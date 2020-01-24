@@ -84,9 +84,18 @@ class Student
     /**
      * @var string
      *
-     * @ORM\Column(name="email", type="string", length=50)
+     * @ORM\Column(name="email", type="string", length=250)
      */
     private $email;
+
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="emailpro", type="string", length=250)
+     */
+    private $emailpro;
+
 
 
 
@@ -1323,4 +1332,29 @@ class Student
     {
         return $this->rankofexams;
     }
+
+
+    /**
+     * Set email
+     *
+     * @param string $emailpro
+     *
+     */
+    public function setEmailpro($emailpro)
+    {
+        $this->emailpro = $emailpro;
+
+        return $this;
+    }
+
+    /**
+     * Get email
+     *
+     * @return string
+     */
+    public function getEmailpro()
+    {
+        return $this->emailpro;
+    }
+
 }

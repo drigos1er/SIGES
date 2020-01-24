@@ -107,44 +107,27 @@
                             <b class="caret"></b>
                         </p>
                     </a>
-                    <div class="collapse {%if current_menu is defined  and  current_menu=='averaging'%}in{% endif %}{%if current_menu is defined  and  current_menu=='importaverages'%}in{% endif %}" id="pagesExamples">
+                    <div class="collapse {%if current_menu is defined  and  current_menu=='teachereculist'%}in{% endif %}{%if current_menu is defined  and  current_menu=='teachereculistvalidation'%}in{% endif %}" id="pagesExamples">
                         <ul class="nav">
 
                             <li class=" {%if current_menu is defined  and  current_menu=='teachereculist'%}active{% endif %}"><a href="{{ path('siges_teachereculist') }}"> <i class="material-icons">keyboard</i>Saisie  </a>
                             </li>
-                            <li class="{%if current_menu is defined  and  current_menu=='importaverages'%}active{% endif %}"><a href=""> <i class="material-icons">get_app</i>Import  </a>
+
+                            <li class="{%if current_menu is defined  and  current_menu=='teachereculistvalidation'%}active{% endif %}"><a href="{{ path('siges_teachereculistvalidation') }}">  <i class="material-icons">where_to_vote</i> Validation </a>
                             </li>
+
+
+                            <li class="{%if current_menu is defined  and  current_menu=='consultaverecuclass'%}active{% endif %}"><a href="#"><i class="material-icons">filter_1</i>Moyennes ECUE</a>
+                            </li>
+                        {#    <li class="{%if current_menu is defined  and  current_menu=='importaverages'%}active{% endif %}"><a href=""> <i class="material-icons">get_app</i>Import  </a>
+                            </li>#}
 
                         </ul>
                     </div>
 
                 </li>
 
-                <li>
-                    <a data-toggle="collapse" href="#formsExamples">
-                        <i class="material-icons">where_to_vote</i>
-                        <p>Validation
-                            <b class="caret"></b>
-                        </p>
-                    </a>
-                    <div class="collapse {%if current_menu is defined  and  current_menu=='statclassaverspec'%}in{% endif %} {%if current_menu is defined  and  current_menu=='statclass'%}in{% endif %} {%if current_menu is defined  and  current_menu=='checklist'%}in{% endif %}{%if current_menu is defined  and  current_menu=='validaverages'%}in{% endif %}" id="formsExamples">
-                        <ul class="nav">
-                            <li class="{%if current_menu is defined  and  current_menu=='validaverages'%}active{% endif %}"><a href=""> <i class="material-icons">check_circule</i> Moyennes </a>
-                            </li>
 
-                            <li class="{%if current_menu is defined  and  current_menu=='checklist'%}active{% endif %}"><a href=""> <i class="material-icons">view_list</i> Listing de Contrôles </a>
-                            </li>
-
-
-                            <li class="{%if current_menu is defined  and  current_menu=='statclass'%}active{% endif %}"><a href=""> <i class="material-icons">timeline</i>Statistiques par Classe </a>
-                            </li>
-                            <li class="{%if current_menu is defined  and  current_menu=='statclassaverspec'%}active{% endif %}"><a href=""><i class="material-icons">timeline</i>Statistiques par Spécialité</a>
-                            </li>
-
-
-                        </ul>
-                    </div>
-                </li>
 
             </ul>
         </div>
@@ -396,12 +379,13 @@
 <script>
 
 
-    $('#listaveraging').DataTable({
+    $('#teachereculist').DataTable({
 
 
-        "ajax": "",
+        "ajax": "{{ path('siges_eculist') }}",
         "sAjaxDataProp": "data",
         "pageLength": 10,
+
 
         "columns":[
 
@@ -822,7 +806,7 @@
     $('#validaverage').DataTable({
 
 
-        "ajax": "",
+        "ajax": "{{ path('siges_eculistvalidation') }}",
         "sAjaxDataProp": "data",
         "pageLength": 10,
 
@@ -837,7 +821,8 @@
             {"data": "semester"},
             {"data": "hourvht"},
             {"data": "averagescc"},
-            {"data": "averagestp"}
+            {"data": "averagestp"},
+            {"data": "listing"},
 
         ],
         "language": {

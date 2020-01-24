@@ -1,0 +1,71 @@
+{% extends 'layoutteachervalidaver.html.twig' %}
+
+{% block title %}SIGES|VALIDATION MOYENNE{% endblock %}
+{% block body %}
+
+    <div class="container-fluid">
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header card-header-icon" data-background-color="blue">
+                        <i class="material-icons">where_to_vote</i>
+                    </div>
+                    <div style="text-align: center ; font-size:15px;" > <a class="btn btn-info" href="{{ path('siges_validallaverages') }}" ><i class="fa fa-check m-right-xs"></i>Valider toutes les Moyennes</a> <a class="btn btn-danger" href="{{ path('siges_unvalidallaverages') }}"><i class="fa fa-remove m-right-xs"></i>Annuler la validation de toutes les Moyennes</a></div>
+                    {% for flashMessage in app.session.flashbag.get('notice') %}
+                        <div class="alert alert-success alert-dismissible fade in" role="alert">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span>
+                            </button>
+                            <div class="flash-notice">
+                                {{ flashMessage }}
+                            </div>
+                        </div>
+                    {% endfor %}
+
+                    <div class="card-content">
+                        <h4>    <span class="card-title">Validation de Moyennes de Contrôles Continus - {%if(app.session.get('typavervaedit')  =='MCC')%}  Théorie {% endif %} {%if(app.session.get('typavervaedit')  =='MTP')%}  TP {% endif %}: <span style="font-style: italic; color: grey; font-size: 14px;">  UE:{{ app.session.get('uenamvaedit') }} &nbsp;&nbsp;ECU:{{ app.session.get('ecunamvaedit') }}   &nbsp; </span>  </h4>
+                        <table id="example" class="display" cellspacing="0" width="100%">
+                            <thead>
+                            <tr>
+
+                                <th>Matricule</th>
+                                <th>Nom</th>
+                                <th>Prenom</th>
+                                <th>Date Nais.</th>
+                                <th>Lieu Nais.</th>
+                                <th>Genre</th>
+
+                                <th>Moyenne</th>
+                                <th>Valider</th>
+                            </tr>
+                            </thead>
+                            <tfoot>
+                            <tr>
+
+                                <th>Matricule</th>
+                                <th>Nom</th>
+                                <th>Prenom</th>
+                                <th>Date Nais.</th>
+                                <th>Lieu Nais.</th>
+                                <th>Genre</th>
+
+                                <th>Moyenne</th>
+                                <th>Valider</th>
+
+                            </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    <div style="text-align: center"> <a href="{{ path('siges_teachereculistvalidation') }}"><i class="fa fa-mail-reply-all"></i>Retour à la liste des ECUEs</a></div>
+                </div>
+            </div>
+        </div>
+
+
+
+    </div>
+    <!-- /page content -->
+
+
+
+{% endblock %}

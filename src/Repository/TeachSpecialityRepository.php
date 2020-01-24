@@ -19,6 +19,55 @@ class TeachSpecialityRepository extends ServiceEntityRepository
         parent::__construct($registry, TeachSpeciality::class);
     }
 
+
+    public function searchteachpec($teachid,$acadyearid,$data, $page = 0, $max = NULL, $getResult = true)
+    {
+        $qb = $this->_em->createQueryBuilder();
+        $query = isset($data['query']) && $data['query']?$data['query']:null;
+
+        $qb
+            ->select('t')
+            ->from('App\Entity\TeachSpeciality', 't')
+            ->where("t.teacherid=:teachid ")
+
+            ->andWhere('t.acadyearid=:acadyearid')
+            ->setParameter('teachid', $teachid)
+
+            ->setParameter('acadyearid', $acadyearid)
+
+
+
+
+
+        ;
+
+        if ($query) {
+            $qb
+                ->andWhere('t.teacherid like :query')
+                ->setParameter('query', "%".$query."%")
+            ;
+        }
+
+        if ($max) {
+            $preparedQuery = $qb->getQuery()
+                ->setMaxResults($max)
+                ->setFirstResult($page * $max)
+            ;
+        } else {
+            $preparedQuery = $qb->getQuery();
+        }
+
+        return $getResult?$preparedQuery->getResult():$preparedQuery;
+    }
+
+
+
+
+
+
+
+
+
     // /**
     //  * @return TeachSpeciality[] Returns an array of TeachSpeciality objects
     //  */

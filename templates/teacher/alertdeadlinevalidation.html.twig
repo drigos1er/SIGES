@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>{% block title %}ERREUR SAISIE MOYENNES{% endblock %}</title>
+    <link id="callCss" rel="stylesheet" href="{{ asset('build/css/bootstrap.min.css') }}" type="text/css" media="screen"/>
+    <link href="{{ asset('build/css/demo.css') }}" rel="stylesheet" type="text/css">
+
+</head>
+<body>
+{% block body %}
+
+
+
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" style="text-align: center; color: orangered">HORS DELAI DE VALIDATION !!<br>VALIDATION NON AUTORISEE DE  MOYENNES DE CONTROLES CONTINUS</h4><span style="text-align: center">{%if(app.request.query.get('typaver')  =='MCC')%}   {% endif %} {%if(app.request.query.get('typaver')   =='MTP')%}  TP {% endif %} &nbsp;&nbsp;UE:{{ app.request.query.get('ueid') }} &nbsp;&nbsp;ECU:{{ app.request.query.get('ecuid') }}&nbsp;Année Académique: {{ app.session.get('anacad') }}&nbsp; Classe: &nbsp;{{ app.request.query.get('classid')  }} &nbsp;&nbsp;Spécialité: {{ app.request.query.get('specid')  }}&nbsp;&nbsp;Semestre: {{ app.request.query.get('semid')  }}</span>
+            </div>
+            <div class="modal-body">
+
+                <p> <p class="text-warning" > <div style="font-style: italic; color: blue; font-size: 18px; text-align: center">Veuillez contacter le servive Ressources Pédagogiques - DP!!!</div> </p></p>
+
+            </div>
+            <div class="modal-footer">
+                <a href="{{ path('siges_teachereculistvalidation') }}"  class="btn btn-danger">OK</a>
+
+            </div>
+        </div>
+    </div>
+    </div>
+{% endblock %}
+<script src="{{ asset('build/js/jquery-3.1.1.min.js') }}"></script>
+<script src="{{  asset('build/js/bootstrap.min.js')}}"></script>
+<script type="text/javascript">
+    $(document).ready(function(){
+        $("#myModal").modal('show');
+    });
+</script>
+</body>
+</html>

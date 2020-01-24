@@ -1,0 +1,60 @@
+{% extends 'layoutteachereditaver.html.twig' %}
+
+{% block title %}SIGES|SAISIE MOYENNE{% endblock %}
+{% block body %}
+
+    <!-- page content -->
+    <div class="container-fluid">
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header card-header-icon" data-background-color="blue">
+                        <i class="material-icons">edit</i>
+                    </div>
+                    <div class="card-content">
+                        <h4>    <span class="card-title">Saisie de Moyennes de Contrôles Continus - {%if(app.session.get('typaveredit')  =='MCC')%}  Théorie {% endif %} {%if(app.session.get('typaveredit')  =='MTP')%}  TP {% endif %}: <span style="font-style: italic; color: grey; font-size: 14px;">  UE:{{ app.session.get('uenamedit') }} &nbsp;&nbsp;ECU:{{ app.session.get('ecunamedit') }}   &nbsp; </span>  </h4>
+                        <table id="example" class="display" cellspacing="0" width="100%">
+                            <thead>
+                            <tr>
+
+                                <th>Matricule</th>
+                                <th>Nom</th>
+                                <th>Prenom</th>
+                                <th>Date Nais.</th>
+                                <th>Lieu Nais.</th>
+                                <th>Genre</th>
+
+                                <th>Moyenne</th>
+
+                            </tr>
+                            </thead>
+                            <tfoot>
+                            <tr>
+
+                                <th>Matricule</th>
+                                <th>Nom</th>
+                                <th>Prenom</th>
+                                <th>Date Nais.</th>
+                                <th>Lieu Nais.</th>
+                                <th>Genre</th>
+
+                                <th>Moyenne</th>
+
+                            </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    <div style="text-align: center"> <a href="{{ path('siges_teachereculist') }}"><i class="fa fa-mail-reply-all"></i>Retour à la liste des Eléments Constitutifs d'Unités d'Enseignements(ECUE)</a></div>
+                </div>
+            </div>
+        </div>
+
+
+
+    </div>
+    <!-- /page content -->
+
+
+
+{% endblock %}

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>{% block title %}ANNULER VALIDATION DE TOUTES LES MOYENNES{% endblock %}</title>
+    <link id="callCss" rel="stylesheet" href="{{ asset('build/css/bootstrap.min.css') }}" type="text/css" media="screen"/>
+    <link href="{{ asset('build/css/demo.css') }}" rel="stylesheet" type="text/css">
+
+</head>
+<body>
+{% block body %}
+
+
+
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">ANNULER VALIDATION DE TOUTES LES MOYENNES</h4>Année Académique: {{ app.session.get('anacad') }}&nbsp; Classe: &nbsp;{{ app.session.get('classnamevaedit') }} &nbsp;&nbsp;Spécialité: {{ app.session.get('specidvaedit') }}&nbsp;&nbsp;Semestre: {{ app.session.get('semidvaedit') }}
+            </div>
+            <div class="modal-body">
+
+                <p> <p class="text-warning" >Voulez vous annuler la validation toutes les moyennes    &nbsp;&nbsp;de Contrôles Continus {%if(app.session.get('typavervaedit')  =='MCC')%}  Théorie {% endif %} {%if(app.session.get('typavervaedit')  =='MTP')%}  TP {% endif %} <br> <div style="font-style: italic; color: blue; font-size: 18px; text-align: center">  UE:{{ app.session.get('uenamvaedit') }} &nbsp;&nbsp;ECU:{{ app.session.get('ecunamvaedit') }} ?</div> </p></p>
+
+            </div>
+            <div class="modal-footer">
+                <a href="{{ path('siges_validaveragesedit') }}"  class="btn btn-danger">NON</a>
+                <a href="{{ path('siges_saveunvalidallaverages')}}"  class="btn btn-primary">OUI</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+<script src="{{ asset('build/js/jquery-3.1.1.min.js') }}"></script>
+<script src="{{  asset('build/js/bootstrap.min.js')}}"></script>
+<script type="text/javascript">
+    $(document).ready(function(){
+        $("#myModal").modal('show');
+    });
+</script>
+</body>
+</html>

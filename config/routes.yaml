@@ -23,12 +23,20 @@ security_redirectuser:
 
 
 security_updpwd:
-  path:     /updatepasswd
+  path:     /updatepasswd/{id}
   defaults: { _controller: App\Controller\SecurityController::updatepwd }
 
 
+
+security_resetpwd:
+  path:     /resetpasswd
+  defaults: { _controller: App\Controller\SecurityController::resetpwd }
+
+
+
+
 security_updprofil:
-  path:     /updateprofil
+  path:     /updateprofil/{id}
   defaults: { _controller: App\Controller\SecurityController::updateprofil }
 
 
@@ -46,7 +54,85 @@ siges_teachereculist:
   defaults: { _controller: App\Controller\TeacherController::teachereculist }
 
 
+siges_eculist:
+  path:     /teacherarea/eculist
+  defaults: { _controller: App\Controller\TeacherController::eculist }
+
+siges_alertvalidation:
+  path:     /teacherarea/alertvalidation
+  defaults: { _controller: App\Controller\TeacherController::alertvalidation}
+
+
+siges_alertdeadlinesaisie:
+  path:     /teacherarea/alertdeadlinesaisie
+  defaults: { _controller: App\Controller\TeacherController::alertdeadlinesaisie}
+
+
+
+siges_redirectentryaverages:
+  path:     /teacherarea/redirectentryaverages
+  defaults: { _controller: App\Controller\TeacherController::redirectentryaverages}
+
+
+
 siges_entryaverages:
   path:     /teacherarea/entryaverages
   defaults: { _controller: App\Controller\TeacherController::entryaverages }
 
+
+
+
+siges_teachereculistvalidation:
+  path:     /teacherarea/teachereculistvalidation
+  defaults: { _controller: App\Controller\TeacherController::teachereculistvalidation }
+
+
+siges_eculistvalidation:
+  path:     /teacherarea/eculistvalidation
+  defaults: { _controller: App\Controller\TeacherController::eculistvalidation }
+
+
+
+siges_alertdeadlinevalid:
+  path:     /teacherarea/alertdeadlinevalid
+  defaults: { _controller: App\Controller\TeacherController::alertdeadlinevalid}
+
+
+
+siges_redirectvalidaverages:
+  path:     /teacherarea/redirectvalidaverages
+  defaults: { _controller: App\Controller\TeacherController::redirectvalidaverages}
+
+
+
+
+
+
+
+siges_validaveragesedit:
+  path:     /teacherarea/validaveragesedit
+  defaults: { _controller: App\Controller\TeacherController::validaveragesedit }
+
+
+
+
+siges_validallaverages:
+  path:     /teacherarea/validallaverages
+  defaults: { _controller: App\Controller\TeacherController::validallaverages }
+
+
+
+siges_unvalidallaverages:
+  path:     /teacherarea/unvalidallaverages
+  defaults: { _controller: App\Controller\TeacherController::unvalidallaverages }
+
+
+
+siges_savevalidallaverages:
+  path:     /teacherarea/savevalidallaverages
+  defaults: { _controller: App\Controller\TeacherController::savevalidallaverages }
+
+
+siges_saveunvalidallaverages:
+  path:     /teacherarea/saveunvalidallaverages
+  defaults: { _controller: App\Controller\TeacherController::saveunvalidallaverages }

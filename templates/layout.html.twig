@@ -61,9 +61,15 @@
                             <div class="collapse" id="collapseExample">
                                 <ul class="nav">
                                     <li>
-                                        <a href="" style="color: black">Mon Profil</a>
+                                        <a href="{{ path('security_updprofil',{id:app.user.id }) }}" style="color: black">Mon Profil</a>
 
                                     </li>
+
+                                    <li>
+                                        <a href="{{ path('security_updpwd',{id:app.user.id }) }}" style="color: black">Modifier mot de Passe</a>
+
+                                    </li>
+
                                     <li>
                                         <a href="{{ path('security_logout') }}" style="color: black"> Deconnexion</a>
 

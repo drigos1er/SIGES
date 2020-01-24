@@ -315,12 +315,12 @@ class SigesUser implements UserInterface
         return $this;
     }
 
-    public function getPicture(): ?string
+    public function getPicture()
     {
         return $this->picture;
     }
 
-    public function setPicture(string $picture): self
+    public function setPicture( $picture): self
     {
         $this->picture = $picture;
 
