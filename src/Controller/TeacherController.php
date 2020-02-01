@@ -131,7 +131,8 @@ class TeacherController extends AbstractController
                 $rsm = new ResultSetMapping();
                 $rsm->addScalarResult('nbstudent', 'nbstudent');
 
-                $sql = "SELECT count(  DISTINCT `studentid`) as nbstudent FROM `student_speciality`  WHERE  acadyearid=:acadyearid and specialityid=:specialityid and  levelid=:levelid and school_classeid=:school_classid  ";
+                $sql = "SELECT count(  DISTINCT `studentid`) as nbstudent FROM `student_speciality`  WHERE 
+ acadyearid=:acadyearid and specialityid=:specialityid and  levelid=:levelid and school_classeid=:school_classid  ";
                 $query = $em->createNativeQuery($sql, $rsm);
                 $query->setParameter('acadyearid', $idanac);
                 $query->setParameter('specialityid', $classincor->getSpecialityId());
@@ -165,7 +166,8 @@ class TeacherController extends AbstractController
                 $rsm = new ResultSetMapping();
                 $rsm->addScalarResult('nbaveragescc', 'nbaveragescc');
 
-                $sql = "SELECT count(  DISTINCT student_averages.`studentid`) as nbaveragescc FROM `student_averages` INNER JOIN student_speciality on student_speciality.studentid=student_averages.studentid WHERE  student_averages.acadyearid=:acadyearid and student_averages.specialityid=:specialityid and student_averages.semesterid=:semesterid and  student_averages.ueid=:ueid and student_averages.ecuid=:ecuid and student_averages.typeof_averages='MCC'  and student_averages.average BETWEEN 0 AND 20 and student_speciality.school_classeid=:school_classeid  ";
+                $sql = "SELECT count(  DISTINCT student_averages.`studentid`) as nbaveragescc FROM `student_averages` INNER JOIN student_speciality on student_speciality.studentid=student_averages.studentid WHERE  student_averages.acadyearid=:acadyearid and student_averages.specialityid=:specialityid and student_averages.semesterid=:semesterid 
+and  student_averages.ueid=:ueid and student_averages.ecuid=:ecuid and student_averages.typeof_averages='MCC'  and student_averages.average BETWEEN 0 AND 20 and student_speciality.school_classeid=:school_classeid  ";
                 $query = $em->createNativeQuery($sql, $rsm);
                 $query->setParameter('acadyearid', $idanac);
                 $query->setParameter('specialityid', $classincor->getSpecialityid());
@@ -195,7 +197,8 @@ class TeacherController extends AbstractController
                 $rsm = new ResultSetMapping();
                 $rsm->addScalarResult('averagestp', 'averagestp');
 
-                $sql = "SELECT count(  DISTINCT student_averages.`studentid`) as averagestp FROM `student_averages` INNER JOIN student_speciality on student_speciality.studentid=student_averages.studentid WHERE  student_averages.acadyearid=:acadyearid and student_averages.specialityid=:specialityid and student_averages.semesterid=:semesterid and  student_averages.ueid=:ueid and student_averages.ecuid=:ecuid and student_averages.typeof_averages='MTP'  and student_averages.average BETWEEN 0 AND 20 and student_speciality.school_classeid=:school_classeid  ";
+                $sql = "SELECT count(  DISTINCT student_averages.`studentid`) as averagestp FROM `student_averages` INNER JOIN student_speciality on student_speciality.studentid=student_averages.studentid WHERE  student_averages.acadyearid=:acadyearid and student_averages.specialityid=:specialityid 
+and student_averages.semesterid=:semesterid and  student_averages.ueid=:ueid and student_averages.ecuid=:ecuid and student_averages.typeof_averages='MTP'  and student_averages.average BETWEEN 0 AND 20 and student_speciality.school_classeid=:school_classeid  ";
                 $query = $em->createNativeQuery($sql, $rsm);
                 $query->setParameter('acadyearid', $this->get('session')->get('anacademiq'));
                 $query->setParameter('specialityid', $classincor->getSpecialityid());
@@ -229,7 +232,8 @@ class TeacherController extends AbstractController
                 $rsm = new ResultSetMapping();
                 $rsm->addScalarResult('average', 'average');
 
-                $sql = "SELECT student_averages.average  FROM `student_averages` INNER JOIN student_speciality on student_speciality.studentid=student_averages.studentid WHERE  student_averages.acadyearid=:acadyearid and student_averages.specialityid=:specialityid and student_averages.semesterid=:semesterid and  student_averages.ueid=:ueid and student_averages.ecuid=:ecuid and student_averages.typeof_averages='MCC'  and student_averages.valid=1 and student_speciality.school_classeid=:school_classeid  ";
+                $sql = "SELECT student_averages.average  FROM `student_averages` INNER JOIN student_speciality on student_speciality.studentid=student_averages.studentid WHERE  student_averages.acadyearid=:acadyearid and 
+student_averages.specialityid=:specialityid and student_averages.semesterid=:semesterid and  student_averages.ueid=:ueid and student_averages.ecuid=:ecuid and student_averages.typeof_averages='MCC'  and student_averages.valid=1 and student_speciality.school_classeid=:school_classeid  ";
                 $query = $em->createNativeQuery($sql, $rsm);
                 $query->setParameter('acadyearid', $idanac);
                 $query->setParameter('specialityid', $classincor->getSpecialityid());
@@ -246,10 +250,23 @@ class TeacherController extends AbstractController
                 if($averagevalid){
 
 
-                          $pathurl=  $this->generateUrl('siges_alertvalidation', array('classid'=>$eculist->getClasseid(),'specid'=>$spe->getId(),'ueid'=>$eculist->getUeid(),'ecuid'=>$eculist->getEcuid(),'uename'=>$ue->getUename(),'classname'=>$classincor->getClassname(),'semid'=>$eculist->getSemesterid(),'ecuname'=>$ecu->getEcuname(),'ecuname'=>$ecu->getEcuname(),'typaver'=>'MCC'))  ;
-                    if ($nbcptnotemoycc >= 1) {
-                        $incorpo = '<a href="'.$pathurl.'" class="btn btn-success btn-xs" >' . $nbcptnotemoycc. '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i> </a>';
-                    } else {
+                          $pathurl=  $this->generateUrl('siges_alertvalidation', array('classid'=>$eculist->getClasseid(),'specid'=>$spe->getId(),'ueid'=>$eculist->getUeid(),
+                              'ecuid'=>$eculist->getEcuid(),'uename'=>$ue->getUename(),'classname'=>$classincor->getClassname(),'semid'=>$eculist->getSemesterid(),'ecuname'=>$ecu->getEcuname(),'ecuname'=>$ecu->getEcuname(),'typaver'=>'MCC'))  ;
+                    if ($nbcptnotemoycc >= 1 and $nbcptnotemoycc < $nbcptetud) {
+                        $incorpo = '<a href="'.$pathurl.'" class="btn btn-warning btn-xs" >' . $nbcptnotemoycc. '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i> </a>';
+                    }
+
+
+
+                    elseif($nbcptnotemoycc == $nbcptetud){
+                                    $incorpo = '<a href="'.$pathurl.'" class="btn btn-success btn-xs" >' . $nbcptnotemoycc. '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i> </a>';
+                    }
+
+
+
+
+
+                    else {
                         $incorpo = '<a href="'.$pathurl.'" class="btn btn-danger btn-xs">' . $nbcptnotemoycc. '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i></a>';
                     }
 
@@ -263,9 +280,15 @@ class TeacherController extends AbstractController
                     if($fdateoftheday > $this->get('session')->get('deadline')){
                                $pathurl=  $this->generateUrl('siges_alertdeadlinesaisie', array('classid'=>$eculist->getClasseid(),'specid'=>$spe->getId(),'ueid'=>$eculist->getUeid(),'ecuid'=>$eculist->getEcuid(),'uename'=>$ue->getUename(),'classname'=>$classincor->getClassname(),'semid'=>$eculist->getSemesterid(),'ecuname'=>$ecu->getEcuname(),'ecuname'=>$ecu->getEcuname(),'typaver'=>'MCC'))  ;
 
-                        if ($nbcptnotemoycc >= 1) {
-                            $incorpo = '<a href="'.$pathurl.'" class="btn btn-success btn-xs" >' . $nbcptnotemoycc. '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i> </a>';
-                        } else {
+                        if ($nbcptnotemoycc >= 1 and $nbcptnotemoycc < $nbcptetud) {
+                            $incorpo = '<a href="'.$pathurl.'" class="btn btn-warning btn-xs" >' . $nbcptnotemoycc. '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i> </a>';
+                        } elseif ($nbcptnotemoycc == $nbcptetud) {
+                                $incorpo = '<a href="'.$pathurl.'" class="btn btn-success btn-xs" >' . $nbcptnotemoycc. '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i> </a>';
+
+                        }
+
+
+                        else {
                             $incorpo = '<a href="'.$pathurl.'" class="btn btn-danger btn-xs">' . $nbcptnotemoycc. '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i></a>';
                         }
                                       $liensaisiecc=$incorpo;
@@ -278,9 +301,20 @@ class TeacherController extends AbstractController
                     }else{
                         $pathurl=  $this->generateUrl('siges_redirectentryaverages', array('classid'=>$eculist->getClasseid(),'specid'=>$spe->getId(),'ueid'=>$eculist->getUeid(),'ecuid'=>$eculist->getEcuid(),'uename'=>$ue->getUename(),'classname'=>$classincor->getClassname(),'semid'=>$eculist->getSemesterid(),'ecuname'=>$ecu->getEcuname(),'ecuname'=>$ecu->getEcuname(),'typaver'=>'MCC'))  ;
 
-                        if ($nbcptnotemoycc >= 1) {
-                            $incorpo = '<a href="'.$pathurl.'" class="btn btn-success btn-xs" >' . $nbcptnotemoycc. '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i> </a>';
-                        } else {
+                        if ($nbcptnotemoycc >= 1 and $nbcptnotemoycc < $nbcptetud) {
+                            $incorpo = '<a href="'.$pathurl.'" class="btn btn-warning btn-xs" >' . $nbcptnotemoycc. '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i> </a>';
+                        } elseif ($nbcptnotemoycc == $nbcptetud) {
+
+                                     $incorpo = '<a href="'.$pathurl.'" class="btn btn-success btn-xs" >' . $nbcptnotemoycc. '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i> </a>';
+
+                        }
+
+
+
+
+
+
+                        else {
                             $incorpo = '<a href="'.$pathurl.'" class="btn btn-danger btn-xs">' . $nbcptnotemoycc. '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i></a>';
                         }
 
@@ -330,9 +364,19 @@ class TeacherController extends AbstractController
                     $pathurltp=  $this->generateUrl('siges_alertvalidation', array('classid'=>$eculist->getClasseid(),'specid'=>$spe->getId(),'ueid'=>$eculist->getUeid(),'ecuid'=>$eculist->getEcuid(),'uename'=>$ue->getUename(),'classname'=>$classincor->getClassname(),'semid'=>$eculist->getSemesterid(),'ecuname'=>$ecu->getEcuname(),'ecuname'=>$ecu->getEcuname(),'typaver'=>'MTP'))  ;
 
 
-                    if ($nbcptnotemoycctp >= 1) {
-                        $incorpotp = '<a href="'.$pathurltp.'" class="btn btn-success btn-xs">' . $nbcptnotemoycctp . '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i></span>';
-                    } else{
+                    if ($nbcptnotemoycctp >= 1 and $nbcptnotemoycctp < $nbcptetud) {
+                        $incorpotp = '<a href="'.$pathurltp.'" class="btn btn-warning btn-xs">' . $nbcptnotemoycctp . '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i></span>';
+                    } elseif($nbcptnotemoycctp==$nbcptetud){
+
+                                        $incorpotp = '<a href="'.$pathurltp.'" class="btn btn-success btn-xs">' . $nbcptnotemoycctp . '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i></span>';
+
+
+                    }
+
+
+
+
+                    else{
 
                         $incorpotp = '<a href="'.$pathurltp.'" class="btn btn-danger btn-xs">' . $nbcptnotemoycctp . '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i></span>';
                     }
@@ -357,9 +401,21 @@ class TeacherController extends AbstractController
 
 
                         $pathurltp=  $this->generateUrl('siges_alertdeadlinesaisie', array('classid'=>$eculist->getClasseid(),'specid'=>$spe->getId(),'ueid'=>$eculist->getUeid(),'ecuid'=>$eculist->getEcuid(),'uename'=>$ue->getUename(),'classname'=>$classincor->getClassname(),'semid'=>$eculist->getSemesterid(),'ecuname'=>$ecu->getEcuname(),'ecuname'=>$ecu->getEcuname(),'typaver'=>'MTP'))  ;
-                        if ($nbcptnotemoycctp >= 1) {
-                            $incorpotp = '<a href="'.$pathurltp.'" class="btn btn-success btn-xs">' . $nbcptnotemoycctp . '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i></span>';
-                        } else{
+                        if ($nbcptnotemoycctp >= 1 and $nbcptnotemoycctp < $nbcptetud) {
+                            $incorpotp = '<a href="'.$pathurltp.'" class="btn btn-warning btn-xs">' . $nbcptnotemoycctp . '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i></span>';
+                        }
+                            elseif ($nbcptnotemoycctp==$nbcptetud)  {
+
+
+                                   $incorpotp = '<a href="'.$pathurltp.'" class="btn btn-success btn-xs">' . $nbcptnotemoycctp . '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i></span>';
+
+
+                            }
+
+
+
+
+                        else{
 
                             $incorpotp = '<a href="'.$pathurltp.'" class="btn btn-danger btn-xs">' . $nbcptnotemoycctp . '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i></span>';
                         }
@@ -375,9 +431,24 @@ class TeacherController extends AbstractController
 
                         $pathurltp=  $this->generateUrl('siges_redirectentryaverages', array('classid'=>$eculist->getClasseid(),'specid'=>$spe->getId(),'ueid'=>$eculist->getUeid(),'ecuid'=>$eculist->getEcuid(),'uename'=>$ue->getUename(),'classname'=>$classincor->getClassname(),'semid'=>$eculist->getSemesterid(),'ecuname'=>$ecu->getEcuname(),'ecuname'=>$ecu->getEcuname(),'typaver'=>'MTP'))  ;
 
-                        if ($nbcptnotemoycctp >= 1) {
-                            $incorpotp = '<a href="'.$pathurltp.'" class="btn btn-success btn-xs">' . $nbcptnotemoycctp . '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i></span>';
-                        } else{
+                        if ($nbcptnotemoycctp >= 1 and $nbcptnotemoycctp < $nbcptetud) {
+
+
+                            $incorpotp = '<a href="'.$pathurltp.'" class="btn btn-warning btn-xs">' . $nbcptnotemoycctp . '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i></span>';
+
+
+
+                        }
+                        elseif ($nbcptnotemoycctp==$nbcptetud)   {
+
+                                           $incorpotp = '<a href="'.$pathurltp.'" class="btn btn-success btn-xs">' . $nbcptnotemoycctp . '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i></span>';
+
+                        }
+
+
+
+
+                        else{
 
                             $incorpotp = '<a href="'.$pathurltp.'" class="btn btn-danger btn-xs">' . $nbcptnotemoycctp . '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i></span>';
                         }
@@ -466,7 +537,7 @@ class TeacherController extends AbstractController
 
 
 
-        return $this->redirect("http://localhost:8888/SIGES/src/Service/averageteacher.php?idanac=$idanac&&idspec=$idspec&&idsem=$idsem&&idue=$idue&&&idecu=$idecu&&typeofaver=$typeofaver&&idclass=$idclass&&leconnecte=$leconnecte");
+        return $this->redirect("http://localhost:8888/SIGES/averageteacher.php?idanac=$idanac&&idspec=$idspec&&idsem=$idsem&&idue=$idue&&&idecu=$idecu&&typeofaver=$typeofaver&&idclass=$idclass&&leconnecte=$leconnecte");
 
 
     }
@@ -699,11 +770,25 @@ class TeacherController extends AbstractController
                     if($fdateoftheday > $this->get('session')->get('deadline')){
                         $pathurl=  $this->generateUrl('siges_alertdeadlinevalid', array('classid'=>$eculist->getClasseid(),'specid'=>$spe->getId(),'ueid'=>$eculist->getUeid(),'ecuid'=>$eculist->getEcuid(),'uename'=>$ue->getUename(),'classname'=>$classincor->getClassname(),'semid'=>$eculist->getSemesterid(),'ecuname'=>$ecu->getEcuname(),'ecuname'=>$ecu->getEcuname(),'typaver'=>'MCC'))  ;
 
-                        if ($nbcptnotemoycc >= 1) {
+                        if ($nbcptnotemoycc >= 1 and $nbcptnotemoycc < $nbcptetud) {
+                            $incorpo = '<a href="'.$pathurl.'" class="btn btn-warning btn-xs" >' . $nbcptnotemoycc. '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i> </a>';
+
+
+                        }elseif ($nbcptnotemoycc == $nbcptetud){
+
+
                             $incorpo = '<a href="'.$pathurl.'" class="btn btn-success btn-xs" >' . $nbcptnotemoycc. '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i> </a>';
 
 
-                        } else {
+
+                        }
+
+
+
+
+
+
+                        else {
                             $incorpo = '<a href="'.$pathurl.'" class="btn btn-danger btn-xs">' . $nbcptnotemoycc. '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i></a>';
 
 
@@ -718,12 +803,19 @@ class TeacherController extends AbstractController
                     }else{
                         $pathurl=  $this->generateUrl('siges_redirectvalidaverages', array('classid'=>$eculist->getClasseid(),'specid'=>$spe->getId(),'ueid'=>$eculist->getUeid(),'ecuid'=>$eculist->getEcuid(),'uename'=>$ue->getUename(),'classname'=>$classincor->getClassname(),'semid'=>$eculist->getSemesterid(),'ecuname'=>$ecu->getEcuname(),'ecuname'=>$ecu->getEcuname(),'typaver'=>'MCC'))  ;
 
-                        if ($nbcptnotemoycc >= 1) {
+                        if ($nbcptnotemoycc >= 1 and $nbcptnotemoycc < $nbcptetud) {
+                            $incorpo = '<a href="'.$pathurl.'" class="btn btn-warning btn-xs" >' . $nbcptnotemoycc. '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i> </a>';
+
+
+                        }elseif ($nbcptnotemoycc == $nbcptetud){
+
+
                             $incorpo = '<a href="'.$pathurl.'" class="btn btn-success btn-xs" >' . $nbcptnotemoycc. '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i> </a>';
 
 
 
-                        } else {
+                        }
+                        else {
                             $incorpo = '<a href="'.$pathurl.'" class="btn btn-danger btn-xs">' . $nbcptnotemoycc. '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i></a>';
 
 
@@ -781,13 +873,24 @@ class TeacherController extends AbstractController
 
 
                         $pathurltp=  $this->generateUrl('siges_alertdeadlinevalid', array('classid'=>$eculist->getClasseid(),'specid'=>$spe->getId(),'ueid'=>$eculist->getUeid(),'ecuid'=>$eculist->getEcuid(),'uename'=>$ue->getUename(),'classname'=>$classincor->getClassname(),'semid'=>$eculist->getSemesterid(),'ecuname'=>$ecu->getEcuname(),'ecuname'=>$ecu->getEcuname(),'typaver'=>'MTP'))  ;
-                        if ($nbcptnotemoycctp >= 1) {
+                        if ($nbcptnotemoycctp >= 1 and $nbcptnotemoycctp < $nbcptetud) {
+                            $incorpotp = '<a href="'.$pathurltp.'" class="btn btn-warning btn-xs">' . $nbcptnotemoycctp . '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i></span>';
+
+
+
+
+                        } elseif ($nbcptnotemoycctp==$nbcptetud){
+
                             $incorpotp = '<a href="'.$pathurltp.'" class="btn btn-success btn-xs">' . $nbcptnotemoycctp . '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i></span>';
 
 
+                        }
 
 
-                        } else{
+
+
+
+                        else{
 
                             $incorpotp = '<a href="'.$pathurltp.'" class="btn btn-danger btn-xs">' . $nbcptnotemoycctp . '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i></span>';
                         }
@@ -802,10 +905,24 @@ class TeacherController extends AbstractController
                     }else{
 
                         $pathurltp=  $this->generateUrl('siges_redirectvalidaverages', array('classid'=>$eculist->getClasseid(),'specid'=>$spe->getId(),'ueid'=>$eculist->getUeid(),'ecuid'=>$eculist->getEcuid(),'uename'=>$ue->getUename(),'classname'=>$classincor->getClassname(),'semid'=>$eculist->getSemesterid(),'ecuname'=>$ecu->getEcuname(),'ecuname'=>$ecu->getEcuname(),'typaver'=>'MTP'))  ;
+                        if ($nbcptnotemoycctp >= 1 and $nbcptnotemoycctp < $nbcptetud) {
+                            $incorpotp = '<a href="'.$pathurltp.'" class="btn btn-warning btn-xs">' . $nbcptnotemoycctp . '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i></span>';
 
-                        if ($nbcptnotemoycctp >= 1) {
+
+
+
+                        } elseif ($nbcptnotemoycctp==$nbcptetud){
+
                             $incorpotp = '<a href="'.$pathurltp.'" class="btn btn-success btn-xs">' . $nbcptnotemoycctp . '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i></span>';
-                        } else{
+
+
+                        }
+
+
+
+
+
+                        else{
 
                             $incorpotp = '<a href="'.$pathurltp.'" class="btn btn-danger btn-xs">' . $nbcptnotemoycctp . '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i></span>';
                         }

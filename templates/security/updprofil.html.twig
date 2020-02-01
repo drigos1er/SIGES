@@ -155,9 +155,29 @@
                         {{ form_end(form) }}
                     </div>
                     <br>
+                    {%if(app.session.get('userrole')  =='ROLE_ENS')%}
+
                     <div style="text-align: center">
-                        {%if(app.session.get('userrole')  =='ROLE_ENS')%} <a href="{{ path('siges_dashboardteacher') }}" class="btn btn-warning btn-round">Accéder au Tableau de bord</a> {% endif %} {%if(app.session.get('tprofil')  =='RP')%} <a href="" class="btn btn-warning btn-round">Retour à l'Accueil</a>  {% endif %}
+                         <a href="{{ path('siges_dashboardteacher') }}" class="btn btn-warning btn-round">Accéder au Tableau de bord</a>
+
+
                     </div>
+                    {% endif %}
+
+
+                    <br>
+                    {%if(app.session.get('userrole')  =='ROLE_PEDAGORES')%}
+
+                        <div style="text-align: center">
+
+
+                            <a href="{{ path('siges_dashboardpedagores') }}" class="btn btn-warning btn-round">Accéder au Tableau de bord</a>
+
+                        </div>
+                    {% endif %}
+
+
+
                 </div>
             </form>
         </div>

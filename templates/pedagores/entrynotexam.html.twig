@@ -1,0 +1,60 @@
+{% extends 'layoutpedagoreseditnex.html.twig' %}
+
+{% block title %}SIGES|SAISIE NOTES D'EXAMENS{% endblock %}
+{% block body %}
+
+    <!-- page content -->
+    <div class="container-fluid">
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header card-header-icon" data-background-color="blue">
+                        <i class="material-icons">keyboard</i>
+                    </div>
+                    <div class="card-content">
+                        <h4>    <span class="card-title">Saisie de Notes d'Examens -  {%if(app.session.get('typenexedit')  =='EXCC')%} Ecrit  {% endif %} {%if(app.session.get('typenexedit')  =='EXTP')%}  TP {% endif %}: <span style="font-style: italic; color: grey; font-size: 14px;"> &nbsp;&nbsp; Niveau: {{ app.session.get('levelidecusemnex') }} &nbsp;&nbsp;Spécialité: {{ app.session.get('specidecusemnex') }} &nbsp;&nbsp;Semestre:{{ app.session.get('semidecusemnex')  }} &nbsp;&nbsp;{%if(app.session.get('sesidecusemnex')  =='SE1')%}  1<sup>ère</sup>SESSION {% endif %} {%if(app.session.get('sesidecusemnex')  =='SE2')%}  2<sup>ème</sup>SESSION {% endif %} UE:{{ app.session.get('uenamenexedit') }} &nbsp;&nbsp;ECU:{{ app.session.get('ecunamenexedit') }}   &nbsp; </span>  </span></h4>
+                        <table id="example" class="display" cellspacing="0" width="100%">
+                            <thead>
+                            <tr>
+
+                                <th>Matricule</th>
+                                <th>Nom</th>
+                                <th>Prenom</th>
+                                <th>Date Nais.</th>
+                                <th>Lieu Nais.</th>
+                                <th>Genre</th>
+
+                                <th>Moyenne</th>
+
+                            </tr>
+                            </thead>
+                            <tfoot>
+                            <tr>
+
+                                <th>Matricule</th>
+                                <th>Nom</th>
+                                <th>Prenom</th>
+                                <th>Date Nais.</th>
+                                <th>Lieu Nais.</th>
+                                <th>Genre</th>
+
+                                <th>Moyenne</th>
+
+                            </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    <div style="text-align: center"> <a href="{{ path('siges_ecusemnex') }}"><i class="fa fa-mail-reply-all"></i>Retour à la liste des Eléments Constitutifs d'Unités  d'Enseignements(ECUE)</a></div>
+                </div>
+            </div>
+        </div>
+
+
+
+    </div>
+    <!-- /page content -->
+
+
+
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends 'layoutchart.html.twig' %}
+
+{% block title %}SIGES|Supervision- Saisie{% endblock %}
+
+{% block body %}
+    <style type="text/css"> @page {
+            size: landscape;
+        }    </style>
+    <!-- page content -->
+    <div class="container-fluid">
+
+        <div class="row" >
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header card-header-icon" data-background-color="blue">
+                        <i class="material-icons">timeline </i>
+                    </div>
+
+                    <div class="card-content">
+                        <h4 class="card-title">Point de Collecte de Moyennes/Notes Semestrielles : <span style="font-style: italic; color: grey; font-size: 14px;"> {%if(app.session.get('idsesrep')  =='SE1')%}  1<sup>ère</sup>SESSION {% endif %} {%if(app.session.get('idsesrep')  =='SE2')%}  2<sup>ème</sup>SESSION {% endif %} &nbsp;&nbsp;{%if(app.session.get('semtyperep')  =='IMPAIR')%}  SEMESTRES IMPAIRS {% endif %}&nbsp;&nbsp;{%if(app.session.get('semtyperep')  =='PAIR')%}  SEMESTRES PAIRS {% endif %}</span></h4>
+                        <div class="row">
+                            <div id="" style="width:900px;height:250px;margin-left: 150px; color: white;"></div>
+
+                            <div class="col-md-offset-2"><a href="" class="btn btn-info btn-round"><span style="font-weight: bold; color: orangered">TOTAL : {{ nbecu }}  ({{ percentecusai }} % de  saisies MCC) </span>  - Voir Détails<i class="material-icons">keyboard_arrow_right</i></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="" class="btn btn-info btn-round"><span style="font-weight: bold; color: orangered">TOTAL : {{ nbecu }}  ({{ percentecusaiex}} % de  saisies NEX) </span> - Voir Détails<i class="material-icons">keyboard_arrow_right</i></a></div>
+                        </div>
+                    </div>
+
+
+                </div>
+
+            </div>
+        </div>
+
+
+
+    </div>
+{% endblock %}

@@ -1,6 +1,5 @@
 <?php
 session_start();
-
 $_SESSION['leconccecte']=$_GET['leconnecte'];
 $_SESSION['idanac']=$_GET['idanac'];
 $_SESSION['idspec']=$_GET['idspec'];

@@ -45,7 +45,7 @@
 -->
         <div class="logo">
             <a href="#" class="simple-text">
-                SIGES-SMCC
+                SIGES
             </a>
         </div>
         <div class="logo logo-mini">
@@ -98,8 +98,8 @@
                 </div>
             </div>
             <ul class="nav">
-                <li class="{%if current_menu is defined  and  current_menu=='averagedashteacher'%}active{% endif %}">
-                    <a href="{{ path('siges_averagedashteacher') }}">
+                <li class="{%if current_menu is defined  and  current_menu=='averagedashpedagores'%}active{% endif %}">
+                    <a href="{{ path('siges_averagedashpedagores') }}">
                         <i class="material-icons">dashboard</i>
                         <p>Tableau de Bord</p>
                     </a>
@@ -109,31 +109,35 @@
                 <li>
                     <a data-toggle="collapse" href="#pagesExamples">
                         <i class="material-icons">filter_1</i>
-                        <p>Collecte Moyennes
+                        <p>Saisie Moyennes
                             <b class="caret"></b>
                         </p>
                     </a>
-                    <div class="collapse {%if current_menu is defined  and  current_menu=='teachereculist'%}in{% endif %}{%if current_menu is defined  and  current_menu=='teachereculistvalidation'%}in{% endif %}" id="pagesExamples">
+                    <div class="collapse {%if current_menu is defined  and  current_menu=='ecusemnex'%}in{% endif %} {%if current_menu is defined  and  current_menu=='specsemnex'%}in{% endif %}{%if current_menu is defined  and  current_menu=='teachereculistvalidation'%}in{% endif %}" id="pagesExamples">
                         <ul class="nav">
 
-                            <li class=" {%if current_menu is defined  and  current_menu=='teachereculist'%}active{% endif %}"><a href="{{ path('siges_teachereculist') }}"> <i class="material-icons">keyboard</i>Saisie  </a>
+                            <li class="{%if current_menu is defined  and  current_menu=='ecusemnex'%}active{% endif %} {%if current_menu is defined  and  current_menu=='specsemnex'%}active{% endif %} {%if current_menu is defined  and  current_menu=='redirectspecsemnex'%}active{% endif %}"><a href="{{ path('siges_redirectspecsemnex', {'idses': 'SE1', 'semtype': 'IMPAIR'}) }}"> <i class="material-icons">keyboard</i>1<sup>ère</sup> Session Semestres IMPAIRS </a>
+                            </li>
+                            <li class=" {%if current_menu is defined  and  current_menu=='teachereculist'%}active{% endif %}"><a href="{{ path('siges_teachereculist', {'idses': 'SE2', 'semtype': 'IMPAIR'}) }}"> <i class="material-icons">keyboard</i>2<sup>ème</sup> Session Semestres IMPAIRS </a>
+                            </li>
+                            <li class=" {%if current_menu is defined  and  current_menu=='teachereculist'%}active{% endif %}"><a href="{{ path('siges_teachereculist', {'idses': 'SE1', 'semtype': 'PAIR'}) }}"> <i class="material-icons">keyboard</i>1<sup>ère</sup> Session Semestres PAIRS </a>
+                            </li>
+                            <li class=" {%if current_menu is defined  and  current_menu=='teachereculist'%}active{% endif %}"><a href="{{ path('siges_teachereculist', {'idses': 'SE2', 'semtype': 'PAIR'}) }}"> <i class="material-icons">keyboard</i>2<sup>ème</sup> Session Semestres PAIRS </a>
                             </li>
 
-                            <li class="{%if current_menu is defined  and  current_menu=='teachereculistvalidation'%}active{% endif %}"><a href="{{ path('siges_teachereculistvalidation') }}">  <i class="material-icons">where_to_vote</i> Validation </a>
-                            </li>
 
-
-                            <li class="{%if current_menu is defined  and  current_menu=='consultaverecuclass'%}active{% endif %}"><a href="#"><i class="material-icons">filter_1</i>Moyennes ECUE</a>
-                            </li>
-                        {#    <li class="{%if current_menu is defined  and  current_menu=='importaverages'%}active{% endif %}"><a href=""> <i class="material-icons">get_app</i>Import  </a>
-                            </li>#}
 
                         </ul>
                     </div>
 
                 </li>
 
-
+                <li>
+                    <a href="{{ path('siges_dashboardpedagores') }}">
+                        <i class="material-icons">reply</i>
+                        <p>Retour Options</p>
+                    </a>
+                </li>
 
             </ul>
         </div>
@@ -154,7 +158,7 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                    <a class="navbar-brand" href="#">      <div style="text-align: center; font-style: italic; font-weight: bold; color: #ed7424;"> ESPACE  SAISIES DE MOYENNES DE CONTRÔLES CONTINUS -DP  ANNEE ACADEMIQUE: &nbsp;&nbsp;<span class="card-title"> {{ app.session.get('anacad') }}</span> </div> </a>
+                    <a class="navbar-brand" href="#">      <div style="text-align: center; font-style: italic; font-weight: bold; color: #ed7424;">  SAISIES DE NOTES D'EXAMENS - DP  ANNEE ACADEMIQUE: &nbsp;&nbsp;<span class="card-title"> {{ app.session.get('anacad') }}</span> </div> </a>
                 </div>
 
             </div>
@@ -168,7 +172,7 @@
                     <ul>
                         <li>
                             <a href="#">
-                                Système de Gestion Intégré de l'ESATIC- Espace Saisies MCC-DP
+                                Système de Gestion Intégré de l'ESATIC- Espace Ressources Pédagogiques
                             </a>
                         </li>
 
@@ -381,30 +385,26 @@
 <!-- /validator -->
 
 
-
 <script>
 
 
-    $('#teachereculist').DataTable({
+    $('#listspeclevel').DataTable({
 
 
-        "ajax": "{{ path('siges_eculist') }}",
+        "ajax": "{{ path('siges_listspecsemnex') }}",
         "sAjaxDataProp": "data",
         "pageLength": 10,
 
-
         "columns":[
 
-            {"data": "specialityname"},
             {"data": "levelid"},
-            {"data": "classename"},
+            {"data": "specid"},
+            {"data": "idsem"},
+            {"data": "nbecu"},
 
-            {"data": "uename"},
-            {"data": "ecuname"},
-            {"data": "semester"},
-            {"data": "hourvht"},
-            {"data": "averagescc"},
-            {"data": "averagestp"}
+
+
+
 
         ],
         "language": {
@@ -439,28 +439,12 @@
 <script>
 
 
-    $('#checklist').DataTable({
+    $('#ecusemnex').DataTable({
 
 
-        "ajax": "",
+        "ajax": "{{ path('siges_listecusemnex') }}",
         "sAjaxDataProp": "data",
         "pageLength": 10,
-
-        "columns":[
-
-            {"data": "specialityname"},
-            {"data": "levelid"},
-            {"data": "classename"},
-
-            {"data": "uename"},
-            {"data": "ecuname"},
-            {"data": "semester"},
-            {"data": "hourvht"},
-            {"data": "averagescc"},
-            {"data": "averagestp"},
-            {"data": "listing"}
-
-        ],
         "language": {
             "search": "_INPUT_",
             "searchPlaceholder": "Recherche",
@@ -482,380 +466,20 @@
             "processing":     "Chargement...",
             "search":         "Recherche:"
 
-        }
-    });
-
-
-
-</script>
-
-<script>
-
-
-    $('#statclass').DataTable({
-
-
-        "ajax": "",
-        "sAjaxDataProp": "data",
-        "pageLength": 10,
-
+        },
         "columns":[
 
-            {"data": "specialityname"},
-            {"data": "levelid"},
-            {"data": "classename"},
-            {"data": "nbstudent"},
-            {"data": "uename"},
-            {"data": "ecuname"},
-            {"data": "semester"},
-            {"data": "hourvht"},
-            {"data": "averagescc"},
-            {"data": "averagestp"},
+            {"data": "ue"},
+            {"data": "ecu"},
+            {"data": "incorpo"},
 
 
-        ],
-        "language": {
-            "search": "_INPUT_",
-            "searchPlaceholder": "Recherche",
-            "paginate": {
-                "first":      "Premier",
-                "last":       "Dernier",
-                "next":       "Suivant",
-                "previous":   "Précédent"
-            },
-            "zeroRecords":    "Aucun Resultat Trouvé",
-            "emptyTable":     "Aucun Resultat Trouvé",
-            "info":           "Affichage de _START_ à _END_ sur _TOTAL_ entrées",
-            "infoEmpty":      "Affichage de 0 à 0 sur 0 entrées",
-            "infoFiltered":   "(filtrés sur _MAX_ total entrées)",
-            "infoPostFix":    "",
-            "thousands":      ",",
-            "lengthMenu":     "Afficher _MENU_ entrées",
-            "loadingRecords": "Chargement...",
-            "processing":     "Chargement...",
-            "search":         "Recherche:"
+            {"data": "MODIFIER"}
 
-        }
+        ]
     });
-
-
-
-</script>
-<script>
-
-
-    $('#statclassaverspec').DataTable({
-
-
-        "ajax": "",
-        "sAjaxDataProp": "data",
-        "pageLength": 10,
-
-        "columns":[
-
-            {"data": "specialityname"},
-            {"data": "levelid"},
-            {"data": "classename"},
-            {"data": "nbstudent"},
-            {"data": "uename"},
-            {"data": "ecuname"},
-            {"data": "semester"},
-            {"data": "hourvht"},
-            {"data": "averagescc"},
-            {"data": "averagestp"},
-
-
-        ],
-        "language": {
-            "search": "_INPUT_",
-            "searchPlaceholder": "Recherche",
-            "paginate": {
-                "first":      "Premier",
-                "last":       "Dernier",
-                "next":       "Suivant",
-                "previous":   "Précédent"
-            },
-            "zeroRecords":    "Aucun Resultat Trouvé",
-            "emptyTable":     "Aucun Resultat Trouvé",
-            "info":           "Affichage de _START_ à _END_ sur _TOTAL_ entrées",
-            "infoEmpty":      "Affichage de 0 à 0 sur 0 entrées",
-            "infoFiltered":   "(filtrés sur _MAX_ total entrées)",
-            "infoPostFix":    "",
-            "thousands":      ",",
-            "lengthMenu":     "Afficher _MENU_ entrées",
-            "loadingRecords": "Chargement...",
-            "processing":     "Chargement...",
-            "search":         "Recherche:"
-
-        }
-    });
-
-
-
-</script>
-<script>
-
-
-    $('#statclasssem').DataTable({
-
-
-        "ajax": "",
-        "sAjaxDataProp": "data",
-        "pageLength": 10,
-
-        "columns":[
-
-            {"data": "specialityname"},
-            {"data": "levelid"},
-            {"data": "classename"},
-            {"data": "nbstudent"},
-            {"data": "uename"},
-            {"data": "ecuname"},
-            {"data": "semester"},
-            {"data": "hourvht"},
-            {"data": "statse1"},
-            {"data": "statse2"}
-
-
-        ],
-        "language": {
-            "search": "_INPUT_",
-            "searchPlaceholder": "Recherche",
-            "paginate": {
-                "first":      "Premier",
-                "last":       "Dernier",
-                "next":       "Suivant",
-                "previous":   "Précédent"
-            },
-            "zeroRecords":    "Aucun Resultat Trouvé",
-            "emptyTable":     "Aucun Resultat Trouvé",
-            "info":           "Affichage de _START_ à _END_ sur _TOTAL_ entrées",
-            "infoEmpty":      "Affichage de 0 à 0 sur 0 entrées",
-            "infoFiltered":   "(filtrés sur _MAX_ total entrées)",
-            "infoPostFix":    "",
-            "thousands":      ",",
-            "lengthMenu":     "Afficher _MENU_ entrées",
-            "loadingRecords": "Chargement...",
-            "processing":     "Chargement...",
-            "search":         "Recherche:"
-
-        }
-    });
-
-
-
-</script>
-
-<script>
-
-
-    $('#statclassspec').DataTable({
-
-
-        "ajax": "",
-        "sAjaxDataProp": "data",
-        "pageLength": 10,
-
-        "columns":[
-
-            {"data": "specialityname"},
-            {"data": "levelid"},
-            {"data": "classename"},
-            {"data": "nbstudent"},
-            {"data": "uename"},
-            {"data": "ecuname"},
-            {"data": "semester"},
-            {"data": "hourvht"},
-            {"data": "statse1"},
-            {"data": "statse2"}
-
-
-        ],
-        "language": {
-            "search": "_INPUT_",
-            "searchPlaceholder": "Recherche",
-            "paginate": {
-                "first":      "Premier",
-                "last":       "Dernier",
-                "next":       "Suivant",
-                "previous":   "Précédent"
-            },
-            "zeroRecords":    "Aucun Resultat Trouvé",
-            "emptyTable":     "Aucun Resultat Trouvé",
-            "info":           "Affichage de _START_ à _END_ sur _TOTAL_ entrées",
-            "infoEmpty":      "Affichage de 0 à 0 sur 0 entrées",
-            "infoFiltered":   "(filtrés sur _MAX_ total entrées)",
-            "infoPostFix":    "",
-            "thousands":      ",",
-            "lengthMenu":     "Afficher _MENU_ entrées",
-            "loadingRecords": "Chargement...",
-            "processing":     "Chargement...",
-            "search":         "Recherche:"
-
-        }
-    });
-
-
-
-</script>
-<script>
-
-
-    $('#consultaverecuclass').DataTable({
-
-
-        "ajax": "",
-        "sAjaxDataProp": "data",
-        "pageLength": 10,
-
-        "columns":[
-
-            {"data": "specialityname"},
-            {"data": "levelid"},
-            {"data": "classename"},
-            {"data": "nbstudent"},
-            {"data": "uename"},
-            {"data": "ecuname"},
-            {"data": "semester"},
-            {"data": "hourvht"},
-            {"data": "averagesecuses1"},
-            {"data": "averagesecuses2"}
-
-
-
-        ],
-        "language": {
-            "search": "_INPUT_",
-            "searchPlaceholder": "Recherche",
-            "paginate": {
-                "first":      "Premier",
-                "last":       "Dernier",
-                "next":       "Suivant",
-                "previous":   "Précédent"
-            },
-            "zeroRecords":    "Aucun Resultat Trouvé",
-            "emptyTable":     "Aucun Resultat Trouvé",
-            "info":           "Affichage de _START_ à _END_ sur _TOTAL_ entrées",
-            "infoEmpty":      "Affichage de 0 à 0 sur 0 entrées",
-            "infoFiltered":   "(filtrés sur _MAX_ total entrées)",
-            "infoPostFix":    "",
-            "thousands":      ",",
-            "lengthMenu":     "Afficher _MENU_ entrées",
-            "loadingRecords": "Chargement...",
-            "processing":     "Chargement...",
-            "search":         "Recherche:"
-
-        }
-    });
-
-
-
-</script>
-
-<script>
-
-
-    $('#listimportaverages').DataTable({
-
-
-        "ajax": "",
-        "sAjaxDataProp": "data",
-        "pageLength": 10,
-
-        "columns":[
-
-            {"data": "specialityname"},
-            {"data": "levelid"},
-            {"data": "classename"},
-
-            {"data": "uename"},
-            {"data": "ecuname"},
-            {"data": "semester"},
-            {"data": "hourvht"},
-
-            {"data": "averagescc"},
-            {"data": "averagestp"}
-
-        ],
-        "language": {
-            "search": "_INPUT_",
-            "searchPlaceholder": "Recherche",
-            "paginate": {
-                "first":      "Premier",
-                "last":       "Dernier",
-                "next":       "Suivant",
-                "previous":   "Précédent"
-            },
-            "zeroRecords":    "Aucun Resultat Trouvé",
-            "emptyTable":     "Aucun Resultat Trouvé",
-            "info":           "Affichage de _START_ à _END_ sur _TOTAL_ entrées",
-            "infoEmpty":      "Affichage de 0 à 0 sur 0 entrées",
-            "infoFiltered":   "(filtrés sur _MAX_ total entrées)",
-            "infoPostFix":    "",
-            "thousands":      ",",
-            "lengthMenu":     "Afficher _MENU_ entrées",
-            "loadingRecords": "Chargement...",
-            "processing":     "Chargement...",
-            "search":         "Recherche:"
-
-        }
-    });
-
-
 
 </script>
 
 
-<script>
-
-
-    $('#validaverage').DataTable({
-
-
-        "ajax": "{{ path('siges_eculistvalidation') }}",
-        "sAjaxDataProp": "data",
-        "pageLength": 10,
-
-        "columns":[
-
-            {"data": "specialityname"},
-            {"data": "levelid"},
-            {"data": "classename"},
-
-            {"data": "uename"},
-            {"data": "ecuname"},
-            {"data": "semester"},
-            {"data": "hourvht"},
-            {"data": "averagescc"},
-            {"data": "averagestp"},
-            {"data": "listing"},
-
-        ],
-        "language": {
-            "search": "_INPUT_",
-            "searchPlaceholder": "Recherche",
-            "paginate": {
-                "first":      "Premier",
-                "last":       "Dernier",
-                "next":       "Suivant",
-                "previous":   "Précédent"
-            },
-            "zeroRecords":    "Aucun Resultat Trouvé",
-            "emptyTable":     "Aucun Resultat Trouvé",
-            "info":           "Affichage de _START_ à _END_ sur _TOTAL_ entrées",
-            "infoEmpty":      "Affichage de 0 à 0 sur 0 entrées",
-            "infoFiltered":   "(filtrés sur _MAX_ total entrées)",
-            "infoPostFix":    "",
-            "thousands":      ",",
-            "lengthMenu":     "Afficher _MENU_ entrées",
-            "loadingRecords": "Chargement...",
-            "processing":     "Chargement...",
-            "search":         "Recherche:"
-
-        }
-    });
-
-
-
-</script>
 </html>

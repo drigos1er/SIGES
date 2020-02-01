@@ -375,12 +375,12 @@ class SigesUser implements UserInterface
         return $this;
     }
 
-    public function getToken(): ?string
+    public function getToken()
     {
         return $this->token;
     }
 
-    public function setToken(string $token): self
+    public function setToken($token): self
     {
         $this->token = $token;
 
@@ -411,12 +411,12 @@ class SigesUser implements UserInterface
         return $this;
     }
 
-    public function getTokendat(): ?\DateTimeInterface
+    public function getTokendat()
     {
         return $this->tokendat;
     }
 
-    public function setTokendat(\DateTimeInterface $tokendat): self
+    public function setTokendat( $tokendat): self
     {
         $this->tokendat = $tokendat;
 

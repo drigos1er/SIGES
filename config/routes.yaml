@@ -33,6 +33,9 @@ security_resetpwd:
   defaults: { _controller: App\Controller\SecurityController::resetpwd }
 
 
+security_resetting:
+  path:     /resetting/{id}/{token}
+  defaults: { _controller: App\Controller\SecurityController::resetting }
 
 
 security_updprofil:
@@ -43,6 +46,10 @@ security_updprofil:
 siges_dashboardteacher:
   path:     /teacherarea/dashboardteacher
   defaults: { _controller: App\Controller\TeacherController::dashboardteacher }
+
+
+
+
 
 siges_averagedashteacher:
   path:     /teacherarea/averagedashteacher
@@ -136,3 +143,75 @@ siges_savevalidallaverages:
 siges_saveunvalidallaverages:
   path:     /teacherarea/saveunvalidallaverages
   defaults: { _controller: App\Controller\TeacherController::saveunvalidallaverages }
+
+
+siges_dashboardpedagores:
+  path:     /pedagoresarea/dashboardpedagores
+  defaults: { _controller: App\Controller\PedagoResController::dashboardpedagores }
+
+siges_averagedashpedagores:
+  path:     /pedagoresarea/averagedashpedagores
+  defaults: { _controller: App\Controller\PedagoResController::averagedashpedagores }
+
+
+
+siges_redirectspecsemnex:
+  path:     /pedagoresarea/redirectspecsemnex
+  defaults: { _controller: App\Controller\PedagoResController::redirectspecsemnex }
+
+siges_specsemnex:
+  path:     /pedagoresarea/specsemnex
+  defaults: { _controller: App\Controller\PedagoResController::specsemnex }
+
+
+siges_listspecsemnex:
+  path:     /pedagoresarea/listspecsemnex
+  defaults: { _controller: App\Controller\PedagoResController::listspecsemnex }
+
+
+
+
+siges_redirectecusemnex:
+  path:     /pedagoresarea/redirectecusemnex
+  defaults: { _controller: App\Controller\PedagoResController::redirectecusemnex }
+
+siges_ecusemnex:
+  path:     /pedagoresarea/ecusemnex
+  defaults: { _controller: App\Controller\PedagoResController::ecusemnex }
+
+
+siges_listecusemnex:
+  path:     /pedagoresarea/listecusemnex
+  defaults: { _controller: App\Controller\PedagoResController::listecusemnex }
+
+
+
+
+
+siges_redirectentrynotexam:
+  path:     /pedagoresarea/redirectentrynotexam
+  defaults: { _controller: App\Controller\PedagoResController::redirectentrynotexam }
+
+
+
+
+
+siges_entrynotexam:
+  path:     /pedagoresarea/entrynotexam
+  defaults: { _controller: App\Controller\PedagoResController::entrynotexam }
+
+
+
+siges_oversightdashpedagores:
+  path:     /pedagoresarea/oversightdashpedagores
+  defaults: { _controller: App\Controller\PedagoResController::oversightdashpedagores }
+
+
+siges_redirectoversightrp:
+  path:     /pedagoresarea/redirectoversightrp
+  defaults: { _controller: App\Controller\PedagoResController::redirectoversightrp }
+
+
+siges_oversightrp:
+  path:     /pedagoresarea/oversightrp
+  defaults: { _controller: App\Controller\PedagoResController::oversightrp }

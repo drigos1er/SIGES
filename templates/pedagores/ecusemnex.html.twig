@@ -1,0 +1,44 @@
+{% extends 'layoutaverpedagores.html.twig' %}
+
+{% block title %}SIGES|Saisie - Notes Examens{% endblock %}
+
+{% block body %}
+    <div class="container-fluid">
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header card-header-icon" data-background-color="blue">
+                        <i class="material-icons">keyboard</i>
+                    </div>
+                    <div class="card-content">
+                        <h4 class="card-title">Saisie de Notes d'Examens - Liste des ECUE<span style="font-style: italic; color: grey; font-size: 14px;">&nbsp;&nbsp; Niveau: {{ app.session.get('levelidecusemnex') }} &nbsp;&nbsp;Spécialité: {{ app.session.get('specidecusemnex') }} &nbsp;&nbsp;Semestre:{{ app.session.get('semidecusemnex')  }} &nbsp;&nbsp;{%if(app.session.get('sesidecusemnex')  =='SE1')%}  1<sup>ère</sup>SESSION {% endif %} {%if(app.session.get('sesidecusemnex')  =='SE2')%}  2<sup>ème</sup>SESSION {% endif %} </span></h4>
+                        <table id="ecusemnex"  class="table table-striped table-bordered table-condensed">
+                            <thead>
+                            <tr>
+
+                                <th>UE</th>
+                                <th>ECU</th>
+                                <th>Note d'Examen Ecrit</th>
+
+                                <th>Note d'Examen TP</th>
+
+
+                            </tr>
+                            </thead>
+
+
+                            <tbody>
+
+                            </tbody>
+                        </table>
+                    </div>
+                    <div style="text-align: center"> <a href="{{ path('siges_specsemnex') }}"><i class="fa fa-mail-reply-all"></i>Retour aux choix des niveaux</a></div>
+                </div>
+            </div>
+        </div>
+
+
+
+    </div>
+{% endblock %}
