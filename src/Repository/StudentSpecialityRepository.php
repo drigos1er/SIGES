@@ -87,6 +87,90 @@ class StudentSpecialityRepository extends ServiceEntityRepository
     }
 
 
+    public function averzero($acadyearid,$specialityid,$semesterid)
+    {
+
+
+
+
+
+
+
+        $rsm = new ResultSetMapping();
+
+        $rsm->addScalarResult('ecuid', 'ecuid');
+        $rsm->addScalarResult('studentid', 'studentid');
+        $rsm->addScalarResult('ueid', 'ueid');
+        $rsm->addScalarResult('semesterid', 'semesterid');
+        $rsm->addScalarResult('specialityid', 'specialityid');
+        $rsm->addScalarResult('typeof_averages', 'typeof_averages');
+        $rsm->addScalarResult('average', 'average');
+
+        $sql = "SELECT DISTINCT ecuid,studentid,ueid,semesterid,specialityid,typeof_averages,average FROM `student_averages`  WHERE  acadyearid=:acadyearid and specialityid=:specialityid and semesterid=:semesterid AND `average`=0 ";
+        $query = $this->_em->createNativeQuery($sql, $rsm);
+
+
+
+        $query->setParameter('acadyearid', $acadyearid );
+
+        $query->setParameter('specialityid', $specialityid);
+
+        $query->setParameter('semesterid', $semesterid);
+
+
+        $averzero = $query->getResult();
+
+
+        return $averzero;
+
+
+
+    }
+
+
+
+    public function notexamzero($acadyearid,$specialityid,$semesterid,$idses)
+    {
+
+
+
+
+
+
+
+        $rsm = new ResultSetMapping();
+
+        $rsm->addScalarResult('ecuid', 'ecuid');
+        $rsm->addScalarResult('studentid', 'studentid');
+        $rsm->addScalarResult('ueid', 'ueid');
+        $rsm->addScalarResult('semesterid', 'semesterid');
+        $rsm->addScalarResult('specialityid', 'specialityid');
+        $rsm->addScalarResult('typeof_examnotes', 'typeof_examnotes');
+        $rsm->addScalarResult('exam_notes', 'exam_notes');
+
+        $sql = "SELECT DISTINCT ecuid,studentid,ueid,semesterid,specialityid,typeof_examnotes,exam_notes FROM `student_examnotes`  WHERE  acadyearid=:acadyearid and specialityid=:specialityid and semesterid=:semesterid AND `exam_notes`=0 AND sessionid=:idses";
+        $query = $this->_em->createNativeQuery($sql, $rsm);
+
+
+
+        $query->setParameter('acadyearid', $acadyearid );
+
+        $query->setParameter('specialityid', $specialityid);
+
+        $query->setParameter('semesterid', $semesterid);
+        $query->setParameter('idses', $idses);
+
+
+        $examnotes = $query->getResult();
+
+
+        return $examnotes;
+
+
+
+    }
+
+
 
 
 

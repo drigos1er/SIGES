@@ -178,6 +178,32 @@
 
 
 
+
+                    {%if(app.session.get('userrole')  =='ROLE_SUPDP')%}
+
+                        <div style="text-align: center">
+
+
+                            <a href="{{ path('siges_dashboardsupdp') }}" class="btn btn-warning btn-round">Accéder au Tableau de bord</a>
+
+                        </div>
+                    {% endif %}
+
+
+
+
+
+                    {%if(app.session.get('userrole')  =='ROLE_ADMINDELIB')%}
+
+                        <div style="text-align: center">
+
+
+                            <a href="{{ path('siges_choiceacadyear') }}" class="btn btn-warning btn-round">Accéder au Tableau de bord</a>
+
+                        </div>
+                    {% endif %}
+
+
                 </div>
             </form>
         </div>

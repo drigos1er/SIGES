@@ -1,0 +1,62 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}SIGES | Choix Année Académique de Déliberation{% endblock %}
+
+{% block body %}
+
+
+    <div class="row">
+
+        <div class="col-md-6 col-md-offset-3">
+            <div class="card card-pricing card-raised">
+                <div class="card-content">
+                    <h6 class="category">BIENVENUE DANS LE MODULE DELIBERATION SEMESTRIELLE </h6>
+                    <div class="icon icon-rose">
+                        <i class="material-icons">school</i>
+                    </div>
+                    <h3 class="card-title"></h3>
+                    <p class="card-description">
+
+
+
+
+                        {{ form_start(f) }}
+                    <div class="form-group">
+
+
+                        <div class="col-md-6 col-md-offset-3">
+                            {{ form_widget(f.academicyear,{'attr': {'class': 'select2_single form-control'}}) }}{{ form_errors(f.academicyear)}}
+
+                        </div>
+                    </div>
+
+
+
+
+
+
+                    <br/> <br/>
+
+
+
+                    <div > <button type="submit" class="btn btn-info" >
+                            ENVOYER</button></div>
+
+
+
+                    {{ form_end(f) }}
+
+
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+
+
+
+
+{% endblock body %}

@@ -203,15 +203,181 @@ siges_entrynotexam:
 
 
 siges_oversightdashpedagores:
-  path:     /pedagoresarea/oversightdashpedagores
+  path:     /oversightdashpedagores
   defaults: { _controller: App\Controller\PedagoResController::oversightdashpedagores }
 
 
 siges_redirectoversightrp:
-  path:     /pedagoresarea/redirectoversightrp
+  path:     /redirectoversightrp
   defaults: { _controller: App\Controller\PedagoResController::redirectoversightrp }
 
 
 siges_oversightrp:
-  path:     /pedagoresarea/oversightrp
+  path:     /oversightrp
   defaults: { _controller: App\Controller\PedagoResController::oversightrp }
+
+siges_listaverrp:
+  path:     /listaverrp
+  defaults: { _controller: App\Controller\PedagoResController::listaverrp }
+
+
+siges_listnexrp:
+  path:     /listnexrp
+  defaults: { _controller: App\Controller\PedagoResController::listnexrp }
+
+
+
+
+
+siges_specmccoversight:
+  path:     /specmccoversight
+  defaults: { _controller: App\Controller\PedagoResController::specmccoversight }
+
+
+
+siges_listspecmccoversight:
+  path:     /listspecmccoversight
+  defaults: { _controller: App\Controller\PedagoResController::listspecmccoversight}
+
+
+
+
+
+siges_redirectecumccover:
+  path:     /redirectecumccover
+  defaults: { _controller: App\Controller\PedagoResController::redirectecumccover }
+
+
+
+
+siges_ecumccoversight:
+  path:     /ecumccoversight
+  defaults: { _controller: App\Controller\PedagoResController::ecumccoversight }
+
+
+
+siges_listecumccoversight:
+  path:     /listecumccoversight
+  defaults: { _controller: App\Controller\PedagoResController::listecumccoversight}
+
+
+
+
+
+
+
+siges_specnexoversight:
+  path:     /specnexoversight
+  defaults: { _controller: App\Controller\PedagoResController::specnexoversight }
+
+
+
+siges_listspecnexoversight:
+  path:     /listspecnexoversight
+  defaults: { _controller: App\Controller\PedagoResController::listspecnexoversight}
+
+
+
+
+
+siges_redirectecunexover:
+  path:     /redirectecunexover
+  defaults: { _controller: App\Controller\PedagoResController::redirectecunexover }
+
+
+
+
+siges_ecunexoversight:
+  path:     /ecunexoversight
+  defaults: { _controller: App\Controller\PedagoResController::ecunexoversight }
+
+
+
+siges_listecunexoversight:
+  path:     /listecunexoversight
+  defaults: { _controller: App\Controller\PedagoResController::listecunexoversight}
+
+
+
+siges_dashboardsupdp:
+  path:     /dparea/dashboardsupdp
+  defaults: { _controller: App\Controller\DpController::dashboardsupdp }
+
+siges_choiceacadyear:
+  path:     /delibarea/choiceacadyear
+  defaults: { _controller: App\Controller\DelibSemController::choiceacadyear }
+
+siges_dashboarddelib:
+  path:     /delibarea/dashboarddelib
+  defaults: { _controller: App\Controller\DelibSemController::dashboarddelib }
+
+siges_redirectdelibspecbylevel:
+  path:     /delibarea/redirectdelibspecbylevel
+  defaults: { _controller: App\Controller\DelibSemController::redirectdelibspecbylevel }
+
+siges_delibspecbylevel:
+  path:     /delibarea/delibspecbylevel/{idses}/{semtype}
+  defaults: { _controller: App\Controller\DelibSemController::delibspecbylevel }
+
+siges_listdelibspecbylevel:
+  path:     /delibarea/listdelibspecbylevel
+  defaults: { _controller: App\Controller\DelibSemController::listdelibspecbylevel }
+
+
+siges_redirectdelibbylevel:
+  path:     /delibarea/redirectdelibbylevel
+  defaults: { _controller: App\Controller\DelibSemController::redirectdelibbylevel }
+
+
+
+siges_dashboarddelibbylevel:
+  path:     /delibarea/dashboarddelibbylevel
+  defaults: { _controller: App\Controller\DelibSemController::dashboarddelibbylevel }
+
+siges_deleteavernull:
+  path:     /delibarea/deleteavernull
+  defaults: { _controller: App\Controller\DelibSemController::deleteavernull}
+
+
+siges_savedeleteavernull:
+  path:     /delibarea/savedeleteavernull
+  defaults: { _controller: App\Controller\DelibSemController::savedeleteavernull}
+
+
+
+siges_viewaverzero:
+  path:     /delibarea/viewaverzero
+  defaults: { _controller: App\Controller\DelibSemController::viewaverzero }
+
+siges_listviewaverzero:
+  path:     /delibarea/listviewaverzero
+  defaults: { _controller: App\Controller\DelibSemController::listviewaverzero }
+
+
+
+
+siges_viewnotexamzero:
+  path:     /delibarea/viewnotexamzero
+  defaults: { _controller: App\Controller\DelibSemController::viewnotexamzero }
+
+siges_listviewnotexamzero:
+  path:     /delibarea/listviewnotexamzero
+  defaults: { _controller: App\Controller\DelibSemController::listviewnotexamzero }
+
+
+siges_consultaveragedelib:
+  path:     /delibarea/consultaveragedelib
+  defaults: { _controller: App\Controller\DelibSemController::consultaveragedelib}
+
+siges_listconsultaveragedelib:
+  path:     /delibarea/listconsultaveragedelib
+  defaults: { _controller: App\Controller\DelibSemController::listconsultaveragedelib }
+
+
+siges_viewaveragesem:
+  path:     /delibarea/viewaveragesem
+  defaults: { _controller: App\Controller\DelibSemController::viewaveragesem}
+
+siges_listviewaveragesem:
+  path:     /delibarea/listviewaveragesem
+  defaults: { _controller: App\Controller\DelibSemController::listviewaveragesem }

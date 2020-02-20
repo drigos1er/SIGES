@@ -1,0 +1,47 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}SIGES | Bienvenue Espace Ressources Pédagogique{% endblock %}
+
+{% block body %}
+                       <br><br>
+    <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+
+            <div class="nav-center">
+                <ul class="nav nav-pills nav-pills-warning nav-pills-icons" role="tablist">
+                    <!--
+        color-classes: "nav-pills-primary", "nav-pills-info", "nav-pills-success", "nav-pills-warning","nav-pills-danger"
+    -->
+                    <li class=" btn btn-info"   >
+                        <a href="#" style="color: white">
+                            <i class="material-icons">import_contacts</i> ATTRIBUTIONS <br>DES ENSEIGNEMENTS
+                        </a>
+                    </li>
+                    <li class=" btn btn-info"  >
+                        <a href="#" style="color: white" >
+                            <i class="material-icons">dashboard</i> L'ECOLE <br> EN CHIFFRES
+                        </a>
+                    </li>
+                    <li class=" btn btn-info"  >
+                        <a href="{{ path('siges_oversightdashpedagores') }}" style="color: white" >
+                            <i class="material-icons">search</i> SUPERVISIONS <br>DES SAISIES
+                        </a>
+                    </li>
+
+                    <li class=" btn btn-info"  >
+                        <a href="#" style="color: white">
+                            <i class="material-icons">layers</i> RESULTATS <br>DE DELIBERATIONS
+                        </a>
+                    </li>
+
+                    <li  class=" btn btn-info" >
+                        <a href="#" style="color: white">
+                            <i class="material-icons">directions_walk</i> PARCOURS<br> D'ETUDIANTS
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+    </div>
+{% endblock %}

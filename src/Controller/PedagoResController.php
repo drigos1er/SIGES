@@ -1,10 +1,16 @@
 <?php
 
 namespace App\Controller;
+use App\Entity\SchoolClass;
+use App\Repository\LevelRepository;
 use App\Repository\SchoolClassRepository;
 use App\Repository\EcuRepository;
 use App\Repository\EcuSpecialityRepository;
+use App\Repository\SemesterRepository;
+use App\Repository\SigesUserRepository;
+use App\Repository\SpecialityRepository;
 use App\Repository\StudentSpecialityRepository;
+use App\Repository\TeachSpecialityRepository;
 use App\Repository\UeRepository;
 use App\Service\MyFunction;
 use Doctrine\ORM\Query\ResultSetMapping;
@@ -265,7 +271,7 @@ class PedagoResController extends AbstractController
 
 
 
-            if ($nbcptecusaiexspec >= 1) {
+            if ($nbcptecusaiexspec >= 1 and  $nbcptecusaiexspec < $nbecusemspec) {
                 $pathurl=  $this->generateUrl('siges_redirectecusemnex', array('levelid'=>$levelspec['levelid'],'specid'=>$levelspec['specialityid'],'idsem'=>$semster,'idses'=>$idses))  ;
 
 
@@ -660,42 +666,35 @@ class PedagoResController extends AbstractController
     public function oversightrp(myFunction $callfunction)
     {
 
+        $callfunction->setIdanac($this->get('session')->get('anacad'));
+        $callfunction->setSemtype($this->get('session')->get('semtypeoversight'));
+        $callfunction->setEntityClass(SchoolClass::class);
 
         if($this->get('session')->get('idsesoversight')=='SE1'){
 
-
-            $nbcptecu=$callfunction->nbecuteachingse1($this->get('session')->get('anacad'),$this->get('session')->get('semtypeoversight'));
-
-        }
-        else{
-
-            $nbcptecu=$callfunction->nbecuteachingse2($this->get('session')->get('anacad'),$this->get('session')->get('semtypeoversight'));
-        }
-
-
-
-        if($this->get('session')->get('idsesoversight')=='SE1'){
-
-
-
-            $nbcptecusai=$callfunction->nbecuentryaverages($this->get('session')->get('anacad'),$this->get('session')->get('semtypeoversight'));
-
+            $nbcptecu=$callfunction->nbecuteachingse1();
+            $nbcptecusai=$callfunction->nbecuentryaverages();
 
 
             $percentecusai=number_format((($nbcptecusai*100)/$nbcptecu),2);
 
 
+            $nbcptecusaiex=$callfunction->nbecuentryexamnotes($this->get('session')->get('idsesoversight'));
 
 
+            $percentecusaiex=number_format((($nbcptecusaiex*100)/$nbcptecu),2);
+
+        }else{
 
 
-            $nbcptecusaiex=$callfunction->nbecuentryexamnotes($this->get('session')->get('anacad'),$this->get('session')->get('semtypeoversight'));
+            $nbcptecu=$callfunction->nbecuteachingse2();
+            $nbcptecusai=$callfunction->nbecuentryaveragesse2();
 
 
+            $percentecusai=number_format((($nbcptecusai*100)/$nbcptecu),2);
 
 
-
-
+            $nbcptecusaiex=$callfunction->nbecuentryexamnotesse2();
 
 
             $percentecusaiex=number_format((($nbcptecusaiex*100)/$nbcptecu),2);
@@ -708,308 +707,52 @@ class PedagoResController extends AbstractController
 
 
 
-        return $this->render('@ESATICSiges/Smcc/receptionrp.html.twig', array('nbecu'=> $nbcptecu,'percentecusai'=> $percentecusai,'percentecusaiex'=> $percentecusaiex));
+        return $this->render('pedagores/oversightrp.html.twig', array('nbecu'=> $nbcptecu,'percentecusai'=> $percentecusai,'percentecusaiex'=> $percentecusaiex));
+
+
+
+
     }
 
 
 
 
-    public function listreceptionrpAction(Request $request )
+    public function listaverrp(MyFunction $callfunction )
     {
 
 
-        $callfunction=  $this->get('esatic_siges.myfunction');
+        $callfunction->setIdanac($this->get('session')->get('anacad'));
+        $callfunction->setSemtype($this->get('session')->get('semtypeoversight'));
+        $callfunction->setEntityClass(SchoolClass::class);
 
+        if($this->get('session')->get('idsesoversight')=='SE1'){
 
-        if($this->get('session')->get('idsesrep')=='SE1'){
-
-
-            $nbcptecu=$callfunction->nbecuteachingse1($this->get('session')->get('idanacademiq'),$this->get('session')->get('semtyperep'));
-
-        }
-        else{
-
-            /*   $em = $this->getDoctrine()->getManager();
-
-
-               $rsm = new ResultSetMapping();
-               $rsm->addScalarResult('nbecu', 'nbecu');
-
-               $sql = "SELECT count( DISTINCT `ecuid`) as nbecu FROM `student_examnotes` where acadyearid=:acadyearid and sessionid=:idses and semesterid in (select id from semester where semtype=:semtype)  ";
-               $query = $em->createNativeQuery($sql, $rsm);
-               $query->setParameter('acadyearid', $this->get('session')->get('idanacademiq'));
-               $query->setParameter('semtype', $this->get('session')->get('semtyperep'));
-               $query->setParameter('idses', $this->get('session')->get('idsesrep'));
-
-               $cptecu= $query->getResult();
-
-
-               foreach ($cptecu as $nt) {
-
-                   $nbcptecu= $nt['nbecu'];
-
-
-
-               }*/
-
-            $nbcptecu=$callfunction->nbecuteachingse2($this->get('session')->get('idanacademiq'),$this->get('session')->get('semtyperep'));
-
-
-        }
-
-
-
-
-
-
-        if($this->get('session')->get('idsesrep')=='SE1'){
-
-
-
-
-
-
-
-            $em = $this->getDoctrine()->getManager();
-
-
-            $rsm = new ResultSetMapping();
-            $rsm->addScalarResult('ecuid', 'ecuid');
-            $rsm->addScalarResult('classeid', 'classeid');
-            $rsm->addScalarResult('ueid', 'ueid');
-            $rsm->addScalarResult('semesterid', 'semesterid');
-
-            $sql = "SELECT ecuid,classeid,ueid,semesterid FROM `teach_speciality` where acadyearid=:acadyearid and semesterid in (select id from semester where semtype=:semtype)  ";
-            $query = $em->createNativeQuery($sql, $rsm);
-            $query->setParameter('acadyearid', $this->get('session')->get('idanacademiq'));
-            $query->setParameter('semtype', $this->get('session')->get('semtyperep'));
-
-            $cptecu= $query->getResult();
-
-            $nbecusai=0;
-            foreach ($cptecu as $ncc) {
-
-
-                $em = $this->getDoctrine()
-                    ->getManager()
-                    ->getRepository('ESATICSigesBundle:SchoolClass');
-
-                $classecu = $em->findOneById($ncc['classeid']);
-
-
-
-
-
-
-                $em = $this->getDoctrine()->getManager();
-
-
-                $rsm = new ResultSetMapping();
-                $rsm->addScalarResult('nbstudent', 'nbstudent');
-
-                $sql = "SELECT count(  DISTINCT `studentid`) as nbstudent FROM `student_speciality`  WHERE  acadyearid=:acadyearid and specialityid=:specialityid  and school_classeid=:school_classid  ";
-                $query = $em->createNativeQuery($sql, $rsm);
-                $query->setParameter('acadyearid', $this->get('session')->get('idanacademiq'));
-                $query->setParameter('specialityid', $classecu->getSpecialityid());
-                $query->setParameter('school_classid', $ncc['classeid']);
-
-
-                $nbstdcc = $query->getResult();
-
-                foreach ($nbstdcc as $nst) {
-                    $nbstudcc= $nst['nbstudent'];
-
-                }
-
-
-
-
-
-
-
-
-
-
-
-
-
-                $em = $this->getDoctrine()->getManager();
-                $rsm = new ResultSetMapping();
-
-                $rsm->addScalarResult('nbaverage', 'nbaverage');
-                $sql = "  SELECT  count(average) as nbaverage FROM  student_averages   WHERE   acadyearid=:idanac and  average  BETWEEN 0 AND 20 and semesterid=:idsem and ecuid=:ecuid and ueid=:ueid and typeof_averages='MCC' and valid=1  and studentid in (select studentid from student_speciality where acadyearid=:idanac and school_classeid=:idclasse)   ";
-                $query = $em->createNativeQuery($sql, $rsm);
-                $query->setParameter('idanac', $this->get('session')->get('idanacademiq'));
-                $query->setParameter('idsem', $ncc['semesterid']);
-                $query->setParameter('ueid', $ncc['ueid']);
-                $query->setParameter('ecuid', $ncc['ecuid']);
-                $query->setParameter('idclasse', $ncc['classeid']);
-
-                $idecucc = $query->getResult();
-
-
-                foreach ($idecucc as $necc){
-                    $averagenb=$necc['nbaverage'];
-                }
-
-
-
-
-
-
-
-                if($nbstudcc==$averagenb){
-
-                    $nbecusai=$nbecusai+1;
-                }
-
-
-
-
-
-
-
-
-
-
-            }
-
-
-            $nbcptecusai= $nbecusai;
-
+            $nbcptecu=$callfunction->nbecuteachingse1();
+            $nbcptecusai=$callfunction->nbecuentryaverages();
 
             $nbecunosai=$nbcptecu-$nbcptecusai;
 
 
+        }else{
 
 
+            $nbcptecu=$callfunction->nbecuteachingse2();
+            $nbcptecusai=$callfunction->nbecuentryaveragesse2();
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        }
-        else {
-            $em = $this->getDoctrine()->getManager();
-
-
-            $rsm = new ResultSetMapping();
-            $rsm->addScalarResult('ecuid', 'ecuid');
-            $rsm->addScalarResult('specialityid', 'specialityid');
-            $rsm->addScalarResult('ueid', 'ueid');
-            $rsm->addScalarResult('semesterid', 'semesterid');
-
-            $sql = "SELECT  DISTINCT ecuid,specialityid,ueid,semesterid FROM `student_examnotes` where acadyearid=:acadyearid AND sessionid='SE2' and typeof_examnotes='EXCC' and semesterid in (select id from semester where semtype=:semtype)  ";
-            $query = $em->createNativeQuery($sql, $rsm);
-            $query->setParameter('acadyearid', $this->get('session')->get('idanacademiq'));
-            $query->setParameter('semtype', $this->get('session')->get('semtyperep'));
-
-            $cptecu= $query->getResult();
-
-            $nbecusai=0;
-
-
-            foreach ($cptecu as $ncc) {
-
-
-
-                $em = $this->getDoctrine()->getManager();
-
-
-                $rsm = new ResultSetMapping();
-                $rsm->addScalarResult('nbstudent', 'nbstudent');
-
-                $sql = "SELECT count(  DISTINCT `studentid`) as nbstudent FROM `student_examnotes`  WHERE  acadyearid=:acadyearid and specialityid=:specialityid and typeof_examnotes='EXCC' and sessionid='SE2' and semesterid=:idsem and ecuid=:ecuid and ueid=:ueid ";
-                $query = $em->createNativeQuery($sql, $rsm);
-                $query->setParameter('acadyearid', $this->get('session')->get('idanacademiq'));
-                $query->setParameter('specialityid', $ncc['specialityid']);
-
-                $query->setParameter('idsem', $ncc['semesterid']);
-                $query->setParameter('ueid', $ncc['ueid']);
-                $query->setParameter('ecuid', $ncc['ecuid']);
-
-                $nbstdex = $query->getResult();
-
-                foreach ($nbstdex as $nstex) {
-                    $nbstud = $nstex['nbstudent'];
-
-                }
-
-
-
-
-                $em = $this->getDoctrine()->getManager();
-                $rsm = new ResultSetMapping();
-
-                $rsm->addScalarResult('nbaverage', 'nbaverage');
-                $sql = " SELECT count(average) as nbaverage FROM student_averages WHERE acadyearid=:idanac and average BETWEEN 0 AND 20 and typeof_averages='MCC' and semesterid=:idsem and ecuid=:ecuid and ueid=:ueid and valid=1 and specialityid=:specialityid and studentid in (SELECT studentid from student_examnotes WHERE acadyearid=:idanac and `specialityid`=:specialityid and `semesterid`=:idsem and `typeof_examnotes`='EXCC' and sessionid='SE2') ";
-                $query = $em->createNativeQuery($sql, $rsm);
-                $query->setParameter('idanac', $this->get('session')->get('idanacademiq'));
-                $query->setParameter('idsem', $ncc['semesterid']);
-                $query->setParameter('ueid', $ncc['ueid']);
-                $query->setParameter('ecuid', $ncc['ecuid']);
-                $query->setParameter('specialityid', $ncc['specialityid']);
-
-
-                $averstuds = $query->getResult();
-
-
-                foreach ($averstuds as $sex) {
-                    $averagenb = $sex['nbaverage'];
-
-                }
-
-
-
-
-
-                if($nbstud==$averagenb){
-
-                    $nbecusai=$nbecusai + 1;
-                }
-
-
-
-
-
-
-
-
-
-
-
-
-
-            }
-            $nbcptecusai=$nbecusai;
             $nbecunosai=$nbcptecu-$nbcptecusai;
 
+
         }
+
+
+
 
         $output1 = [
 
 
             'nbecu' =>$nbecunosai,
 
-            'title' =>'ECUE non Saisie',
+            'title' =>'Non Saisie',
             'color' =>'#ee3639',
 
 
@@ -1028,7 +771,7 @@ class PedagoResController extends AbstractController
             'nbecu' =>$nbcptecusai,
 
 
-            'title' =>'ECUE Saisie',
+            'title' =>' Saisie',
             'color' =>'#0dc143'
 
 
@@ -1048,321 +791,45 @@ class PedagoResController extends AbstractController
     }
 
 
-    public function listreceptionrpexamAction(Request $request )
+
+
+
+
+    public function listnexrp(MyFunction $callfunction )
     {
 
-        $callfunction=  $this->get('esatic_siges.myfunction');
 
+        $callfunction->setIdanac($this->get('session')->get('anacad'));
+        $callfunction->setSemtype($this->get('session')->get('semtypeoversight'));
+        $callfunction->setEntityClass(SchoolClass::class);
 
-        if($this->get('session')->get('idsesrep')=='SE1'){
+        if($this->get('session')->get('idsesoversight')=='SE1'){
 
+            $nbcptecu=$callfunction->nbecuteachingse1();
 
-            $nbcptecu=$callfunction->nbecuteachingse1($this->get('session')->get('idanacademiq'),$this->get('session')->get('semtyperep'));
+            $nbcptecusaiex=$callfunction->nbecuentryexamnotes($this->get('session')->get('idsesoversight'));
 
-        }
-        else{
+            $nbecunosaiex=$nbcptecu-$nbcptecusaiex;
 
-            /*   $em = $this->getDoctrine()->getManager();
 
+        }else
+            {
+                $nbcptecu=$callfunction->nbecuteachingse2();
 
-               $rsm = new ResultSetMapping();
-               $rsm->addScalarResult('nbecu', 'nbecu');
+                $nbcptecusaiex=$callfunction->nbecuentryexamnotesse2();
 
-               $sql = "SELECT count( DISTINCT `ecuid`) as nbecu FROM `student_examnotes` where acadyearid=:acadyearid and sessionid=:idses and semesterid in (select id from semester where semtype=:semtype)  ";
-               $query = $em->createNativeQuery($sql, $rsm);
-               $query->setParameter('acadyearid', $this->get('session')->get('idanacademiq'));
-               $query->setParameter('semtype', $this->get('session')->get('semtyperep'));
-               $query->setParameter('idses', $this->get('session')->get('idsesrep'));
-
-               $cptecu= $query->getResult();
-
-
-               foreach ($cptecu as $nt) {
-
-                   $nbcptecu= $nt['nbecu'];
-
-
-
-               }*/
-
-            $nbcptecu=$callfunction->nbecuteachingse2($this->get('session')->get('idanacademiq'),$this->get('session')->get('semtyperep'));
-
-
-        }
-
-
-
-
-        if($this->get('session')->get('idsesrep')=='SE1'){
-
-
-
-
-
-
-
-            $em = $this->getDoctrine()->getManager();
-
-
-            $rsm = new ResultSetMapping();
-            $rsm->addScalarResult('ecuid', 'ecuid');
-            $rsm->addScalarResult('classeid', 'classeid');
-            $rsm->addScalarResult('ueid', 'ueid');
-            $rsm->addScalarResult('semesterid', 'semesterid');
-
-            $sql = "SELECT ecuid,classeid,ueid,semesterid FROM `teach_speciality` where acadyearid=:acadyearid and semesterid in (select id from semester where semtype=:semtype)  ";
-            $query = $em->createNativeQuery($sql, $rsm);
-            $query->setParameter('acadyearid', $this->get('session')->get('idanacademiq'));
-            $query->setParameter('semtype', $this->get('session')->get('semtyperep'));
-
-            $cptecu= $query->getResult();
-
-            $nbecusaiex=0;
-            foreach ($cptecu as $n) {
-
-
-                $em = $this->getDoctrine()
-                    ->getManager()
-                    ->getRepository('ESATICSigesBundle:SchoolClass');
-
-                $classecu = $em->findOneById($n['classeid']);
-
-
-
-
-
-
-
-
-                $em = $this->getDoctrine()->getManager();
-
-
-                $rsm = new ResultSetMapping();
-                $rsm->addScalarResult('nbstudent', 'nbstudent');
-
-                $sql = "SELECT count(  DISTINCT `studentid`) as nbstudent FROM `student_speciality`  WHERE  acadyearid=:acadyearid and specialityid=:specialityid  and school_classeid=:school_classid  ";
-                $query = $em->createNativeQuery($sql, $rsm);
-                $query->setParameter('acadyearid', $this->get('session')->get('idanacademiq'));
-                $query->setParameter('specialityid', $classecu->getSpecialityid());
-                $query->setParameter('school_classid', $n['classeid']);
-
-
-                $nbstdex = $query->getResult();
-
-                foreach ($nbstdex as $nstex) {
-                    $nbstud= $nstex['nbstudent'];
-
-                }
-
-
-                $em = $this->getDoctrine()->getManager();
-                $rsm = new ResultSetMapping();
-
-                $rsm->addScalarResult('nbexamnotes', 'nbexamnotes');
-                $sql = "  SELECT   count(exam_notes) as nbexamnotes FROM  student_examnotes   WHERE   acadyearid=:idanac and  exam_notes BETWEEN 0 AND 20 and semesterid=:idsem and sessionid=:idses and ecuid=:ecuid and ueid=:ueid and typeof_examnotes='EXCC' and studentid in (select studentid from student_speciality where acadyearid=:idanac and school_classeid=:idclasse)   ";
-                $query = $em->createNativeQuery($sql, $rsm);
-                $query->setParameter('idanac', $this->get('session')->get('idanacademiq'));
-                $query->setParameter('idsem', $n['semesterid']);
-                $query->setParameter('idses', $this->get('session')->get('idsesrep'));
-                $query->setParameter('ueid', $n['ueid']);
-                $query->setParameter('ecuid', $n['ecuid']);
-                $query->setParameter('idclasse', $n['classeid']);
-
-                $idecu = $query->getResult();
-
-
-                foreach ($idecu as $ne){
-                    $examnotenb=$ne['nbexamnotes'];
-                }
-
-
-
-
-
-
-                if($nbstud==$examnotenb){
-
-                    $nbecusaiex=$nbecusaiex+1;
-                }
-
-
-
-
-
-
-
-
-
-
+                $nbecunosaiex=$nbcptecu-$nbcptecusaiex;
             }
-
-
-            $nbcptecusaiex=$nbecusaiex;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        }
-        else {
-
-
-            $em = $this->getDoctrine()->getManager();
-
-
-            $rsm = new ResultSetMapping();
-            $rsm->addScalarResult('ecuid', 'ecuid');
-            $rsm->addScalarResult('specialityid', 'specialityid');
-            $rsm->addScalarResult('ueid', 'ueid');
-            $rsm->addScalarResult('semesterid', 'semesterid');
-
-            $sql = "SELECT  DISTINCT ecuid,specialityid,ueid,semesterid FROM `student_examnotes` where acadyearid=:acadyearid AND sessionid=:idses and semesterid in (select id from semester where semtype=:semtype)  ";
-            $query = $em->createNativeQuery($sql, $rsm);
-            $query->setParameter('acadyearid', $this->get('session')->get('idanacademiq'));
-            $query->setParameter('semtype', $this->get('session')->get('semtyperep'));
-            $query->setParameter('idses', $this->get('session')->get('idsesrep'));
-
-            $cptecu= $query->getResult();
-
-            $nbecusaiex=0;
-            foreach ($cptecu as $n) {
-
-
-
-
-
-
-
-                $em = $this->getDoctrine()->getManager();
-
-
-                $rsm = new ResultSetMapping();
-                $rsm->addScalarResult('nbstudent', 'nbstudent');
-
-                $sql = "SELECT count(  DISTINCT `studentid`) as nbstudent FROM `student_examnotes`  WHERE  acadyearid=:acadyearid and specialityid=:specialityid  and sessionid=:idses and semesterid=:idsem and ecuid=:ecuid and ueid=:ueid and typeof_examnotes='EXCC'";
-                $query = $em->createNativeQuery($sql, $rsm);
-                $query->setParameter('acadyearid', $this->get('session')->get('idanacademiq'));
-                $query->setParameter('specialityid', $n['specialityid']);
-                $query->setParameter('idses', $this->get('session')->get('idsesrep'));
-                $query->setParameter('idsem', $n['semesterid']);
-                $query->setParameter('ueid', $n['ueid']);
-                $query->setParameter('ecuid', $n['ecuid']);
-
-
-                $nbstdex = $query->getResult();
-
-                foreach ($nbstdex as $nstex) {
-                    $nbstud= $nstex['nbstudent'];
-
-                }
-
-
-
-
-
-
-
-
-                $em = $this->getDoctrine()->getManager();
-                $rsm = new ResultSetMapping();
-
-                $rsm->addScalarResult('nbexamnotes', 'nbexamnotes');
-                $sql = "  SELECT   count(exam_notes) as nbexamnotes FROM  student_examnotes   WHERE   acadyearid=:idanac and  exam_notes BETWEEN  0 AND 20 and semesterid=:idsem and sessionid=:idses and ecuid=:ecuid and ueid=:ueid  and specialityid=:specialityid  and typeof_examnotes='EXCC' ";
-                $query = $em->createNativeQuery($sql, $rsm);
-                $query->setParameter('idanac', $this->get('session')->get('idanacademiq'));
-                $query->setParameter('idsem', $n['semesterid']);
-                $query->setParameter('idses', $this->get('session')->get('idsesrep'));
-                $query->setParameter('ueid', $n['ueid']);
-                $query->setParameter('ecuid', $n['ecuid']);
-                $query->setParameter('specialityid', $n['specialityid']);
-
-                $idecu = $query->getResult();
-
-
-                foreach ($idecu as $ne){
-                    $examnotenb=$ne['nbexamnotes'];
-                }
-
-
-
-
-
-
-                if($nbstud==$examnotenb){
-
-                    $nbecusaiex=$nbecusaiex+1;
-                }
-
-
-
-
-
-
-
-            }
-
-
-
-            $nbcptecusaiex=$nbecusaiex;
-
-        }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        $nbecunosaiex=$nbcptecu-$nbcptecusaiex;
-
-
 
 
 
 
         $output1 = [
+
+
             'nbecu' =>$nbecunosaiex,
-            'title' =>'ECUE non Saisie',
+
+            'title' =>'Non Saisie',
             'color' =>'#ee3639',
 
 
@@ -1379,7 +846,9 @@ class PedagoResController extends AbstractController
 
         $output2 = [
             'nbecu' =>$nbcptecusaiex,
-            'title' =>'ECUE Saisie',
+
+
+            'title' =>'Saisie',
             'color' =>'#0dc143'
 
 
@@ -1402,6 +871,650 @@ class PedagoResController extends AbstractController
 
 
 
+
+
+
+    public function specmccoversight()
+    {
+        return  $this->render('pedagores/specmccoversight.html.twig',array('current_menu'=>'specmccoversight'));
+    }
+
+
+
+
+    public function listspecmccoversight(Request $request, StudentSpecialityRepository $studspecrepo, MyFunction $callfunction, SchoolClassRepository $schoolcrepo)
+    {
+        $idanac=$this->get('session')->get('anacad');
+        $semtype=$this->get('session')->get('semtypeoversight');
+        $idses=$this->get('session')->get('idsesoversight');
+
+        $callfunction->setIdanac($this->get('session')->get('anacad'));
+        $callfunction->setSemtype($this->get('session')->get('semtypeoversight'));
+        $callfunction->setEntityClass(SchoolClass::class);
+
+        if($this->get('session')->get('idsesoversight')=='SE1')
+
+        {
+
+            $length = $request->get('length');
+            $length = $length && ($length!=-1)?$length:0;
+
+            $start = $request->get('start');
+            $start = $length?($start && ($start!=-1)?$start:0)/$length:0;
+
+            $search = $request->get('search');
+            $filters = [
+                'query' => @$search['value']
+            ];
+
+            $users = $studspecrepo->levelspec($idanac, $filters, $start, $length
+            );
+
+            $output = array(
+                'data' => array(),
+                'recordsFiltered' => count($studspecrepo->levelspec($idanac, $filters, 0, false)),
+                'recordsTotal' => count($studspecrepo->levelspec($idanac, 0, false))
+            );
+
+            foreach ($users as $levspec) {
+
+                $em = $this->getDoctrine()->getManager();
+
+
+                $rsm = new ResultSetMapping();
+                $rsm->addScalarResult('id', 'id');
+
+                $sql = "SELECT id FROM `semester`  WHERE  level_id=:levelid and semtype=:semtype  ";
+                $query = $em->createNativeQuery($sql, $rsm);
+                $query->setParameter('levelid', $levspec['levelid']);
+                $query->setParameter('semtype', $semtype);
+
+
+
+                $seme= $query->getResult();
+
+
+                foreach ($seme as $sm) {
+                    $semster= $sm['id'];
+
+                }
+
+
+                $nbecusemspec = $callfunction->nbeculevelspec($idanac,$levspec['specialityid'],$semster);
+
+
+
+                $nbcptecusaispec= $callfunction->nbecuentryaveragesbyspec($idanac,$semster,$levspec['specialityid']);
+
+
+
+                if ($nbcptecusaispec >= 1 and $nbcptecusaispec < $nbecusemspec) {
+
+
+                    $pathurl=  $this->generateUrl('siges_redirectecumccover', array('levelid'=>$levspec['levelid'],'specid'=>$levspec['specialityid'],'idsem'=>$semster,'idses'=>$idses))  ;
+
+
+
+
+                    $incorpo = '<a href="'.$pathurl.'" class="btn btn-warning btn-xs">' . $nbcptecusaispec . '/' . $nbecusemspec . '&nbsp;&nbsp;<i class="fa fa-search"></i> </a>';
+
+
+
+
+
+
+                } elseif ($nbcptecusaispec ==$nbecusemspec){
+
+
+
+                    $pathurl=  $this->generateUrl('siges_redirectecumccover', array('levelid'=>$levspec['levelid'],'specid'=>$levspec['specialityid'],'idsem'=>$semster,'idses'=>$idses))  ;
+
+
+
+
+                    $incorpo = '<a href="'.$pathurl.'" class="btn btn-success btn-xs">' . $nbcptecusaispec . '/' . $nbecusemspec . '&nbsp;&nbsp;<i class="fa fa-search"></i> </a>';
+
+
+                }
+
+
+
+
+
+                else{
+
+
+                    $pathurl=  $this->generateUrl('siges_redirectecumccover', array('levelid'=>$levspec['levelid'],'specid'=>$levspec['specialityid'],'idsem'=>$semster,'idses'=>$idses))  ;
+
+
+
+
+                    $incorpo = '<a href="'.$pathurl.'" class="btn btn-danger btn-xs">' . $nbcptecusaispec . '/' . $nbecusemspec . '&nbsp;&nbsp;<i class="fa fa-search"></i> </a>';
+
+                }
+
+
+
+                if($levspec['specialityid']=='TCSIGLSITW'){
+
+                    $libspec='INFORMATIQUE';
+                }else{
+                    $libspec=$levspec['specialityid'];
+                }
+
+
+
+
+
+
+                $output['data'][] = [
+                    'levelid' =>$levspec['levelid'],
+                    'specid' => $libspec,
+                    'idsem' => $semster,
+                    'saiecue' => $incorpo,
+
+
+
+
+
+                ];
+            }
+
+            return new Response(json_encode($output), 200, ['Content-Type' => 'application/json']);
+        }
+
+
+
+
+    }
+
+
+
+
+
+
+    public function redirectecumccover(Request $request)
+    {
+
+        $request->getSession()->set('levelidecumcc', $request->query->get('levelid'));
+        $request->getSession()->set('specidecumcc', $request->query->get('specid'));
+        $request->getSession()->set('semidecumcc', $request->query->get('idsem'));
+
+        return $this->redirectToRoute('siges_ecumccoversight');
+    }
+
+
+
+
+    public function ecumccoversight()
+    {
+        return  $this->render('pedagores/ecumccoversight.html.twig',array('current_menu'=>'ecumccoversight'));
+    }
+
+
+
+
+    public function listecumccoversight(Request $request, TeachSpecialityRepository $teachspecrepo, SchoolClassRepository $schoolclassrepo,
+                                        SigesUserRepository $sigesuser, UeRepository $uerepo, EcuRepository $ecurepo,
+                                        SpecialityRepository $specrepo, LevelRepository $levelrepo, SemesterRepository $semrepo, MyFunction $callfunction)
+    {
+        $idanac=$this->get('session')->get('anacad');
+
+        $idsem= $this->get('session')->get('semidecumcc');
+        $idspec=$this->get('session')->get('specidecumcc');
+        $levelid=$this->get('session')->get('levelidecumcc');
+        $semtype=$this->get('session')->get('semtypeoversight');
+        $idses=$this->get('session')->get('idsesoversight');
+
+
+
+        if($idses=='SE1')
+
+        {
+            $length = $request->get('length');
+            $length = $length && ($length!=-1)?$length:0;
+
+            $start = $request->get('start');
+            $start = $length?($start && ($start!=-1)?$start:0)/$length:0;
+
+            $search = $request->get('search');
+            $filters = [
+                'query' => @$search['value']
+            ];
+
+            $users = $teachspecrepo->searchsemspec($idanac,$idsem,$idspec,$levelid, $filters, $start, $length
+            );
+
+            $output = array(
+                'data' => array(),
+                'recordsFiltered' => count($teachspecrepo->searchsemspec($idanac,$idsem,$idspec,$levelid, $filters, 0, false)),
+                'recordsTotal' => count($teachspecrepo->searchsemspec($idanac,$idsem,$idspec,$levelid, 0, false))
+            );
+
+            foreach ($users as $tspec) {
+
+
+                $classincor = $schoolclassrepo->findOneById($tspec['classeid']);
+
+
+                $ens = $sigesuser->findOneByUsername($tspec['teacherid']);
+
+
+                $ue = $uerepo->findOneById($tspec['ueid']);
+
+
+                $ecu = $ecurepo->findOneById($tspec['ecuid']);
+
+                $spe = $specrepo->findOneById($classincor->getSpecialityId());
+
+
+                $lev = $levelrepo->findOneById($classincor->getLevelid());
+
+                $sem = $semrepo->findOneById($tspec['semesterid']);
+
+
+
+                    $nbcptetud= $callfunction->nbstudentclass($idanac,$classincor->getSpecialityid(),$tspec['classeid']);
+
+
+
+
+                    $nbcptnotemoycc= $callfunction->nbaveragebyschoolclass($idanac,$idsem,$tspec['ueid'],$tspec['ecuid'],$classincor->getId());
+
+
+
+
+                if ($nbcptnotemoycc >= 1) {
+                    $incorpo = '<span class="btn btn-success btn-xs">' .$nbcptnotemoycc  . '/' . $nbcptetud . '</span>';
+                } else {
+                    $incorpo = '<span class="btn btn-danger btn-xs">' .$nbcptnotemoycc  . '/' . $nbcptetud . '</span>';
+                }
+                if ($nbcptnotemoycc==0) {
+                    $listing = '';
+                } elseif($nbcptnotemoycc <$nbcptetud){
+
+                    $listing = '<a href="http://localhost:8888/SIGES/files/calllisting.php?levelname=' .$lev->getLevelname(). '&amp;semname=' .$sem->getSemname(). '&amp;classid=' .$tspec['classeid']. '&amp;specid=' .$spe->getId(). '&amp;ueid=' . $tspec['ueid']. '&amp;ecuid=' .$tspec['ecuid']. '&amp;uename=' . $ue->getUename(). '&amp;classname=' . $classincor->getClassname(). ' &amp;semid=' . $tspec['semesterid']. ' &amp;ecuname=' . $ecu->getEcuname(). '&amp;idanac='.$idanac.'&amp;idses=&amp;typeaver=" class="btn btn-warning btn-xs"><i class="fa fa-file-pdf-o"></i>  </a>';
+                }
+
+
+
+                else{
+
+                    $listing = '<a href="http://localhost:8888/SIGES/files/calllisting.php?levelname=' .$lev->getLevelname(). '&amp;semname=' .$sem->getSemname(). '&amp;classid=' .$tspec['classeid']. '&amp;specid=' .$spe->getId(). '&amp;ueid=' . $tspec['ueid']. '&amp;ecuid=' . $tspec['ecuid']. '&amp;uename=' . $ue->getUename(). '&amp;classname=' . $classincor->getClassname(). ' &amp;semid=' . $tspec['semesterid']. ' &amp;ecuname=' . $ecu->getEcuname(). '&amp;idanac='.$idanac.'&amp;idses=&amp;typeaver=" class="btn btn-success btn-xs"><i class="fa fa-file-pdf-o"></i>  </a>';
+                }
+
+
+
+
+
+                $enseignant='<div>'.$ens->getLastname().' '.$ens->getFirstname().'  <br> Contact:'.$ens->getPhone().'</div>';
+
+
+
+
+                $output['data'][] = [
+                    'classename' =>$tspec['classeid'],
+                    'specid' => $classincor->getSpecialityId(),
+                    'levelid' => $classincor->getLevelid(),
+                    'ecuname' => $ecu->getEcuname(),
+                    'semester' => $tspec['semesterid'],
+                    'ens' => $enseignant,
+
+
+                    'averageva' => $incorpo,
+                    'listing' => $listing,
+
+
+
+                ];
+            }
+
+            return new Response(json_encode($output), 200, ['Content-Type' => 'application/json']);
+
+
+
+
+
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+    public function specnexoversight()
+    {
+        return  $this->render('pedagores/specnexoversight.html.twig',array('current_menu'=>'specmccoversight'));
+    }
+
+
+
+
+    public function listspecnexoversight(Request $request, StudentSpecialityRepository $studspecrepo, MyFunction $callfunction, SchoolClassRepository $schoolcrepo)
+    {
+        $idanac=$this->get('session')->get('anacad');
+        $semtype=$this->get('session')->get('semtypeoversight');
+        $idses=$this->get('session')->get('idsesoversight');
+
+        $callfunction->setIdanac($this->get('session')->get('anacad'));
+        $callfunction->setSemtype($this->get('session')->get('semtypeoversight'));
+        $callfunction->setEntityClass(SchoolClass::class);
+
+        if($this->get('session')->get('idsesoversight')=='SE1')
+
+        {
+
+            $length = $request->get('length');
+            $length = $length && ($length!=-1)?$length:0;
+
+            $start = $request->get('start');
+            $start = $length?($start && ($start!=-1)?$start:0)/$length:0;
+
+            $search = $request->get('search');
+            $filters = [
+                'query' => @$search['value']
+            ];
+
+            $users = $studspecrepo->levelspec($idanac, $filters, $start, $length
+            );
+
+            $output = array(
+                'data' => array(),
+                'recordsFiltered' => count($studspecrepo->levelspec($idanac, $filters, 0, false)),
+                'recordsTotal' => count($studspecrepo->levelspec($idanac, 0, false))
+            );
+
+            foreach ($users as $levspec) {
+
+                $em = $this->getDoctrine()->getManager();
+
+
+                $rsm = new ResultSetMapping();
+                $rsm->addScalarResult('id', 'id');
+
+                $sql = "SELECT id FROM `semester`  WHERE  level_id=:levelid and semtype=:semtype  ";
+                $query = $em->createNativeQuery($sql, $rsm);
+                $query->setParameter('levelid', $levspec['levelid']);
+                $query->setParameter('semtype', $semtype);
+
+
+
+                $seme= $query->getResult();
+
+
+                foreach ($seme as $sm) {
+                    $semster= $sm['id'];
+
+                }
+
+
+                $nbecusemspec = $callfunction->nbeculevelspec($idanac,$levspec['specialityid'],$semster);
+
+
+
+                $nbcptecusaispec= $callfunction->nbecuentryexamnotesbyspec($idanac,$semster,$levspec['specialityid'],$idses);
+
+
+
+                if ($nbcptecusaispec >= 1 and $nbcptecusaispec < $nbecusemspec) {
+
+
+                    $pathurl=  $this->generateUrl('siges_redirectecunexover', array('levelid'=>$levspec['levelid'],'specid'=>$levspec['specialityid'],'idsem'=>$semster,'idses'=>$idses))  ;
+
+
+
+
+                    $incorpo = '<a href="'.$pathurl.'" class="btn btn-warning btn-xs">' . $nbcptecusaispec . '/' . $nbecusemspec . '&nbsp;&nbsp;<i class="fa fa-search"></i> </a>';
+
+
+
+
+
+
+                } elseif ($nbcptecusaispec ==$nbecusemspec){
+
+
+
+                    $pathurl=  $this->generateUrl('siges_redirectecunexover', array('levelid'=>$levspec['levelid'],'specid'=>$levspec['specialityid'],'idsem'=>$semster,'idses'=>$idses))  ;
+
+
+
+
+                    $incorpo = '<a href="'.$pathurl.'" class="btn btn-success btn-xs">' . $nbcptecusaispec . '/' . $nbecusemspec . '&nbsp;&nbsp;<i class="fa fa-search"></i> </a>';
+
+
+                }
+
+
+
+
+
+                else{
+
+
+                    $pathurl=  $this->generateUrl('siges_redirectecunexover', array('levelid'=>$levspec['levelid'],'specid'=>$levspec['specialityid'],'idsem'=>$semster,'idses'=>$idses))  ;
+
+
+
+
+                    $incorpo = '<a href="'.$pathurl.'" class="btn btn-danger btn-xs">' . $nbcptecusaispec . '/' . $nbecusemspec . '&nbsp;&nbsp;<i class="fa fa-search"></i> </a>';
+
+                }
+
+
+
+                if($levspec['specialityid']=='TCSIGLSITW'){
+
+                    $libspec='INFORMATIQUE';
+                }else{
+                    $libspec=$levspec['specialityid'];
+                }
+
+
+
+
+
+
+                $output['data'][] = [
+                    'levelid' =>$levspec['levelid'],
+                    'specid' => $libspec,
+                    'idsem' => $semster,
+                    'saiecue' => $incorpo,
+
+
+
+
+
+                ];
+            }
+
+            return new Response(json_encode($output), 200, ['Content-Type' => 'application/json']);
+        }
+
+
+
+
+    }
+
+
+
+
+
+
+    public function redirectecunexover(Request $request)
+    {
+
+        $request->getSession()->set('levelidecunex', $request->query->get('levelid'));
+        $request->getSession()->set('specidecunex', $request->query->get('specid'));
+        $request->getSession()->set('semidecunex', $request->query->get('idsem'));
+
+        return $this->redirectToRoute('siges_ecunexoversight');
+    }
+
+
+
+
+    public function ecunexoversight()
+    {
+        return  $this->render('pedagores/ecunexoversight.html.twig',array('current_menu'=>'ecunexoversight'));
+    }
+
+
+
+
+    public function listecunexoversight(Request $request, TeachSpecialityRepository $teachspecrepo, SchoolClassRepository $schoolclassrepo,
+                                        SigesUserRepository $sigesuser, UeRepository $uerepo, EcuRepository $ecurepo,
+                                        SpecialityRepository $specrepo, LevelRepository $levelrepo, SemesterRepository $semrepo, MyFunction $callfunction)
+    {
+        $idanac=$this->get('session')->get('anacad');
+
+        $idsem= $this->get('session')->get('semidecunex');
+        $idspec=$this->get('session')->get('specidecunex');
+        $levelid=$this->get('session')->get('levelidecunex');
+        $semtype=$this->get('session')->get('semtypeoversight');
+        $idses=$this->get('session')->get('idsesoversight');
+
+
+
+        if($idses=='SE1')
+
+        {
+            $length = $request->get('length');
+            $length = $length && ($length!=-1)?$length:0;
+
+            $start = $request->get('start');
+            $start = $length?($start && ($start!=-1)?$start:0)/$length:0;
+
+            $search = $request->get('search');
+            $filters = [
+                'query' => @$search['value']
+            ];
+
+            $users = $teachspecrepo->searchsemspec($idanac,$idsem,$idspec,$levelid, $filters, $start, $length
+            );
+
+            $output = array(
+                'data' => array(),
+                'recordsFiltered' => count($teachspecrepo->searchsemspec($idanac,$idsem,$idspec,$levelid, $filters, 0, false)),
+                'recordsTotal' => count($teachspecrepo->searchsemspec($idanac,$idsem,$idspec,$levelid, 0, false))
+            );
+
+            foreach ($users as $tspec) {
+
+
+                $classincor = $schoolclassrepo->findOneById($tspec['classeid']);
+
+
+                $ens = $sigesuser->findOneByUsername($tspec['teacherid']);
+
+
+                $ue = $uerepo->findOneById($tspec['ueid']);
+
+
+                $ecu = $ecurepo->findOneById($tspec['ecuid']);
+
+                $spe = $specrepo->findOneById($classincor->getSpecialityId());
+
+
+                $lev = $levelrepo->findOneById($classincor->getLevelid());
+
+                $sem = $semrepo->findOneById($tspec['semesterid']);
+
+
+
+                $nbcptetud= $callfunction->nbstudentclass($idanac,$classincor->getSpecialityid(),$tspec['classeid']);
+
+
+
+
+                $nbcptnotemoycc= $callfunction->nbexamnotesbyschoolclass($idanac,$idsem,$idses,$tspec['ueid'],$tspec['ecuid'],$classincor->getId());
+
+
+
+
+                if ($nbcptnotemoycc >= 1) {
+                    $incorpo = '<span class="btn btn-success btn-xs">' .$nbcptnotemoycc  . '/' . $nbcptetud . '</span>';
+                } else {
+                    $incorpo = '<span class="btn btn-danger btn-xs">' .$nbcptnotemoycc  . '/' . $nbcptetud . '</span>';
+                }
+                if ($nbcptnotemoycc==0) {
+                    $listing = '';
+                } elseif($nbcptnotemoycc <$nbcptetud){
+
+                    $listing = '<a href="http://localhost:8888/SIGES/files/calllistingnex.php?levelname=' .$lev->getLevelname(). '&amp;semname=' .$sem->getSemname(). '&amp;classid=' .$tspec['classeid']. '&amp;specid=' .$spe->getId(). '&amp;ueid=' . $tspec['ueid']. '&amp;ecuid=' .$tspec['ecuid']. '&amp;uename=' . $ue->getUename(). '&amp;classname=' . $classincor->getClassname(). ' &amp;semid=' . $tspec['semesterid']. ' &amp;ecuname=' . $ecu->getEcuname(). '&amp;idanac='.$idanac.'&amp;idses=&amp;typeaver=" class="btn btn-warning btn-xs"><i class="fa fa-file-pdf-o"></i>  </a>';
+                }
+
+
+
+                else{
+
+                    $listing = '<a href="http://localhost:8888/SIGES/files/calllistingnex.php?levelname=' .$lev->getLevelname(). '&amp;semname=' .$sem->getSemname(). '&amp;classid=' .$tspec['classeid']. '&amp;specid=' .$spe->getId(). '&amp;ueid=' . $tspec['ueid']. '&amp;ecuid=' . $tspec['ecuid']. '&amp;uename=' . $ue->getUename(). '&amp;classname=' . $classincor->getClassname(). ' &amp;semid=' . $tspec['semesterid']. ' &amp;ecuname=' . $ecu->getEcuname(). '&amp;idanac='.$idanac.'&amp;idses=&amp;typeaver=" class="btn btn-success btn-xs"><i class="fa fa-file-pdf-o"></i>  </a>';
+                }
+
+
+
+
+
+                $enseignant='<div>'.$ens->getLastname().' '.$ens->getFirstname().'  <br> Contact:'.$ens->getPhone().'</div>';
+
+
+
+
+                $output['data'][] = [
+                    'classename' =>$tspec['classeid'],
+                    'specid' => $classincor->getSpecialityId(),
+                    'levelid' => $classincor->getLevelid(),
+                    'ecuname' => $ecu->getEcuname(),
+                    'semester' => $tspec['semesterid'],
+                    'ens' => $enseignant,
+
+
+                    'averageva' => $incorpo,
+                    'listing' => $listing,
+
+
+
+                ];
+            }
+
+            return new Response(json_encode($output), 200, ['Content-Type' => 'application/json']);
+
+
+
+
+
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+    }
 
 
 

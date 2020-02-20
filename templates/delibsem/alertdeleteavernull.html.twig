@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>{% block title %}SUPPRESSION MOYENNES/NOTES NULL{% endblock %}</title>
+    <link id="callCss" rel="stylesheet" href="{{ asset('build/css/bootstrap.min.css') }}" type="text/css" media="screen"/>
+    <link href="{{ asset('build/css/demo.css') }}" rel="stylesheet" type="text/css">
+
+</head>
+<body>
+{% block body %}
+
+
+
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">SUPPRESSION  DES MOYENNES / NOTES NULL </h4>Année Académique: {{ app.session.get('anacad') }}&nbsp; &nbsp;&nbsp;Spécialité: {{ app.session.get('speciddelib') }}&nbsp;&nbsp;Semestre: {{ app.session.get('semiddelib') }} SESSION: &nbsp;{{ app.session.get('idsesdelib') }}
+            </div>
+            <div class="modal-body">
+
+                <p> <p class="text-warning" >Voulez vous supprimer toutes les moyennes/Notes Null ?</div> </p></p>
+
+            </div>
+            <div class="modal-footer">
+                <a href="{{ path('siges_dashboarddelibbylevel') }}"  class="btn btn-danger">NON</a>
+                <a href="{{ path('siges_savedeleteavernull')}}"  class="btn btn-primary">OUI</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+<script src="{{ asset('build/js/jquery-3.1.1.min.js') }}"></script>
+<script src="{{  asset('build/js/bootstrap.min.js')}}"></script>
+<script type="text/javascript">
+    $(document).ready(function(){
+        $("#myModal").modal('show');
+    });
+</script>
+</body>
+</html>

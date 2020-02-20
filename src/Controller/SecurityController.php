@@ -143,24 +143,78 @@ class SecurityController extends AbstractController
     public function redirectuser(Request $request)
     {
 
+
+
+
         $userprofile= $this->getUser();
-         $ananow = date('Y');
-         $anabefore = $ananow - 1;
-         $anacad = $anabefore . '-' . $ananow;
-         $defaultpasswd="Siges2020";
+        if($userprofile->getUsername()=="usersoutenance" || $userprofile->getUsername()=="usermdsimcc" || $userprofile->getUsername()=="usermdsinex"  ){
+
+            $anacad = '2018-2019';
+            $request->getSession()->set('anacad', $anacad);
+        }else{
+            $ananow = date('Y');
+            $anabefore = $ananow - 1;
+            $anacad = $anabefore . '-' . $ananow;
+            $defaultpasswd="Siges2020";
+            $request->getSession()->set('anacad', $anacad);
+        }
 
 
 
-        $request->getSession()->set('anacad', $anacad);
+
 
         $auth = $this->container->get('security.authorization_checker');
 
+
+
         if ($auth->isGranted('ROLE_ENS')) {
-            $semtype='IMPAIR';
 
-            $request->getSession()->set('semtype', $semtype);
+            $userrole= 'ROLE_ENS';
+            $request->getSession()->set('userrole', $userrole);
 
-            $deadline='2020-02-10 00:00:00';
+        }
+        if($auth->isGranted('ROLE_PEDAGORES')){
+
+            $userrole= 'ROLE_PEDAGORES';
+            $request->getSession()->set('userrole', $userrole);
+        }
+
+
+        if($auth->isGranted('ROLE_SUPDP')){
+
+            $userrole= 'ROLE_SUPDP';
+            $request->getSession()->set('userrole', $userrole);
+        }
+
+
+        if($auth->isGranted('ROLE_ADMINDELIB')){
+
+            $userrole= 'ROLE_ADMINDELIB';
+            $request->getSession()->set('userrole', $userrole);
+        }
+
+
+
+
+
+        if ($auth->isGranted('ROLE_ENS')) {
+
+            if($userprofile->getUsername()=="usermdsimcc"   ){
+
+                $semtype='PAIR';
+                $request->getSession()->set('semtype', $semtype);
+            }else{
+
+                $semtype='IMPAIR';
+                $request->getSession()->set('semtype', $semtype);
+            }
+
+
+
+
+
+
+            $deadline='2020-02-19 00:00:00';
             $request->getSession()->set('deadline', $deadline);
             if ($userprofile->getPassword()== '$2y$13$NWNUsZWJCUM91KaoWBcbaO0KRGfU6XCQl6gWH9/rtv8f9bUc7FCAi') {
                 return $this->redirectToRoute('security_updpwd', array('id'=>$userprofile->getId()));
@@ -177,7 +231,7 @@ class SecurityController extends AbstractController
 
             $request->getSession()->set('semtype', $semtype);
 
-            $deadline='2020-02-10 00:00:00';
+            $deadline='2020-02-19 00:00:00';
             $request->getSession()->set('deadline', $deadline);
             if ($userprofile->getPassword()== '$2y$13$NWNUsZWJCUM91KaoWBcbaO0KRGfU6XCQl6gWH9/rtv8f9bUc7FCAi') {
                 return $this->redirectToRoute('security_updpwd', array('id'=>$userprofile->getId()));
@@ -188,6 +242,43 @@ class SecurityController extends AbstractController
 
             return $this->redirectToRoute('siges_dashboardpedagores');
         }
+
+
+        if ($auth->isGranted('ROLE_SUPDP')) {
+            $semtype='IMPAIR';
+
+            $request->getSession()->set('semtype', $semtype);
+
+            $deadline='2020-02-15 00:00:00';
+            $request->getSession()->set('deadline', $deadline);
+            if ($userprofile->getPassword()== '$2y$13$NWNUsZWJCUM91KaoWBcbaO0KRGfU6XCQl6gWH9/rtv8f9bUc7FCAi') {
+                return $this->redirectToRoute('security_updpwd', array('id'=>$userprofile->getId()));
+            }
+            if($userprofile->getUpdprofil()!=1){
+                return $this->redirectToRoute('security_updprofil', array('id'=>$userprofile->getId()));
+            }
+
+            return $this->redirectToRoute('siges_dashboardsupdp');
+        }
+
+
+        if ($auth->isGranted('ROLE_ADMINDELIB')) {
+            $semtype='IMPAIR';
+
+            $request->getSession()->set('semtype', $semtype);
+
+            $deadline='2020-02-15 00:00:00';
+            $request->getSession()->set('deadline', $deadline);
+            if ($userprofile->getPassword()== '$2y$13$NWNUsZWJCUM91KaoWBcbaO0KRGfU6XCQl6gWH9/rtv8f9bUc7FCAi') {
+                return $this->redirectToRoute('security_updpwd', array('id'=>$userprofile->getId()));
+            }
+            if($userprofile->getUpdprofil()!=1){
+                return $this->redirectToRoute('security_updprofil', array('id'=>$userprofile->getId()));
+            }
+
+            return $this->redirectToRoute('siges_choiceacadyear');
+        }
+
 
     }
 
@@ -205,19 +296,6 @@ class SecurityController extends AbstractController
         // Sauvegarde de l'image de l'utilisateur courant
         $userccpicture= $this->getUser()->getPicture();
         $request->getSession()->set('userccpicture', $userccpicture);
-
-        $auth = $this->container->get('security.authorization_checker');
-        if ($auth->isGranted('ROLE_ENS')) {
-
-            $userrole= 'ROLE_ENS';
-            $request->getSession()->set('userrole', $userrole);
-
-        }
-         if($auth->isGranted('ROLE_PEDAGORES')){
-
-                     $userrole= 'ROLE_PEDAGORES';
-             $request->getSession()->set('userrole', $userrole);
-         }
 
 
 

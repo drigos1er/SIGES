@@ -61,7 +61,7 @@
 </head>
 <body class="dt-example">
 
-    <a class="navbar-brand" href="#">      <div style="text-align: center; font-style: italic; font-weight: bold; color: #ed7424;">Année. Académique:{{ app.session.get('idanacademiq') }}&nbsp;&nbsp;</div> </a>
+    <a class="navbar-brand" href="#">      <div style="text-align: center; font-style: italic; font-weight: bold; color: #ed7424;">Année. Académique:{{ app.session.get('anacad') }}&nbsp;&nbsp;</div> </a>
     <!-- page content -->
     {% block body %}{% endblock %}
     <!-- /page content -->
@@ -144,16 +144,13 @@
 
 <script>
     webix.ui({
-        container: "chartDivrep",
+        container: "chartDivrepmcc",
 
         css:"my_style",
         cols:[
             {
                 rows:[
-                    {
-                        template:"<div style='width:100%;text-align:center; font-weight: '>Moyennes de Contrôles Continus(MCC)</div>",
-                        height:30
-                    },
+
                     {
                         view: "chart",
                         type:"pie3D",
@@ -172,35 +169,7 @@
                         y:120,
                         pieInnerText:"#nbecu#",
                         shadow:0,
-                        url:""
-                    }
-                ]
-            },
-            {
-                rows:[
-                    {
-                        template:"<div style='width:100%;text-align:center'>Notes d'Examens(NEX)</div>",
-                        height:30
-                    },
-                    {
-                        view: "chart",
-                        type:"pie3D",
-                        container:"chartDivrep",
-                        value:"#nbecu#",
-                        color:"#color#",
-                        legend:{
-                            width:250,
-                            align:"left",
-
-                            valign:"middle",
-                            template:"#title#"
-                        },
-
-                        x:180,
-                        y:120,
-                        pieInnerText:"#nbecu#",
-                        shadow:0,
-                        url:""
+                        url:"{{ path('siges_listaverrp') }}"
                     }
                 ]
             }
@@ -209,6 +178,41 @@
     });
 </script>
 
+<script>
+    webix.ui({
+        container: "chartDivrepnex",
 
+        css:"my_style",
+        cols:[
+
+            {
+                rows:[
+
+                    {
+                        view: "chart",
+                        type:"pie3D",
+                        container:"chartDivrep",
+                        value:"#nbecu#",
+                        color:"#color#",
+                        legend:{
+                            width:250,
+                            align:"left",
+
+                            valign:"middle",
+                            template:"#title#"
+                        },
+
+                        x:180,
+                        y:120,
+                        pieInnerText:"#nbecu#",
+                        shadow:0,
+                        url:"{{ path('siges_listnexrp') }}"
+                    }
+                ]
+            }
+        ]
+
+    });
+</script>
 
 </html>

@@ -47,4 +47,80 @@ class EcuRepository extends ServiceEntityRepository
         ;
     }
     */
+
+
+    public function spececu($idspec, $idsem, $idanac, $data, $page = 0, $max = NULL, $getResult = true)
+    {
+        $qb = $this->_em->createQueryBuilder();
+        $query = isset($data['query']) && $data['query'] ? $data['query'] : null;
+
+        $qb
+            ->select('e')
+            ->from('App\Entity\EcuSpeciality', 'e')
+            ->where('e.specialityid=:idspec ')
+            ->andWhere('e.semester=:sem')
+            ->andWhere('e.acadyearid=:anac')
+            ->setParameter('idspec', $idspec)
+            ->setParameter('sem', $idsem)
+            ->setParameter('anac', $idanac);
+
+        if ($query) {
+            $qb
+                ->andWhere('e.specialityid like :query')
+                ->setParameter('query', "%" . $query . "%");
+        }
+        if ($max) {
+            $preparedQuery = $qb->getQuery()
+                ->setMaxResults($max)
+                ->setFirstResult($page * $max)
+            ;
+        } else {
+            $preparedQuery = $qb->getQuery();
+        }
+
+        return $getResult?$preparedQuery->getResult():$preparedQuery;
+    }
+
+
+
+
+    public function ueecu($idspec,$idsem,$idue,$idanac,$data, $page = 0, $max = NULL, $getResult = true)
+    {
+        $qb = $this->_em->createQueryBuilder();
+        $query = isset($data['query']) && $data['query'] ? $data['query'] : null;
+
+        $qb
+            ->select('e')
+            ->from('App\Entity\EcuSpeciality', 'e')
+            ->where('e.specialityid=:idspec ')
+            ->andWhere('e.semester=:sem')
+            ->andWhere('e.acadyearid=:anac')
+            ->andWhere('e.ueid=:idue')
+
+            ->setParameter('idspec', $idspec)
+            ->setParameter('sem', $idsem)
+            ->setParameter('idue', $idue)
+            ->setParameter('anac', $idanac);
+
+        if ($query) {
+            $qb
+                ->andWhere('e.specialityid like :query')
+                ->setParameter('query', "%" . $query . "%");
+        }
+        if ($max) {
+            $preparedQuery = $qb->getQuery()
+                ->setMaxResults($max)
+                ->setFirstResult($page * $max)
+            ;
+        } else {
+            $preparedQuery = $qb->getQuery();
+        }
+
+        return $getResult?$preparedQuery->getResult():$preparedQuery;
+    }
+
+
+
+
+
 }

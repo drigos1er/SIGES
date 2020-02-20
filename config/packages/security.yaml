@@ -40,4 +40,5 @@ security:
     access_control:
     - { path: ^/teacherarea, roles: ROLE_ENS }
     - { path: ^/pedagoresarea, roles: ROLE_PEDAGORES }
+    - { path: ^/delibarea, roles: ROLE_ADMINDELIB }
     # - { path: ^/profile, roles: ROLE_USER }

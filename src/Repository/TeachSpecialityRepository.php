@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\TeachSpeciality;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\ORM\Query\ResultSetMapping;
 
 /**
  * @method TeachSpeciality|null find($id, $lockMode = null, $lockVersion = null)
@@ -63,6 +64,43 @@ class TeachSpecialityRepository extends ServiceEntityRepository
 
 
 
+
+
+
+    public function searchsemspec($acadyearid,$idsem,$idspec,$levelid,$data, $page = 0, $max = NULL, $getResult = true)
+    {
+
+
+
+        $rsm = new ResultSetMapping();
+        $rsm->addScalarResult('ecuid', 'ecuid');
+        $rsm->addScalarResult('classeid', 'classeid');
+        $rsm->addScalarResult('ueid', 'ueid');
+        $rsm->addScalarResult('semesterid', 'semesterid');
+        $rsm->addScalarResult('teacherid', 'teacherid');
+
+
+        $sql = "SELECT ecuid,classeid,ueid,semesterid,teacherid FROM `teach_speciality` where acadyearid=:acadyearid  and semesterid=:idsem and classeid in (select id from school_class where `specialityid`=:idspec and `levelid`=:levelid) ";
+        $query = $this->_em->createNativeQuery($sql, $rsm);
+        $query->setParameter('acadyearid', $acadyearid);
+        $query->setParameter('idsem', $idsem);
+        $query->setParameter('idspec', $idspec);
+        $query->setParameter('levelid', $levelid);
+
+        $ecu = $query->getResult();
+
+
+        return $ecu;
+
+
+
+
+
+
+
+
+
+    }
 
 
 

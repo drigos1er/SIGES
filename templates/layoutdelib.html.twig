@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/png" href="{{ asset('build/img/favicon.ico')}}" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <title>SIGES</title>
+    <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' name='viewport' />
+    <meta name="viewport" content="width=device-width" />
+    <!-- Bootstrap core CSS     -->
+    <link href="{{ asset('build/css/bootstrap.min.css')}}" rel="stylesheet" />
+    <!--  Material Dashboard CSS    -->
+    <link href="{{ asset('build/css/material-dashboard.css')}}" rel="stylesheet" />
+    <!--  CSS for Demo Purpose, don't include it in your project     -->
+    <link href="{{ asset('build/css/demo.css')}}" rel="stylesheet" />
+    <link href="{{ asset('build/css/material-bootstrap-wizard.css')}}" rel="stylesheet" />
+
+    <!--     Fonts and icons     -->
+    <link href="http://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons" />
+    <!-- Select2 -->
+
+    <style type="text/css" class="init">
+
+    </style>
+</head>
+
+<body>
+<div class="wrapper">
+    <div class="sidebar" data-active-color="blue" data-background-color="white" data-image="{{ asset('build/img/bgsidebar.jpg')}}">
+        <!--
+    Tip 1: You can change the color of active element of the sidebar using: data-active-color="purple | blue | green | orange | red | rose"
+    Tip 2: you can also add an image using data-image tag
+    Tip 3: you can change the color of the sidebar with data-background-color="white | black"
+-->
+        <div class="logo">
+            <a href="#" class="simple-text">
+                SIGES-MDS
+            </a>
+        </div>
+        <div class="logo logo-mini">
+            <a href="#" class="simple-text">
+                MDS
+            </a>
+        </div>
+        <div class="sidebar-wrapper">
+            <div class="user">
+                <div class="photo">
+
+                    {% if app.user.picture=="" %}
+                        <img src="{{ asset('build/img/default-avatar.png') }}" alt="photoprofile"/>
+
+                    {% endif %}
+
+                    {% if app.user.picture!="" %}
+                        <img src="/SIGES/public/images/users/{{ app.user.picture }}" alt="photoprofile"/>
+
+                    {% endif %}
+
+
+                </div>
+                <div class="info">
+                    <a data-toggle="collapse" href="#collapseExample" class="collapsed">
+                        {{ app.user.firstname }}
+                        <br>&nbsp;{{ app.user.lastname}}
+                        <b class="caret"></b>
+                    </a>
+                    <div class="collapse" id="collapseExample">
+                        <ul class="nav">
+                            <li>
+                                <a href="{{ path('security_updprofil',{id:app.user.id }) }}" style="color: black">Mon Profil</a>
+
+                            </li>
+
+                            <li>
+                                <a href="{{ path('security_updpwd',{id:app.user.id }) }}" style="color: black">Modifier mot de Passe</a>
+
+                            </li>
+
+                            <li>
+                                <a href="{{ path('security_logout') }}" style="color: black"> Deconnexion</a>
+
+                            </li>
+
+
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <ul class="nav">
+                <li class="{%if current_menu is defined  and  current_menu=='dashboarddelibbylevel'%}active{% endif %}{%if current_menu is defined  and  current_menu=='tbborddelibbylevel'%}active{% endif %}">
+
+
+
+
+                    <a href="{{ path('siges_dashboarddelibbylevel') }}">
+                        <i class="material-icons">dashboard</i>
+                        <p>Tableau de Bord</p>
+                    </a>
+                </li>
+
+
+
+                <li>
+                    <a data-toggle="collapse" href="#pagesExamples">
+                        <i class="material-icons">image</i>
+                        <p>Consolidation
+                            <b class="caret"></b>
+                        </p>
+                    </a>
+                    <div class="collapse {%if current_menu is defined  and  current_menu=='deleteavernull'%}in{% endif %} {%if current_menu is defined  and  current_menu=='viewaverzero'%}in{% endif %}{%if current_menu is defined  and  current_menu=='viewnotexamzero'%}in{% endif %}" id="pagesExamples">
+                        <ul class="nav">
+                            <li class="{%if current_menu is defined  and  current_menu=='deleteavernull'%}active{% endif %}"><a href="{{ path('siges_deleteavernull') }}"><i class="material-icons">error</i>Suppression Entrée NULL</a></li>
+
+                            <li class="{%if current_menu is defined  and  current_menu=='viewaverzero'%}active{% endif %}"><a href="{{ path('siges_viewaverzero') }}"><i class="material-icons">warning</i>MCC=0</a></li>
+
+                            <li class="{%if current_menu is defined  and  current_menu=='viewnotexamzero'%}active{% endif %}"><a href="{{ path('siges_viewnotexamzero') }}"><i class="material-icons">warning</i>Note Exam=0</a></li>
+
+                            <li ><a href=""><i class="material-icons">warning</i>MTP sans Exam TP </a></li>
+
+                            <li><a href=""><i class="material-icons">warning</i> Exam TP sans MCC </a></li>
+
+                        </ul>
+                    </div>
+                </li>
+
+
+                <li class="{%if current_menu is defined  and  current_menu=='consultaveragedelib'%}active{% endif %}">
+                    <a href="{{ path('siges_consultaveragedelib') }}">
+                        <i class="material-icons">visibility</i>
+                        <p>Consultation</p>
+                    </a>
+                </li>
+
+
+
+                <li>
+                    <a href="{{ path('siges_redirectdelibspecbylevel', {'idses':  app.session.get('idsesdelib'), 'semtype': app.session.get('semtypedelib') }) }}">
+                        <i class="material-icons">reply</i>
+                        <p>Changer de Spécialité</p>
+                    </a>
+                </li>
+
+            </ul>
+        </div>
+    </div>
+    <div class="main-panel">
+        <nav class="navbar navbar-transparent navbar-absolute">
+            <div class="container-fluid">
+                <div class="navbar-minimize">
+                    <button id="minimizeSidebar" class="btn btn-round btn-white btn-fill btn-just-icon">
+                        <i class="material-icons visible-on-sidebar-regular">more_vert</i>
+                        <i class="material-icons visible-on-sidebar-mini">view_list</i>
+                    </button>
+                </div>
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="#">      <div style="text-align: center; font-style: italic; font-weight: bold; color: #ed7424;">Année. Académique:{{ app.session.get('anacad') }}&nbsp;&nbsp;Niveau:{{ app.session.get('leveliddelib') }} &nbsp;&nbsp;Spécialité:{{ app.session.get('speciddelib') }}&nbsp;&nbsp;Semestre:{{ app.session.get('semiddelib') }}&nbsp;&nbsp;Session:{{ app.session.get('idsesdelib') }}</div> </a>
+                </div>
+
+            </div>
+        </nav>
+        <div class="content">
+
+            {% block body %}{% endblock %}
+        </div>
+        <footer class="footer">
+            <div class="container-fluid">
+                <nav class="pull-left">
+                    <ul>
+                        <li>
+                            <a href="#">
+                                Système de Gestion Intégré de l'ESATIC- Module de Délibération Semestrielle
+                            </a>
+                        </li>
+
+                    </ul>
+                </nav>
+                <p class="copyright pull-right">
+                    &copy;
+                    <script>
+                        document.write(new Date().getFullYear())
+                    </script>
+                    SIGES-MDS
+                </p>
+            </div>
+        </footer>
+    </div>
+</div>
+
+
+
+</body>
+<script type="text/javascript" language="javascript" src="//code.jquery.com/jquery-1.12.4.js">
+</script>
+<script type="text/javascript" language="javascript" src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js">
+</script>
+<script type="text/javascript" language="javascript" src="https://cdn.datatables.net/buttons/1.5.0/js/dataTables.buttons.min.js">
+</script>
+<script type="text/javascript" language="javascript" src="https://cdn.datatables.net/select/1.2.4/js/dataTables.select.min.js"></script>
+<!--   Core JS Files   -->
+<script src="{{ asset('build/js/jquery-3.1.1.min.js') }}" type="text/javascript"></script>
+<script src="{{ asset('build/js/jquery-ui.min.js') }}" type="text/javascript"></script>
+<script src="{{ asset('build/js/bootstrap.min.js') }}" type="text/javascript"></script>
+<script src="{{ asset('build/js/material.min.js') }}" type="text/javascript"></script>
+<script src="{{ asset('build/js/perfect-scrollbar.jquery.min.js') }}" type="text/javascript"></script>
+<!-- Forms Validations Plugin -->
+<script src="{{ asset('build/js/jquery.validate.min.js') }}"></script>
+<!--  Plugin for Date Time Picker and Full Calendar Plugin-->
+<script src="{{ asset('build/js/moment.min.js') }}"></script>
+<!--  Charts Plugin -->
+<script src="{{ asset('build/js/chartist.min.js') }}"></script>
+<!--  Plugin for the Wizard -->
+<script src="{{ asset('build/js/jquery.bootstrap-wizard.js') }}"></script>
+<!--  Notifications Plugin    -->
+<script src="{{ asset('build/js/bootstrap-notify.js') }}"></script>
+<!-- DateTimePicker Plugin -->
+<script src="{{ asset('build/js/bootstrap-datetimepicker.js') }}"></script>
+<!-- Vector Map plugin -->
+<script src="{{ asset('build/js/jquery-jvectormap.js') }}"></script>
+<!-- Sliders Plugin -->
+<script src="{{ asset('build/js/nouislider.min.js') }}"></script>
+<!--  Google Maps Plugin    -->
+<script src="https://maps.googleapis.com/maps/api/js"></script>
+<!-- Select Plugin -->
+<script src="{{ asset('build/js/jquery.select-bootstrap.js') }}"></script>
+<!--  DataTables.net Plugin    -->
+<script src="{{ asset('build/js/jquery.datatables.js') }}"></script>
+<!-- Sweet Alert 2 plugin -->
+<script src="{{ asset('build/js/sweetalert2.js') }}"></script>
+<!--	Plugin for Fileupload, full documentation here: http://www.jasny.net/bootstrap/javascript/#fileinput -->
+<script src="{{ asset('build/js/jasny-bootstrap.min.js') }}"></script>
+<!--  Full Calendar Plugin    -->
+<script src="{{ asset('build/js/fullcalendar.min.js') }}"></script>
+<!-- TagsInput Plugin -->
+<script src="{{ asset('build/js/jquery.tagsinput.js') }}"></script>
+<!-- Material Dashboard javascript methods -->
+<script src="{{ asset('build/js/material-dashboard.js') }}"></script>
+<!-- Material Dashboard DEMO methods, don't include it in your project! -->
+<script src="{{ asset('build/js/demo.js') }}"></script>
+
+
+
+
+<script type="text/javascript">
+    $().ready(function() {
+        demo.checkFullPageBackgroundImage();
+
+        setTimeout(function() {
+            // after 1000 ms we add the class animated to the login/register card
+            $('.card').removeClass('card-hidden');
+        }, 700)
+    });
+</script>
+
+
+<script type="text/javascript">
+
+    $('#consultaveragedelib').DataTable({
+
+
+        "ajax": "{{ path('siges_listconsultaveragedelib') }}",
+        "sAjaxDataProp": "data",
+        "pageLength": 10,
+        "columns":[
+
+            {"data": "ue"},
+            {"data": "ecu"},
+
+            {"data": "voir"}
+
+        ],
+        "language": {
+            "search": "_INPUT_",
+            "searchPlaceholder": "Recherche",
+            "paginate": {
+                "first":      "Premier",
+                "last":       "Dernier",
+                "next":       "Suivant",
+                "previous":   "Précédent"
+            },
+            "zeroRecords":    "Aucun Resultat Trouvé",
+            "emptyTable":     "Aucun Resultat Trouvé",
+            "info":           "Affichage de _START_ à _END_ sur _TOTAL_ entrées",
+            "infoEmpty":      "Affichage de 0 à 0 sur 0 entrées",
+            "infoFiltered":   "(filtrés sur _MAX_ total entrées)",
+            "infoPostFix":    "",
+            "thousands":      ",",
+            "lengthMenu":     "Afficher _MENU_ entrées",
+            "loadingRecords": "Chargement...",
+            "processing":     "Chargement...",
+            "search":         "Recherche:"
+
+        }
+    });
+
+
+    $('#consultationecu').DataTable({
+
+
+        "ajax": "",
+        "sAjaxDataProp": "data",
+        "pageLength": 10,
+        "columns":[
+
+
+            {"data": "ecu"},
+
+            {"data": "cc"},
+            {"data": "examen"},
+            {"data": "moyenne"},
+            {"data": "cctp"},
+            {"data": "examentp"},
+            {"data": "moyennetp"},
+            {"data": "moyenneecu"},
+
+
+        ],
+        "language": {
+            "search": "_INPUT_",
+            "searchPlaceholder": "Recherche",
+            "paginate": {
+                "first":      "Premier",
+                "last":       "Dernier",
+                "next":       "Suivant",
+                "previous":   "Précédent"
+            },
+            "zeroRecords":    "Aucun Resultat Trouvé",
+            "emptyTable":     "Aucun Resultat Trouvé",
+            "info":           "Affichage de _START_ à _END_ sur _TOTAL_ entrées",
+            "infoEmpty":      "Affichage de 0 à 0 sur 0 entrées",
+            "infoFiltered":   "(filtrés sur _MAX_ total entrées)",
+            "infoPostFix":    "",
+            "thousands":      ",",
+            "lengthMenu":     "Afficher _MENU_ entrées",
+            "loadingRecords": "Chargement...",
+            "processing":     "Chargement...",
+            "search":         "Recherche:"
+
+        }
+    });
+
+
+</script>
+
+
+</html>

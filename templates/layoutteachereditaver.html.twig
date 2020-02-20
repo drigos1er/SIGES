@@ -88,6 +88,7 @@
     var editor; // use a global for the submit and return data rendering in the examples
 
     $(document).ready(function() {
+
         editor = new $.fn.dataTable.Editor( {
             ajax: "http://localhost:8888/SIGES/public/build/editeur/examples/php/averageteacher.php",
             table: "#example",
@@ -110,6 +111,10 @@
                 }
             ]
         } );
+
+
+
+
 
         // Activate an inline edit on click of a table cell
         $('#example').on( 'click', 'tbody td:not(:first-child)', function (e) {

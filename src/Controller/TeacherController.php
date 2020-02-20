@@ -61,7 +61,7 @@ class TeacherController extends AbstractController
      * @throws \Exception
      */
     public function eculist(Request $request, TeachSpecialityRepository $teachSpecialityrep,
-                                  SchoolClassRepository $schoolclassrep, UeRepository $uerep,
+                            SchoolClassRepository $schoolclassrep, UeRepository $uerep,
                             EcuRepository $ecurep, SpecialityRepository $specrep
     )
     {
@@ -83,8 +83,8 @@ class TeacherController extends AbstractController
 
         $ecuslist = $teachSpecialityrep->searchteachpec($teachid, $idanac, $filters, $start, $length
         );
-        
-  
+
+
 
 
         $output = array(
@@ -166,7 +166,7 @@ class TeacherController extends AbstractController
                 $rsm = new ResultSetMapping();
                 $rsm->addScalarResult('nbaveragescc', 'nbaveragescc');
 
-                $sql = "SELECT count(  DISTINCT student_averages.`studentid`) as nbaveragescc FROM `student_averages` INNER JOIN student_speciality on student_speciality.studentid=student_averages.studentid WHERE  student_averages.acadyearid=:acadyearid and student_averages.specialityid=:specialityid and student_averages.semesterid=:semesterid 
+                $sql = "SELECT count(  DISTINCT student_averages.`studentid`) as nbaveragescc FROM `student_averages` INNER JOIN student_speciality on student_speciality.studentid=student_averages.studentid WHERE  student_speciality.acadyearid=:acadyearid and student_averages.specialityid=:specialityid and student_averages.semesterid=:semesterid 
 and  student_averages.ueid=:ueid and student_averages.ecuid=:ecuid and student_averages.typeof_averages='MCC'  and student_averages.average BETWEEN 0 AND 20 and student_speciality.school_classeid=:school_classeid  ";
                 $query = $em->createNativeQuery($sql, $rsm);
                 $query->setParameter('acadyearid', $idanac);
@@ -197,10 +197,10 @@ and  student_averages.ueid=:ueid and student_averages.ecuid=:ecuid and student_a
                 $rsm = new ResultSetMapping();
                 $rsm->addScalarResult('averagestp', 'averagestp');
 
-                $sql = "SELECT count(  DISTINCT student_averages.`studentid`) as averagestp FROM `student_averages` INNER JOIN student_speciality on student_speciality.studentid=student_averages.studentid WHERE  student_averages.acadyearid=:acadyearid and student_averages.specialityid=:specialityid 
+                $sql = "SELECT count(  DISTINCT student_averages.`studentid`) as averagestp FROM `student_averages` INNER JOIN student_speciality on student_speciality.studentid=student_averages.studentid WHERE  student_speciality.acadyearid=:acadyearid and student_averages.specialityid=:specialityid 
 and student_averages.semesterid=:semesterid and  student_averages.ueid=:ueid and student_averages.ecuid=:ecuid and student_averages.typeof_averages='MTP'  and student_averages.average BETWEEN 0 AND 20 and student_speciality.school_classeid=:school_classeid  ";
                 $query = $em->createNativeQuery($sql, $rsm);
-                $query->setParameter('acadyearid', $this->get('session')->get('anacademiq'));
+                $query->setParameter('acadyearid', $idanac);
                 $query->setParameter('specialityid', $classincor->getSpecialityid());
                 $query->setParameter('semesterid', $eculist->getSemesterid());
 
@@ -232,7 +232,7 @@ and student_averages.semesterid=:semesterid and  student_averages.ueid=:ueid and
                 $rsm = new ResultSetMapping();
                 $rsm->addScalarResult('average', 'average');
 
-                $sql = "SELECT student_averages.average  FROM `student_averages` INNER JOIN student_speciality on student_speciality.studentid=student_averages.studentid WHERE  student_averages.acadyearid=:acadyearid and 
+                $sql = "SELECT student_averages.average  FROM `student_averages` INNER JOIN student_speciality on student_speciality.studentid=student_averages.studentid WHERE  student_speciality.acadyearid=:acadyearid and 
 student_averages.specialityid=:specialityid and student_averages.semesterid=:semesterid and  student_averages.ueid=:ueid and student_averages.ecuid=:ecuid and student_averages.typeof_averages='MCC'  and student_averages.valid=1 and student_speciality.school_classeid=:school_classeid  ";
                 $query = $em->createNativeQuery($sql, $rsm);
                 $query->setParameter('acadyearid', $idanac);
@@ -250,8 +250,8 @@ student_averages.specialityid=:specialityid and student_averages.semesterid=:sem
                 if($averagevalid){
 
 
-                          $pathurl=  $this->generateUrl('siges_alertvalidation', array('classid'=>$eculist->getClasseid(),'specid'=>$spe->getId(),'ueid'=>$eculist->getUeid(),
-                              'ecuid'=>$eculist->getEcuid(),'uename'=>$ue->getUename(),'classname'=>$classincor->getClassname(),'semid'=>$eculist->getSemesterid(),'ecuname'=>$ecu->getEcuname(),'ecuname'=>$ecu->getEcuname(),'typaver'=>'MCC'))  ;
+                    $pathurl=  $this->generateUrl('siges_alertvalidation', array('classid'=>$eculist->getClasseid(),'specid'=>$spe->getId(),'ueid'=>$eculist->getUeid(),
+                        'ecuid'=>$eculist->getEcuid(),'uename'=>$ue->getUename(),'classname'=>$classincor->getClassname(),'semid'=>$eculist->getSemesterid(),'ecuname'=>$ecu->getEcuname(),'ecuname'=>$ecu->getEcuname(),'typaver'=>'MCC'))  ;
                     if ($nbcptnotemoycc >= 1 and $nbcptnotemoycc < $nbcptetud) {
                         $incorpo = '<a href="'.$pathurl.'" class="btn btn-warning btn-xs" >' . $nbcptnotemoycc. '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i> </a>';
                     }
@@ -259,7 +259,7 @@ student_averages.specialityid=:specialityid and student_averages.semesterid=:sem
 
 
                     elseif($nbcptnotemoycc == $nbcptetud){
-                                    $incorpo = '<a href="'.$pathurl.'" class="btn btn-success btn-xs" >' . $nbcptnotemoycc. '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i> </a>';
+                        $incorpo = '<a href="'.$pathurl.'" class="btn btn-success btn-xs" >' . $nbcptnotemoycc. '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i> </a>';
                     }
 
 
@@ -278,12 +278,12 @@ student_averages.specialityid=:specialityid and student_averages.semesterid=:sem
 
 
                     if($fdateoftheday > $this->get('session')->get('deadline')){
-                               $pathurl=  $this->generateUrl('siges_alertdeadlinesaisie', array('classid'=>$eculist->getClasseid(),'specid'=>$spe->getId(),'ueid'=>$eculist->getUeid(),'ecuid'=>$eculist->getEcuid(),'uename'=>$ue->getUename(),'classname'=>$classincor->getClassname(),'semid'=>$eculist->getSemesterid(),'ecuname'=>$ecu->getEcuname(),'ecuname'=>$ecu->getEcuname(),'typaver'=>'MCC'))  ;
+                        $pathurl=  $this->generateUrl('siges_alertdeadlinesaisie', array('classid'=>$eculist->getClasseid(),'specid'=>$spe->getId(),'ueid'=>$eculist->getUeid(),'ecuid'=>$eculist->getEcuid(),'uename'=>$ue->getUename(),'classname'=>$classincor->getClassname(),'semid'=>$eculist->getSemesterid(),'ecuname'=>$ecu->getEcuname(),'ecuname'=>$ecu->getEcuname(),'typaver'=>'MCC'))  ;
 
                         if ($nbcptnotemoycc >= 1 and $nbcptnotemoycc < $nbcptetud) {
                             $incorpo = '<a href="'.$pathurl.'" class="btn btn-warning btn-xs" >' . $nbcptnotemoycc. '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i> </a>';
                         } elseif ($nbcptnotemoycc == $nbcptetud) {
-                                $incorpo = '<a href="'.$pathurl.'" class="btn btn-success btn-xs" >' . $nbcptnotemoycc. '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i> </a>';
+                            $incorpo = '<a href="'.$pathurl.'" class="btn btn-success btn-xs" >' . $nbcptnotemoycc. '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i> </a>';
 
                         }
 
@@ -291,7 +291,7 @@ student_averages.specialityid=:specialityid and student_averages.semesterid=:sem
                         else {
                             $incorpo = '<a href="'.$pathurl.'" class="btn btn-danger btn-xs">' . $nbcptnotemoycc. '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i></a>';
                         }
-                                      $liensaisiecc=$incorpo;
+                        $liensaisiecc=$incorpo;
 
 
 
@@ -305,7 +305,7 @@ student_averages.specialityid=:specialityid and student_averages.semesterid=:sem
                             $incorpo = '<a href="'.$pathurl.'" class="btn btn-warning btn-xs" >' . $nbcptnotemoycc. '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i> </a>';
                         } elseif ($nbcptnotemoycc == $nbcptetud) {
 
-                                     $incorpo = '<a href="'.$pathurl.'" class="btn btn-success btn-xs" >' . $nbcptnotemoycc. '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i> </a>';
+                            $incorpo = '<a href="'.$pathurl.'" class="btn btn-success btn-xs" >' . $nbcptnotemoycc. '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i> </a>';
 
                         }
 
@@ -344,7 +344,7 @@ student_averages.specialityid=:specialityid and student_averages.semesterid=:sem
                 $rsm = new ResultSetMapping();
                 $rsm->addScalarResult('average', 'average');
 
-                $sql = "SELECT student_averages.average  FROM `student_averages` INNER JOIN student_speciality on student_speciality.studentid=student_averages.studentid WHERE  student_averages.acadyearid=:acadyearid and student_averages.specialityid=:specialityid and student_averages.semesterid=:semesterid and  student_averages.ueid=:ueid and student_averages.ecuid=:ecuid and student_averages.typeof_averages='MTP'  and student_averages.valid=1 and student_speciality.school_classeid=:school_classeid  ";
+                $sql = "SELECT student_averages.average  FROM `student_averages` INNER JOIN student_speciality on student_speciality.studentid=student_averages.studentid WHERE  student_speciality.acadyearid=:acadyearid and student_averages.specialityid=:specialityid and student_averages.semesterid=:semesterid and  student_averages.ueid=:ueid and student_averages.ecuid=:ecuid and student_averages.typeof_averages='MTP'  and student_averages.valid=1 and student_speciality.school_classeid=:school_classeid  ";
                 $query = $em->createNativeQuery($sql, $rsm);
                 $query->setParameter('acadyearid', $idanac);
                 $query->setParameter('specialityid', $classincor->getSpecialityid());
@@ -368,7 +368,7 @@ student_averages.specialityid=:specialityid and student_averages.semesterid=:sem
                         $incorpotp = '<a href="'.$pathurltp.'" class="btn btn-warning btn-xs">' . $nbcptnotemoycctp . '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i></span>';
                     } elseif($nbcptnotemoycctp==$nbcptetud){
 
-                                        $incorpotp = '<a href="'.$pathurltp.'" class="btn btn-success btn-xs">' . $nbcptnotemoycctp . '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i></span>';
+                        $incorpotp = '<a href="'.$pathurltp.'" class="btn btn-success btn-xs">' . $nbcptnotemoycctp . '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i></span>';
 
 
                     }
@@ -404,13 +404,13 @@ student_averages.specialityid=:specialityid and student_averages.semesterid=:sem
                         if ($nbcptnotemoycctp >= 1 and $nbcptnotemoycctp < $nbcptetud) {
                             $incorpotp = '<a href="'.$pathurltp.'" class="btn btn-warning btn-xs">' . $nbcptnotemoycctp . '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i></span>';
                         }
-                            elseif ($nbcptnotemoycctp==$nbcptetud)  {
+                        elseif ($nbcptnotemoycctp==$nbcptetud)  {
 
 
-                                   $incorpotp = '<a href="'.$pathurltp.'" class="btn btn-success btn-xs">' . $nbcptnotemoycctp . '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i></span>';
+                            $incorpotp = '<a href="'.$pathurltp.'" class="btn btn-success btn-xs">' . $nbcptnotemoycctp . '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i></span>';
 
 
-                            }
+                        }
 
 
 
@@ -441,7 +441,7 @@ student_averages.specialityid=:specialityid and student_averages.semesterid=:sem
                         }
                         elseif ($nbcptnotemoycctp==$nbcptetud)   {
 
-                                           $incorpotp = '<a href="'.$pathurltp.'" class="btn btn-success btn-xs">' . $nbcptnotemoycctp . '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i></span>';
+                            $incorpotp = '<a href="'.$pathurltp.'" class="btn btn-success btn-xs">' . $nbcptnotemoycctp . '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i></span>';
 
                         }
 
@@ -589,8 +589,8 @@ student_averages.specialityid=:specialityid and student_averages.semesterid=:sem
      * @throws \Exception
      */
     public function eculistvalidation(Request $request, TeachSpecialityRepository $teachSpecialityrep,
-                            SchoolClassRepository $schoolclassrep, UeRepository $uerep,
-                            EcuRepository $ecurep, SpecialityRepository $specrep, SemesterRepository $semrep, LevelRepository $levelrep
+                                      SchoolClassRepository $schoolclassrep, UeRepository $uerep,
+                                      EcuRepository $ecurep, SpecialityRepository $specrep, SemesterRepository $semrep, LevelRepository $levelrep
     )
     {
         $idanac=$this->get('session')->get('anacad');
@@ -700,7 +700,7 @@ student_averages.specialityid=:specialityid and student_averages.semesterid=:sem
                 $rsm = new ResultSetMapping();
                 $rsm->addScalarResult('nbaveragescc', 'nbaveragescc');
 
-                $sql = "SELECT count(  DISTINCT student_averages.`studentid`) as nbaveragescc FROM `student_averages` INNER JOIN student_speciality on student_speciality.studentid=student_averages.studentid WHERE  student_averages.acadyearid=:acadyearid and student_averages.specialityid=:specialityid and student_averages.semesterid=:semesterid and  student_averages.ueid=:ueid and student_averages.ecuid=:ecuid and student_averages.typeof_averages='MCC'  and student_averages.average BETWEEN 0 AND 20 and student_speciality.school_classeid=:school_classeid and student_averages.valid=1  ";
+                $sql = "SELECT count(  DISTINCT student_averages.`studentid`) as nbaveragescc FROM `student_averages` INNER JOIN student_speciality on student_speciality.studentid=student_averages.studentid WHERE  student_speciality.acadyearid=:acadyearid and student_averages.specialityid=:specialityid and student_averages.semesterid=:semesterid and  student_averages.ueid=:ueid and student_averages.ecuid=:ecuid and student_averages.typeof_averages='MCC'  and student_averages.average BETWEEN 0 AND 20 and student_speciality.school_classeid=:school_classeid and student_averages.valid=1  ";
                 $query = $em->createNativeQuery($sql, $rsm);
                 $query->setParameter('acadyearid', $idanac);
                 $query->setParameter('specialityid', $classincor->getSpecialityid());
@@ -730,9 +730,9 @@ student_averages.specialityid=:specialityid and student_averages.semesterid=:sem
                 $rsm = new ResultSetMapping();
                 $rsm->addScalarResult('averagestp', 'averagestp');
 
-                $sql = "SELECT count(  DISTINCT student_averages.`studentid`) as averagestp FROM `student_averages` INNER JOIN student_speciality on student_speciality.studentid=student_averages.studentid WHERE  student_averages.acadyearid=:acadyearid and student_averages.specialityid=:specialityid and student_averages.semesterid=:semesterid and  student_averages.ueid=:ueid and student_averages.ecuid=:ecuid and student_averages.typeof_averages='MTP'  and student_averages.average BETWEEN 0 AND 20 and student_speciality.school_classeid=:school_classeid and student_averages.valid=1  ";
+                $sql = "SELECT count(  DISTINCT student_averages.`studentid`) as averagestp FROM `student_averages` INNER JOIN student_speciality on student_speciality.studentid=student_averages.studentid WHERE  student_speciality.acadyearid=:acadyearid and student_averages.specialityid=:specialityid and student_averages.semesterid=:semesterid and  student_averages.ueid=:ueid and student_averages.ecuid=:ecuid and student_averages.typeof_averages='MTP'  and student_averages.average BETWEEN 0 AND 20 and student_speciality.school_classeid=:school_classeid and student_averages.valid=1  ";
                 $query = $em->createNativeQuery($sql, $rsm);
-                $query->setParameter('acadyearid', $this->get('session')->get('anacademiq'));
+                $query->setParameter('acadyearid', $idanac);
                 $query->setParameter('specialityid', $classincor->getSpecialityid());
                 $query->setParameter('semesterid', $eculist->getSemesterid());
 
@@ -763,71 +763,71 @@ student_averages.specialityid=:specialityid and student_averages.semesterid=:sem
 
 
 
-                    $dateoftheday=new \Datetime();
-                    $fdateoftheday= $dateoftheday->format('Y-m-d h:i:s');
+                $dateoftheday=new \Datetime();
+                $fdateoftheday= $dateoftheday->format('Y-m-d h:i:s');
 
 
-                    if($fdateoftheday > $this->get('session')->get('deadline')){
-                        $pathurl=  $this->generateUrl('siges_alertdeadlinevalid', array('classid'=>$eculist->getClasseid(),'specid'=>$spe->getId(),'ueid'=>$eculist->getUeid(),'ecuid'=>$eculist->getEcuid(),'uename'=>$ue->getUename(),'classname'=>$classincor->getClassname(),'semid'=>$eculist->getSemesterid(),'ecuname'=>$ecu->getEcuname(),'ecuname'=>$ecu->getEcuname(),'typaver'=>'MCC'))  ;
+                if($fdateoftheday > $this->get('session')->get('deadline')){
+                    $pathurl=  $this->generateUrl('siges_alertdeadlinevalid', array('classid'=>$eculist->getClasseid(),'specid'=>$spe->getId(),'ueid'=>$eculist->getUeid(),'ecuid'=>$eculist->getEcuid(),'uename'=>$ue->getUename(),'classname'=>$classincor->getClassname(),'semid'=>$eculist->getSemesterid(),'ecuname'=>$ecu->getEcuname(),'ecuname'=>$ecu->getEcuname(),'typaver'=>'MCC'))  ;
 
-                        if ($nbcptnotemoycc >= 1 and $nbcptnotemoycc < $nbcptetud) {
-                            $incorpo = '<a href="'.$pathurl.'" class="btn btn-warning btn-xs" >' . $nbcptnotemoycc. '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i> </a>';
-
-
-                        }elseif ($nbcptnotemoycc == $nbcptetud){
+                    if ($nbcptnotemoycc >= 1 and $nbcptnotemoycc < $nbcptetud) {
+                        $incorpo = '<a href="'.$pathurl.'" class="btn btn-warning btn-xs" >' . $nbcptnotemoycc. '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i> </a>';
 
 
-                            $incorpo = '<a href="'.$pathurl.'" class="btn btn-success btn-xs" >' . $nbcptnotemoycc. '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i> </a>';
+                    }elseif ($nbcptnotemoycc == $nbcptetud){
 
 
-
-                        }
+                        $incorpo = '<a href="'.$pathurl.'" class="btn btn-success btn-xs" >' . $nbcptnotemoycc. '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i> </a>';
 
 
 
-
-
-
-                        else {
-                            $incorpo = '<a href="'.$pathurl.'" class="btn btn-danger btn-xs">' . $nbcptnotemoycc. '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i></a>';
-
-
-                        }
-                        $liensaisiecc=$incorpo;
-
-
-
-
-
-
-                    }else{
-                        $pathurl=  $this->generateUrl('siges_redirectvalidaverages', array('classid'=>$eculist->getClasseid(),'specid'=>$spe->getId(),'ueid'=>$eculist->getUeid(),'ecuid'=>$eculist->getEcuid(),'uename'=>$ue->getUename(),'classname'=>$classincor->getClassname(),'semid'=>$eculist->getSemesterid(),'ecuname'=>$ecu->getEcuname(),'ecuname'=>$ecu->getEcuname(),'typaver'=>'MCC'))  ;
-
-                        if ($nbcptnotemoycc >= 1 and $nbcptnotemoycc < $nbcptetud) {
-                            $incorpo = '<a href="'.$pathurl.'" class="btn btn-warning btn-xs" >' . $nbcptnotemoycc. '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i> </a>';
-
-
-                        }elseif ($nbcptnotemoycc == $nbcptetud){
-
-
-                            $incorpo = '<a href="'.$pathurl.'" class="btn btn-success btn-xs" >' . $nbcptnotemoycc. '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i> </a>';
-
-
-
-                        }
-                        else {
-                            $incorpo = '<a href="'.$pathurl.'" class="btn btn-danger btn-xs">' . $nbcptnotemoycc. '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i></a>';
-
-
-
-                        }
-
-
-
-
-
-                        $liensaisiecc=$incorpo;
                     }
+
+
+
+
+
+
+                    else {
+                        $incorpo = '<a href="'.$pathurl.'" class="btn btn-danger btn-xs">' . $nbcptnotemoycc. '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i></a>';
+
+
+                    }
+                    $liensaisiecc=$incorpo;
+
+
+
+
+
+
+                }else{
+                    $pathurl=  $this->generateUrl('siges_redirectvalidaverages', array('classid'=>$eculist->getClasseid(),'specid'=>$spe->getId(),'ueid'=>$eculist->getUeid(),'ecuid'=>$eculist->getEcuid(),'uename'=>$ue->getUename(),'classname'=>$classincor->getClassname(),'semid'=>$eculist->getSemesterid(),'ecuname'=>$ecu->getEcuname(),'ecuname'=>$ecu->getEcuname(),'typaver'=>'MCC'))  ;
+
+                    if ($nbcptnotemoycc >= 1 and $nbcptnotemoycc < $nbcptetud) {
+                        $incorpo = '<a href="'.$pathurl.'" class="btn btn-warning btn-xs" >' . $nbcptnotemoycc. '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i> </a>';
+
+
+                    }elseif ($nbcptnotemoycc == $nbcptetud){
+
+
+                        $incorpo = '<a href="'.$pathurl.'" class="btn btn-success btn-xs" >' . $nbcptnotemoycc. '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i> </a>';
+
+
+
+                    }
+                    else {
+                        $incorpo = '<a href="'.$pathurl.'" class="btn btn-danger btn-xs">' . $nbcptnotemoycc. '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i></a>';
+
+
+
+                    }
+
+
+
+
+
+                    $liensaisiecc=$incorpo;
+                }
 
 
 
@@ -841,7 +841,7 @@ student_averages.specialityid=:specialityid and student_averages.semesterid=:sem
 
 
 
-                    $lienlisting = '<a href="http://localhost:8888/SIGES/files/calllisting.php?levelname=' .$lev->getLevelname(). '&amp;semname=' .$sem->getSemname(). '&amp;classid=' .$eculist->getClasseid(). '&amp;specid=' .$spe->getId(). '&amp;ueid=' . $eculist->getUeid(). '&amp;ecuid=' . $eculist->getEcuid(). '&amp;uename=' . $ue->getUename(). '&amp;classname=' . $classincor->getClassname(). ' &amp;semid=' . $eculist->getSemesterid(). ' &amp;ecuname=' . $ecu->getEcuname(). '&amp;idanac='.$idanac.'&amp;idses=&amp;typeaver=" class="btn btn-warning btn-xs"><i class="fa fa-file-pdf-o"></i>  </a>';
+                    $lienlisting = '<a href="http://siges.esatic.ci/files/calllisting.php?levelname=' .$lev->getLevelname(). '&amp;semname=' .$sem->getSemname(). '&amp;classid=' .$eculist->getClasseid(). '&amp;specid=' .$spe->getId(). '&amp;ueid=' . $eculist->getUeid(). '&amp;ecuid=' . $eculist->getEcuid(). '&amp;uename=' . $ue->getUename(). '&amp;classname=' . $classincor->getClassname(). ' &amp;semid=' . $eculist->getSemesterid(). ' &amp;ecuname=' . $ecu->getEcuname(). '&amp;idanac='.$idanac.'&amp;idses=&amp;typeaver=" class="btn btn-warning btn-xs"><i class="fa fa-file-pdf-o"></i>  </a>';
 
 
                 }
@@ -850,7 +850,7 @@ student_averages.specialityid=:specialityid and student_averages.semesterid=:sem
 
                 else{
 
-                    $lienlisting = '<a href="http://localhost:8888/SIGES/files/calllisting.php?levelname=' .$lev->getLevelname(). '&amp;semname=' .$sem->getSemname(). '&amp;classid=' .$eculist->getClasseid(). '&amp;specid=' .$spe->getId(). '&amp;ueid=' . $eculist->getUeid(). '&amp;ecuid=' . $eculist->getEcuid(). '&amp;uename=' . $ue->getUename(). '&amp;classname=' . $classincor->getClassname(). ' &amp;semid=' . $eculist->getSemesterid(). ' &amp;ecuname=' . $ecu->getEcuname(). '&amp;idanac='.$idanac.'&amp;idses=&amp;typeaver=" class="btn btn-success btn-xs"><i class="fa fa-file-pdf-o"></i>  </a>';
+                    $lienlisting = '<a href="http://siges.esatic.ci/files/calllisting.php?levelname=' .$lev->getLevelname(). '&amp;semname=' .$sem->getSemname(). '&amp;classid=' .$eculist->getClasseid(). '&amp;specid=' .$spe->getId(). '&amp;ueid=' . $eculist->getUeid(). '&amp;ecuid=' . $eculist->getEcuid(). '&amp;uename=' . $ue->getUename(). '&amp;classname=' . $classincor->getClassname(). ' &amp;semid=' . $eculist->getSemesterid(). ' &amp;ecuname=' . $ecu->getEcuname(). '&amp;idanac='.$idanac.'&amp;idses=&amp;typeaver=" class="btn btn-success btn-xs"><i class="fa fa-file-pdf-o"></i>  </a>';
 
 
                 }
@@ -865,74 +865,74 @@ student_averages.specialityid=:specialityid and student_averages.semesterid=:sem
 
 
 
-                    $dateoftheday=new \Datetime();
-                    $fdateoftheday= $dateoftheday->format('Y-m-d h:i:s');
+                $dateoftheday=new \Datetime();
+                $fdateoftheday= $dateoftheday->format('Y-m-d h:i:s');
 
 
-                    if($fdateoftheday > $this->get('session')->get('deadline')){
+                if($fdateoftheday > $this->get('session')->get('deadline')){
 
 
-                        $pathurltp=  $this->generateUrl('siges_alertdeadlinevalid', array('classid'=>$eculist->getClasseid(),'specid'=>$spe->getId(),'ueid'=>$eculist->getUeid(),'ecuid'=>$eculist->getEcuid(),'uename'=>$ue->getUename(),'classname'=>$classincor->getClassname(),'semid'=>$eculist->getSemesterid(),'ecuname'=>$ecu->getEcuname(),'ecuname'=>$ecu->getEcuname(),'typaver'=>'MTP'))  ;
-                        if ($nbcptnotemoycctp >= 1 and $nbcptnotemoycctp < $nbcptetud) {
-                            $incorpotp = '<a href="'.$pathurltp.'" class="btn btn-warning btn-xs">' . $nbcptnotemoycctp . '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i></span>';
-
-
-
-
-                        } elseif ($nbcptnotemoycctp==$nbcptetud){
-
-                            $incorpotp = '<a href="'.$pathurltp.'" class="btn btn-success btn-xs">' . $nbcptnotemoycctp . '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i></span>';
-
-
-                        }
+                    $pathurltp=  $this->generateUrl('siges_alertdeadlinevalid', array('classid'=>$eculist->getClasseid(),'specid'=>$spe->getId(),'ueid'=>$eculist->getUeid(),'ecuid'=>$eculist->getEcuid(),'uename'=>$ue->getUename(),'classname'=>$classincor->getClassname(),'semid'=>$eculist->getSemesterid(),'ecuname'=>$ecu->getEcuname(),'ecuname'=>$ecu->getEcuname(),'typaver'=>'MTP'))  ;
+                    if ($nbcptnotemoycctp >= 1 and $nbcptnotemoycctp < $nbcptetud) {
+                        $incorpotp = '<a href="'.$pathurltp.'" class="btn btn-warning btn-xs">' . $nbcptnotemoycctp . '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i></span>';
 
 
 
 
+                    } elseif ($nbcptnotemoycctp==$nbcptetud){
 
-                        else{
+                        $incorpotp = '<a href="'.$pathurltp.'" class="btn btn-success btn-xs">' . $nbcptnotemoycctp . '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i></span>';
 
-                            $incorpotp = '<a href="'.$pathurltp.'" class="btn btn-danger btn-xs">' . $nbcptnotemoycctp . '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i></span>';
-                        }
-
-
-
-
-                        $liensaisietp=$incorpotp;
-
-
-
-                    }else{
-
-                        $pathurltp=  $this->generateUrl('siges_redirectvalidaverages', array('classid'=>$eculist->getClasseid(),'specid'=>$spe->getId(),'ueid'=>$eculist->getUeid(),'ecuid'=>$eculist->getEcuid(),'uename'=>$ue->getUename(),'classname'=>$classincor->getClassname(),'semid'=>$eculist->getSemesterid(),'ecuname'=>$ecu->getEcuname(),'ecuname'=>$ecu->getEcuname(),'typaver'=>'MTP'))  ;
-                        if ($nbcptnotemoycctp >= 1 and $nbcptnotemoycctp < $nbcptetud) {
-                            $incorpotp = '<a href="'.$pathurltp.'" class="btn btn-warning btn-xs">' . $nbcptnotemoycctp . '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i></span>';
-
-
-
-
-                        } elseif ($nbcptnotemoycctp==$nbcptetud){
-
-                            $incorpotp = '<a href="'.$pathurltp.'" class="btn btn-success btn-xs">' . $nbcptnotemoycctp . '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i></span>';
-
-
-                        }
-
-
-
-
-
-                        else{
-
-                            $incorpotp = '<a href="'.$pathurltp.'" class="btn btn-danger btn-xs">' . $nbcptnotemoycctp . '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i></span>';
-                        }
-
-
-
-
-                        $liensaisietp=$incorpotp;
 
                     }
+
+
+
+
+
+                    else{
+
+                        $incorpotp = '<a href="'.$pathurltp.'" class="btn btn-danger btn-xs">' . $nbcptnotemoycctp . '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i></span>';
+                    }
+
+
+
+
+                    $liensaisietp=$incorpotp;
+
+
+
+                }else{
+
+                    $pathurltp=  $this->generateUrl('siges_redirectvalidaverages', array('classid'=>$eculist->getClasseid(),'specid'=>$spe->getId(),'ueid'=>$eculist->getUeid(),'ecuid'=>$eculist->getEcuid(),'uename'=>$ue->getUename(),'classname'=>$classincor->getClassname(),'semid'=>$eculist->getSemesterid(),'ecuname'=>$ecu->getEcuname(),'ecuname'=>$ecu->getEcuname(),'typaver'=>'MTP'))  ;
+                    if ($nbcptnotemoycctp >= 1 and $nbcptnotemoycctp < $nbcptetud) {
+                        $incorpotp = '<a href="'.$pathurltp.'" class="btn btn-warning btn-xs">' . $nbcptnotemoycctp . '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i></span>';
+
+
+
+
+                    } elseif ($nbcptnotemoycctp==$nbcptetud){
+
+                        $incorpotp = '<a href="'.$pathurltp.'" class="btn btn-success btn-xs">' . $nbcptnotemoycctp . '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i></span>';
+
+
+                    }
+
+
+
+
+
+                    else{
+
+                        $incorpotp = '<a href="'.$pathurltp.'" class="btn btn-danger btn-xs">' . $nbcptnotemoycctp . '/' . $nbcptetud .'&nbsp;&nbsp;<i class="fa fa-edit"></i></span>';
+                    }
+
+
+
+
+                    $liensaisietp=$incorpotp;
+
+                }
 
 
 
@@ -1020,7 +1020,7 @@ student_averages.specialityid=:specialityid and student_averages.semesterid=:sem
 
 
 
-        return $this->redirect("http://localhost:8888/SIGES/src/Service/averagevaedit.php?idanac=$idanac&&idspec=$idspec&&idsem=$idsem&&idue=$idue&&&idecu=$idecu&&typeofaver=$typeofaver&&idclass=$idclass&&leconnecte=$leconnecte");
+        return $this->redirect("http://siges.esatic.ci/averagevaedit.php?idanac=$idanac&&idspec=$idspec&&idsem=$idsem&&idue=$idue&&&idecu=$idecu&&typeofaver=$typeofaver&&idclass=$idclass&&leconnecte=$leconnecte");
 
     }
 
@@ -1057,16 +1057,16 @@ student_averages.specialityid=:specialityid and student_averages.semesterid=:sem
         $dateoftheday=new \Datetime();
         $fdateoftheday= $dateoftheday->format('Y-m-d h:i:s');
 
-/*
-        if($fdateoftheday > $this->get('session')->get('deadline') && $this->get('session')->get('classnamevaedit')!='MBDSM1'){
+        /*
+                if($fdateoftheday > $this->get('session')->get('deadline') && $this->get('session')->get('classnamevaedit')!='MBDSM1'){
 
 
 
-            return $this->redirect("http://localhost/SIGESV2/SIGESV2/web/app_dev.php/teachersarea/notifvalidationdead?classid=$classeid&&specid=$specid&&&ueid=$ueid&&ecuid=$ecuid&&uename=$uename&&classname=$classname&&semid=$semid&&ecuname=$ecuname&&typaver=$typaver");
+                    return $this->redirect("http://localhost/SIGESV2/SIGESV2/web/app_dev.php/teachersarea/notifvalidationdead?classid=$classeid&&specid=$specid&&&ueid=$ueid&&ecuid=$ecuid&&uename=$uename&&classname=$classname&&semid=$semid&&ecuname=$ecuname&&typaver=$typaver");
 
 
 
-        }*/
+                }*/
 
 
 
@@ -1132,15 +1132,15 @@ student_averages.specialityid=:specialityid and student_averages.semesterid=:sem
         $fdateoftheday= $dateoftheday->format('Y-m-d h:i:s');
 
 
-    /*    if($fdateoftheday > $this->get('session')->get('deadline') && $this->get('session')->get('classnamevaedit')!='MBDSM1'){
+        /*    if($fdateoftheday > $this->get('session')->get('deadline') && $this->get('session')->get('classnamevaedit')!='MBDSM1'){
 
 
 
-            return $this->redirect("http://localhost/SIGESV2/SIGESV2/web/app_dev.php/teachersarea/notifvalidationdead?classid=$classeid&&specid=$specid&&&ueid=$ueid&&ecuid=$ecuid&&uename=$uename&&classname=$classname&&semid=$semid&&ecuname=$ecuname&&typaver=$typaver");
+                return $this->redirect("http://localhost/SIGESV2/SIGESV2/web/app_dev.php/teachersarea/notifvalidationdead?classid=$classeid&&specid=$specid&&&ueid=$ueid&&ecuid=$ecuid&&uename=$uename&&classname=$classname&&semid=$semid&&ecuname=$ecuname&&typaver=$typaver");
 
 
 
-        }*/
+            }*/
 
 
 
