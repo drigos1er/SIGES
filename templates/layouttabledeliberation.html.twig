@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+
+    <link rel="icon" type="image/png" href="{{ asset('build/img/favicon.ico')}}" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <title>SIGES</title>
+    <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' name='viewport' />
+    <meta name="viewport" content="width=device-width" />
+    <!-- Bootstrap core CSS     -->
+    <link href="{{ asset('build/css/bootstrap.min.css')}}" rel="stylesheet" />
+    <!--  Material Dashboard CSS    -->
+    <link href="{{ asset('build/css/material-dashboard.css')}}" rel="stylesheet" />
+    <!--  CSS for Demo Purpose, don't include it in your project     -->
+    <link href="{{ asset('build/css/demo.css')}}" rel="stylesheet" />
+    <link href="{{ asset('build/css/material-bootstrap-wizard.css')}}" rel="stylesheet" />
+
+    <!--     Fonts and icons     -->
+    <link href="http://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons" />
+    <!-- Select2 -->
+    <link href="{{ asset('build/css/select2.min.css')}}" rel="stylesheet">
+
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/1.5.0/css/buttons.dataTables.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/select/1.2.4/css/select.dataTables.min.css">
+    <link href="{{ asset('build/filtre/samples/common/samples.css')}}" rel="stylesheet" />
+    <link href="{{ asset('build/filtre/codebase/webix.css')}}" rel="stylesheet" />
+    <style type="text/css" class="init">
+
+    </style>
+    <style type="text/css">
+        .myhover{
+            background: #F0DCB6;
+        }
+    </style>
+    <style type="text/css">
+        .multiline{
+            line-height: 20px !important;
+        }
+    </style>
+    <style>
+        .my_style .webix_hcell{
+
+
+            font-weight:bold;
+
+
+        }
+        .my_styleminor{
+            font-weight:bold;
+            color:#B51454;
+            background:#ddFFdd;
+        }
+
+        .my_stylemajor{
+            font-weight:bold;
+            color:#B51454;
+            background-color:#ffffbb;
+        }
+
+
+        .my_styleaver{
+            font-weight:bold;
+            color:black;
+            background-color:#E0CDA9;
+        }
+
+
+        .highlight{
+            background-color:#FFAAAA;
+        }
+    </style>
+</head>
+<body class="dt-example">
+
+    <a class="navbar-brand" href="#">      <div style="text-align: center; font-style: italic; font-weight: bold; color: #ed7424;">Année. Académique:{{ app.session.get('anacad') }}&nbsp;&nbsp;Niveau:{{ app.session.get('leveliddelib') }} &nbsp;&nbsp;Spécialité:{{ app.session.get('speciddelib') }}&nbsp;&nbsp;Semestre:{{ app.session.get('semiddelib') }}&nbsp;&nbsp;Session:{{ app.session.get('idsesdelib') }}</div> </a>
+    <!-- page content -->
+    {% block body %}{% endblock %}
+    <!-- /page content -->
+
+
+</body>
+
+<script type="text/javascript" language="javascript" src="//code.jquery.com/jquery-1.12.4.js">
+</script>
+<script type="text/javascript" language="javascript" src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js">
+</script>
+<script type="text/javascript" language="javascript" src="https://cdn.datatables.net/buttons/1.5.0/js/dataTables.buttons.min.js">
+</script>
+<script type="text/javascript" language="javascript" src="https://cdn.datatables.net/select/1.2.4/js/dataTables.select.min.js"></script>
+    <!--   Core JS Files   -->
+    <script src="{{ asset('build/js/jquery-3.1.1.min.js')}}" type="text/javascript"></script>
+<script src="{{ asset('build/js/jquery-ui.min.js')}}" type="text/javascript"></script>
+<script src="{{ asset('build/js/bootstrap.min.js')}}" type="text/javascript"></script>
+<script src="{{ asset('build/js/material.min.js')}}" type="text/javascript"></script>
+<script src="{{ asset('build/js/perfect-scrollbar.jquery.min.js')}}" type="text/javascript"></script>
+<!-- Forms Validations Plugin -->
+<script src="{{ asset('build/js/jquery.validate.min.js')}}"></script>
+<!--  Plugin for Date Time Picker and Full Calendar Plugin-->
+<script src="{{ asset('build/js/moment.min.js')}}"></script>
+<!--  Charts Plugin -->
+<script src="{{ asset('build/js/chartist.min.js')}}"></script>
+<!--  Plugin for the Wizard -->
+<script src="{{ asset('build/js/jquery.bootstrap-wizard.js')}}"></script>
+<!--  Notifications Plugin    -->
+<script src="{{ asset('build/js/bootstrap-notify.js')}}"></script>
+<!-- DateTimePicker Plugin -->
+<script src="{{ asset('build/js/bootstrap-datetimepicker.js')}}"></script>
+<!-- Vector Map plugin -->
+<script src="{{asset('build/js/jquery-jvectormap.js')}}"></script>
+<!-- Sliders Plugin -->
+<script src="{{ asset('build/js/nouislider.min.js')}}"></script>
+<!--  Google Maps Plugin    -->
+<script src="https://maps.googleapis.com/maps/api/js"></script>
+<!-- Select Plugin -->
+<script src="{{ asset('build/js/jquery.select-bootstrap.js')}}"></script>
+<!--  DataTables.net Plugin    -->
+<script src="{{ asset('build/js/jquery.datatables.js')}}"></script>
+<!-- Sweet Alert 2 plugin -->
+<script src="{{ asset('build/js/sweetalert2.js')}}"></script>
+<!--	Plugin for Fileupload, full documentation here: http://www.jasny.net/bootstrap/javascript/#fileinput -->
+<script src="{{ asset('build/js/jasny-bootstrap.min.js')}}"></script>
+<!--  Full Calendar Plugin    -->
+<script src="{{ asset('build/js/fullcalendar.min.js')}}"></script>
+<!-- TagsInput Plugin -->
+<script src="{{ asset('build/js/jquery.tagsinput.js')}}"></script>
+<!-- Material Dashboard javascript methods -->
+<script src="{{ asset('build/js/material-dashboard.js')}}"></script>
+<!-- Material Dashboard DEMO methods, don't include it in your project! -->
+<script src="{{ asset('build/js/demo.js')}}"></script>
+<!-- Select2 -->
+<script src="{{ asset('build/js/select2.full.min.js') }}"></script>
+<!-- jQuery autocomplete -->
+<script src="{{ asset('build/jquery.autocomplete.min.js') }}"></script>
+
+<script type="text/javascript" language="javascript" src="{{ asset('build/editeur/js/dataTables.editor.min.js')}}">
+</script>
+<script type="text/javascript" language="javascript" src="{{ asset('build/editeur/resources/syntax/shCore.js')}}">
+</script>
+<script type="text/javascript" language="javascript" src="{{ asset('build/editeur/resources/demo.js')}}">
+</script>
+<script type="text/javascript" language="javascript" src="{{ asset('build/editeur/resources/editor-demo.js')}}">
+</script>
+<script src="{{ asset('build/filtre/codebase/webix.js')}}"></script>
+
+<script>
+
+    webix.i18n.locales["fr-FR"]={
+
+        combo:{
+            selectAll:"Sélectionner Tout",
+            unselectAll:"Désélectionner Tout"
+        }
+    };
+
+
+
+
+
+    webix.i18n.setLocale('fr-FR');
+
+    function startCompare(value, filter){
+        value = value.toString().toLowerCase();
+        filter = filter.toString().toLowerCase();
+        return value.indexOf(filter) === 0;
+    }
+    webix.locale.pager = {
+        first: "Début",
+        last: "Fin",
+        next: "Suivant",
+        prev: "Précédent"
+    };
+
+    webix.ui.datafilter.floatNumFilter = webix.extend({
+        init:function(config){
+            config.prepare = function(value, filter){
+                var equality = (value.indexOf("=") != -1)?1:0;
+                var intvalue = this.format(value);
+                if (intvalue === "") return "";
+
+                if (value.indexOf(">") != -1)
+                    config.compare = equality ? this._greater_or_equal : this._greater;
+                else if (value.indexOf("<") != -1){
+                    config.compare = equality ? this._lesser_or_equal : this._lesser;
+                }
+                else {
+                    config.compare = this._equal;
+                    equality = 0;
+                }
+                return intvalue;
+            };
+        },
+        _greater:function(a,b){ return a*1>b; },
+        _lesser:function(a,b){ return a!=="" && a*1<b; },
+        _equal:function(a,b){ return a*1==b; },
+        _greater_or_equal:function(a, b){ return a*1 >= b; },
+        _lesser_or_equal:function(a, b){ return a*1 <= b; }
+    }, webix.ui.datafilter.numberFilter);
+
+    webix.ui({
+        container:"tabledeliberationrtell2",
+        padding: 20,
+        rows: [
+            {
+                id: "table",
+                view:"datatable",
+                columns:[
+                    { id:"index", header:"", width:50 },
+                    { id:"idetudiant", header:["Matricule",{content:"textFilter"}],template:"<a href='http://localhost/SIGESV2/SIGESV2/web/app_dev.php/delibarea/deliberationsemestreuniq?idetudiant=#idetudiant#'  style='color:black;'>#idetudiant#</a>", sort:"text", width:150},
+
+                    { id:"ue1",	header:[{text:"OGE (Organisation et gestion des entreprises)", css:"multiline"}, { content:"floatNumFilter" }],
+                        template:function(obj){
+                            if (obj.ue1 < 7)
+                                return "<span><a href='http://localhost/SIGESV2/SIGESV2/web/app_dev.php/delibarea/consultationecu?idue=COM3300&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:red;'>"+obj.ue1+"</a></span>";
+                            else
+                                return "<span><a href='http://localhost/SIGESV2/SIGESV2/web/app_dev.php/delibarea/consultationecu?idue=COM3300&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:black;'>"+obj.ue1+"</a></span>";
+                        },css:"my_styleminor", tooltip: "UE Mineure [2]",sort:"int" },
+                    { id:"ue2",	header:[{text:"Programmation Orienté Objet (JAVA)", css:"multiline"}, { content:"floatNumFilter" }],template:function(obj){
+                            if (obj.ue2 < 7)
+                                return "<span><a href='http://localhost/SIGESV2/SIGESV2/web/app_dev.php/delibarea/consultationecu?idue=FRA3300&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:red;'>"+obj.ue2+"</a></span>";
+                            else
+                                return "<span><a href='http://localhost/SIGESV2/SIGESV2/web/app_dev.php/delibarea/consultationecu?idue=FRA3300&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:black;'>"+obj.ue2+"</a></span>";
+                        }, css:"my_styleminor",tooltip: "UE Mineure [2]", sort:"int",width:110},
+                    { id:"ue3",	header:[{text:"Filtrage analogique", css:"multiline"}, { content:"floatNumFilter" }] , template:function(obj){
+                            if (obj.ue3 < 7)
+                                return "<span><a href='http://localhost/SIGESV2/SIGESV2/web/app_dev.php/delibarea/consultationecu?idue=ECO3300&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:red;'>"+obj.ue3+"</a></span>";
+                            else
+                                return "<span><a href='http://localhost/SIGESV2/SIGESV2/web/app_dev.php/delibarea/consultationecu?idue=ECO3300&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:black;'>"+obj.ue3+"</a></span>";
+                        }, css:"my_styleminor", tooltip: "UE Mineure [3]", sort:"int"},
+
+
+                    { id:"moyennesemminor",header:[{text:"Moyenne UE Mineure", css:"multiline"}, { content:"floatNumFilter" }] , css:"my_styleaver", sort:"int"},
+
+                    { id:"ue4",	header:[{text:"Communication et développement personnel", css:"multiline"}, { content:"floatNumFilter" }]  , template:function(obj){
+                            if (obj.ue4 < 7)
+                                return "<span><a href='http://localhost/SIGESV2/SIGESV2/web/app_dev.php/delibarea/consultationecu?idue=INF3300&&idetudiant="+obj.idetudiant+"'  target='_blank' style='color:red;'>"+obj.ue4+"</a></span>";
+                            else
+                                return "<span><a href='http://localhost/SIGESV2/SIGESV2/web/app_dev.php/delibarea/consultationecu?idue=INF3300&&idetudiant="+obj.idetudiant+"'  target='_blank' style='color:black;'>"+obj.ue4+"</a></span>";
+                        }, css:"my_stylemajor",tooltip: "UE Majeure [4]", sort:"int",width:115},
+                    { id:"ue5",	header:[{text:"Mathématiques appliquées",height:120,
+                            css:"multiline"},{ content:"floatNumFilter" }] ,template:function(obj){
+                            if (obj.ue5 < 7)
+                                return "<span><a href='http://localhost/SIGESV2/SIGESV2/web/app_dev.php/delibarea/consultationecu?idue=INF3302&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:red;'>"+obj.ue5+"</a></span>";
+                            else
+                                return "<span><a href='http://localhost/SIGESV2/SIGESV2/web/app_dev.php/delibarea/consultationecu?idue=INF3302&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:black;'>"+obj.ue5+"</a></span>";
+                        },css:"my_stylemajor",tooltip: "UE Majeure [5]", sort:"int",width:115},
+                    { id:"ue6",	header:[{text:"Physique des ondes", css:"multiline"}, { content:"floatNumFilter" }] ,template:function(obj){
+                            if (obj.ue6 < 7)
+                                return "<span><a href='http://localhost/SIGESV2/SIGESV2/web/app_dev.php/delibarea/consultationecu?idue=MTH3302&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:red;'>"+obj.ue6+"</a></span>";
+                            else
+                                return "<span><a href='http://localhost/SIGESV2/SIGESV2/web/app_dev.php/delibarea/consultationecu?idue=MTH3302&&idetudiant="+obj.idetudiant+"'  target='_blank' style='color:black;'>"+obj.ue6+"</a></span>";
+                        },css:"my_stylemajor",tooltip: "UE Majeure [6]",  sort:"int"},
+                    { id:"ue7",	header:[{text:"Transmissions analogique / numérique", css:"multiline"}, { content:"floatNumFilter" }],css:"my_stylemajor",tooltip: "UE Majeure [4]", sort:"int",template:function(obj){
+                            if (obj.ue7 < 7)
+                                return "<span><a href='http://localhost/SIGESV2/SIGESV2/web/app_dev.php/delibarea/consultationecu?idue=PHY3302&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:red;'>"+obj.ue7+"</a></span>";
+                            else
+                                return "<span><a href='http://localhost/SIGESV2/SIGESV2/web/app_dev.php/delibarea/consultationecu?idue=PHY3302&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:black;'>"+obj.ue7+"</a></span>";
+                        }},
+                    { id:"ue8",	header:[{text:"Réseaux", css:"multiline"}, { content:"floatNumFilter" }] ,template:function(obj){
+                            if (obj.ue8 < 7)
+                                return "<span><a href='http://localhost/SIGESV2/SIGESV2/web/app_dev.php/delibarea/consultationecu?idue=PHY3304&&idetudiant="+obj.idetudiant+"'  target='_blank'style='color:red;'>"+obj.ue8+"</a></span>";
+                            else
+                                return "<span><a href='http://localhost/SIGESV2/SIGESV2/web/app_dev.php/delibarea/consultationecu?idue=PHY3304&&idetudiant="+obj.idetudiant+"' target='_blank'  style='color:black;'>"+obj.ue8+"</a></span>";
+                        },css:"my_stylemajor",tooltip: "UE Majeure [4]", sort:"int"},
+
+
+
+                    { id:"moyennesemmajor",header:[{text:"Moyenne UE Majeure", css:"multiline"}, { content:"floatNumFilter" }] ,css:"my_styleaver", sort:"int"},
+
+                    { id:"moyennesem",header:[{text:"Moyenne du Semestre", css:"multiline"}, { content:"floatNumFilter" }] ,sort:"int"},
+
+
+                    { id:"tcredit",header:[{text:"Total Crédits Validés", css:"multiline"}, { content:"numberFilter" }] ,template:function(obj){
+                            if (obj.tcredit == 30)
+                                return "<span style='color:darkgreen; font-weight: bold; ' >"+obj.tcredit+"</span>";
+                            else
+                                return "<span style='color:black; font-weight: bold'>"+obj.tcredit+"</span>";
+                        }, sort:"int"}
+                ],
+                ready:function(){
+                    this.getFilter("Moyenne du Semestre").value = ">=9";
+                    this.filterByAll();
+                },
+
+                on:{
+                    onBeforeLoad:function(){
+                        webix.extend(this, webix.OverlayBox);
+
+                        this.showOverlay("Patientez svp...");
+                    },
+                    onAfterLoad:function(){
+                        if (!this.count())
+                            this.showOverlay("Aucune donnée à Afficher");
+                        this.hideOverlay();
+                    },
+                    "data->onStoreUpdated":function(){
+                        this.data.each(function(obj, i){
+                            obj.index = i+1;
+                        })
+                    }
+                },
+
+                hover:"myhover",
+                navigation:true,
+                spans:true,
+                select:"cell",
+                autoheight:true,
+                autowidth:true,
+                headermenu:true,
+                tooltip:true,
+
+
+
+                pager:{
+                    template:"{common.first()} {common.prev()} {common.pages()} {common.next()} {common.last()}{common.limit()}",
+                    container:"paging_herertell2",
+                    size:100,
+                    group:5
+
+                },
+                url:"{{ path('siges_listtabledelibrtell2sem3') }}"
+            },
+            {
+                view: "form",
+                css: "toolbar",
+                paddingY: 5,
+                paddingX: 10,
+                cols:[
+                    {
+                        view: "label", label: "Exporter"
+                    },
+                    {
+                        view: "button", label: "EXCEL", width: 95, click:function(){
+                            webix.toExcel($$("table"));
+                        }
+                    },
+                    { view:"button", value:"PDF", autowidth:true, click:function(){
+                            webix.toPDF($$("table")), {
+                                orientation:"landscape"
+                            };
+                        }
+                    }
+
+                ]
+
+            }
+        ]
+    });
+
+    //adding progress bar functionality to it
+    webix.extend($$("idetudiant"), webix.ProgressBar);
+
+    //using the functionality
+    $$("idetudiant").showProgress({
+        type:"bottom",
+        delay:3000
+
+    });
+
+</script>
+
+
+</html>

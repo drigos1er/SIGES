@@ -5,6 +5,7 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
+ * @ORM\Table(name="halfyearly_delib")
  * @ORM\Entity(repositoryClass="App\Repository\HalfYearlyDelibRepository")
  */
 class HalfYearlyDelib

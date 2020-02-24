@@ -1,0 +1,158 @@
+{% extends"layoutdelib.html.twig" %}
+{% block body %}
+
+    <!-- page content -->
+    <div class="container-fluid">
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header card-header-icon" data-background-color="blue">
+                        <i class="material-icons">info </i>
+                    </div>
+                    <div class="card-content">
+                        <h4 class="card-title">CRITERES DE DELIBERATION</h4>
+
+                        {%if app.session.get('anacad')!='2019-2020' %}
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <ul class="nav nav-pills nav-pills-icons nav-pills-warning nav-stacked" role="tablist">
+                                    <!--
+                        color-classes: "nav-pills-primary", "nav-pills-info", "nav-pills-success", "nav-pills-warning","nav-pills-danger"
+                    -->
+                                    <li class="active">
+                                        <a href="#dashboard-2" role="tab" data-toggle="tab">
+                                            <i class="material-icons">dashboard</i> Unité d'Enseignements
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="#schedule-2" role="tab" data-toggle="tab">
+                                            <i class="material-icons">schedule</i> Validation de Crédits
+                                        </a>
+                                    </li>
+
+                                    <li>
+                                        <a href="#schedule-3" role="tab" data-toggle="tab">
+                                            <i class="material-icons">schedule</i> Admission
+                                        </a>
+                                    </li>
+
+
+                                    <li>
+                                        <a href="{{ path('siges_startdelib2') }}" >
+                                            <i class="material-icons">send</i> Effectifs de la Spécialité
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="tab-content">
+                                    <div class="tab-pane active" id="dashboard-2">
+                                        <h3> <i class="material-icons">room</i> Une  Unité d'Enseignement (UE) est constituée d'un ou plusieurs élements constitutifs d'unités d'enseignements(ECUE).
+                                        <br />
+                                        <br /> <i class="material-icons">room</i> A chaque ECUE est attribué un nombre de crédits.
+                                        <br />
+                                        <br /><i class="material-icons">room</i> Le nombre de crédits d'une UE correspond à la somme des crédits de ses ECUE . </h3>
+                                    </div>
+                                    <div class="tab-pane" id="schedule-2">
+                                        <h3>  L' UE est validée lorsque l'une des conditions ci-dessous est satisfaite:
+                                        <br />
+                                        <br /> <i class="material-icons">room</i>  la Moyenne de l'UE doit être supérieure ou égale à 10.<br />
+                                        <br /> <i class="material-icons">room</i> la Moyenne générale du semestre doit être supérieure ou égale à 10  et la moyenne de l' UE  supérieure ou égale à 7. </h3>
+                                    </div>
+
+                                    <div class="tab-pane" id="schedule-3">
+                                        <h3>  <i class="material-icons">room</i> Est déclaré admis tout étudiant ayant obtenu les 30 crédits du semestre</h3>
+                                        <br />
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% endif %}
+
+
+                        {%if app.session.get('anacad')=='2019-2020' %}
+
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <ul class="nav nav-pills nav-pills-icons nav-pills-warning nav-stacked" role="tablist">
+                                        <!--
+                            color-classes: "nav-pills-primary", "nav-pills-info", "nav-pills-success", "nav-pills-warning","nav-pills-danger"
+                        -->
+                                        <li class="active">
+                                            <a href="#dashboard-2" role="tab" data-toggle="tab">
+                                                <i class="material-icons">dashboard</i> Unité d'Enseignements
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="#schedule-2" role="tab" data-toggle="tab">
+                                                <i class="material-icons">schedule</i> Validation de Crédits
+                                            </a>
+                                        </li>
+
+                                        <li>
+                                            <a href="#schedule-3" role="tab" data-toggle="tab">
+                                                <i class="material-icons">check</i> Validation du Semestre
+                                            </a>
+                                        </li>
+
+
+                                        <li>
+                                            <a href="{{ path('siges_startdelib2') }}" >
+                                                <i class="material-icons">send</i> Effectifs de la Spécialité
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-8">
+                                    <div class="tab-content">
+                                        <div class="tab-pane active" id="dashboard-2">
+                                            <h3> <i class="material-icons">room</i> Une  Unité d'Enseignement (UE) est constituée d'un ou plusieurs élements constitutifs d'unités d'enseignements(ECUE).
+                                                <br />
+                                                <br /> <i class="material-icons">room</i> A chaque ECUE est attribué un nombre de crédits.
+                                                <br />
+                                                <br /><i class="material-icons">room</i> Le nombre de crédits d'une UE correspond à la somme des crédits de ses ECUE .
+
+                                               <br> <br /><i class="material-icons">room</i> Selon leur importance, les UE sont classées en deux catégories: UE majeures (4 à 6 crédits), UE mineures (2 à 3 crédits) .
+
+
+                                            </h3>
+                                        </div>
+                                        <div class="tab-pane" id="schedule-2">
+                                            <h3>  Chaque UE est validée par compensation ou lorsque la moyenne de l'UE est >= 10 sur 20. <br>La compensation se fait selon les modalités suivantes:
+                                                <br />
+                                                <br /> <i class="material-icons">room</i>  Toutes les UE majeures sont validées par compensation et les crédits correspondants sont acquis lorsque la moyenne des majeures est >= 10 sur 20 et que la moyenne de chaque UE majeure est >=7 sur 20<br />
+                                                <br /> <i class="material-icons">room</i> Toutes les UE mineures sont validées par compensation et les crédits correspondants sont acquis lorsque la moyenne des mineures est >= 10 sur 20 et que la moyenne de chaque UE mineure est >=7 sur 20 </h3>
+                                        </div>
+
+                                        <div class="tab-pane" id="schedule-3">
+                                            <h3>  <i class="material-icons">room</i>Pour valider le semestre, l'apprenant doit valider toutes les UE</h3>
+                                            <br />
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        {% endif %}
+
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+    </div>
+    <!-- /page content -->
+
+
+
+
+
+{% endblock %}

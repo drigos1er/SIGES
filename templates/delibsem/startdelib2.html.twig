@@ -1,0 +1,108 @@
+{% extends"layoutdelib.html.twig" %}
+{% block body %}
+    <!-- page content -->
+    <div class="container-fluid">
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header card-header-icon" data-background-color="green">
+                        <i class="material-icons">group </i>
+                    </div>
+                    <div class="card-content">
+                        <h4 class="card-title">EFFECTIFS DE LA SPECIALITE </h4>
+                        <div class="row">
+                            <div class="col-lg-3 col-md-6 col-sm-6">
+                                <div class="card card-stats">
+                                    <div class="card-header" data-background-color="blue">
+                                        <i class="material-icons">accessibility</i>
+                                    </div>
+                                    <div class="card-content">
+                                        <p class="card-title">Effectif Total étudiants</p>
+                                        <h3 class="card-title">{{ app.session.get('totaletud') }}</h3>
+                                    </div>
+                                    <div class="card-footer">
+                                        <div class="stats">
+                                            <i class="material-icons text-info">face</i>
+                                            <h4 class="card-title">{{ app.session.get('totaletudg') }} Garçon(s)</h4>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer">
+                                        <div class="stats">
+                                            <i class="material-icons text-info">face</i>
+                                            <h4 class="card-title">{{ app.session.get('totaletudf') }} Fille(s)</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-md-6 col-sm-6">
+                                <div class="card card-stats">
+                                    <div class="card-header" data-background-color="orange">
+                                        <i class="material-icons">accessibility</i>
+                                    </div>
+                                    <div class="card-content">
+                                        <p class="card-title">Effectif attendu</p>
+                                        <h3 class="card-title">{{ app.session.get('nbattendus') }}</h3>
+                                    </div>
+                                    <button class="btn btn-info btn-xs"><a href="{{ path('siges_stusemvalide') }}"  target="_blank" style="color: white; ">LISTE ETUDIANTS SEMESTRE VALIDE</a>
+
+
+                                        </button>
+
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-md-6 col-sm-6">
+                                <div class="card card-stats">
+                                    <div class="card-header" data-background-color="green">
+                                        <i class="material-icons">edit</i>
+                                    </div>
+                                    <div class="card-content">
+                                        <p class="card-title">Effectif Total evalués</p>
+                                        <h3 class="card-title">{{ app.session.get('totaletudeva') }}</h3>
+                                    </div>
+                                    <div class="card-footer">
+                                        <div class="stats">
+                                            <i class="material-icons text-info">face</i>
+                                            <h4 class="card-title">{{ app.session.get('totaletudevag') }} Garçon(s)</h4>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer">
+                                        <div class="stats">
+                                            <i class="material-icons text-info">face</i>
+                                            <h4  class="card-title">{{ app.session.get('totaletudevaf') }} Fille(s)</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-3 col-md-6 col-sm-6">
+                                <div class="card card-stats">
+                                    <div class="card-header" data-background-color="red">
+    {%if(  (app.session.get('leveliddelib')=='L1') or (app.session.get('leveliddelib')=='L3') or (app.session.get('leveliddelib')=='L2') )%} <a href="{{ path('siges_deliberationsemestre') }}"><i class="material-icons">touch_app</i></a>{% endif %}
+
+                                        {%if(  (app.session.get('leveliddelib')=='M1') or (app.session.get('leveliddelib')=='M2')  )%} <a href="{{ path('_siges_deliberationsemestremaster') }}"><i class="material-icons">touch_app</i></a>{% endif %}
+
+                                    </div>
+
+
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+    {%if( (app.session.get('speciddelib') =='RTEL') and (app.session.get('leveliddelib')=='L2')and (app.session.get('semiddelib')=='SEM3'))%}<a href="{{ path('siges_tabledelibrtell2sem3') }}" style="color: white" target="_blank"><button class="btn"> TABLEAU DE DELIBERATION  <i class="material-icons">forward</i></button></a>{% endif %}
+
+
+
+    <!-- /page content -->
+    <!-- /page content -->
+
+
+
+
+{% endblock %}

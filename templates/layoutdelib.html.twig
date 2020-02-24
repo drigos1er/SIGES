@@ -132,6 +132,58 @@
                     </a>
                 </li>
 
+                <li>
+                    <a data-toggle="collapse" href="#formsExamples">
+                        <i class="material-icons">school</i>
+                        <p>Délibération
+                            <b class="caret"></b>
+                        </p>
+                    </a>
+                    <div class="collapse {%if current_menu is defined  and  current_menu=='startdeliblicence'%}in{% endif %} {%if current_menu is defined  and  current_menu=='decisionjury'%}in{% endif %} {%if current_menu is defined  and  current_menu=='delibannuel'%}in{% endif %} {%if current_menu is defined  and  current_menu=='startorientation'%}in{% endif %}" id="formsExamples">
+                        <ul class="nav">
+
+                            {%if( (app.session.get('leveliddelib')=='M1'or app.session.get('leveliddelib')=='M2'))%}
+                            <li class="{%if current_menu is defined  and  current_menu=='consultaveragedelib'%}active{% endif %}"><a href="{{ path('siges_startdelibmaster') }}"><i class="material-icons">play_arrow</i>Déliberation du Semestre</a>
+                                </li>{% endif %}
+
+                            {%if( (app.session.get('leveliddelib')=='L1'or app.session.get('leveliddelib')=='L2' or app.session.get('leveliddelib')=='L3'))%}
+                            <li class="{%if current_menu is defined  and  current_menu=='startdeliblicence'%}active{% endif %}"><a href="{{ path('siges_startdeliblicence') }}"><i class="material-icons">play_arrow</i>Déliberation du Semestre</a>
+                                </li>{% endif %}
+
+
+
+
+
+
+                            <li class="{%if current_menu is defined  and  current_menu=='decisionjury'%}active{% endif %}"><a href="{{ path('siges_decisionjury') }}"><i class="material-icons">play_arrow</i>Décision du jury</a>
+                            </li>
+
+                            <li class="{%if current_menu is defined  and  current_menu=='delibannuel'%}active{% endif %}"><a href="{{ path('siges_delibannuel') }}" target="_blank"><i class="material-icons">play_arrow</i>Déliberation Annuelle</a>
+                            </li>
+
+                        </ul>
+                    </div>
+                </li>
+
+
+                <li>
+                    <a data-toggle="collapse" href="#tablesExamples">
+                        <i class="material-icons">print</i>
+                        <p>Edition
+                            <b class="caret"></b>
+                        </p>
+                    </a>
+                    <div class="collapse" id="tablesExamples">
+                        <ul class="nav">
+                            {%if( (app.session.get('speciddelib') =='RTEL') and (app.session.get('semiddelib')=='SEM3') and (app.session.get('anacad')=='2019-2020') )%}
+                                <li class="sub_menu"><a href="/SIGES/files/pvdelibRTELSEM320182019.php?levelid={{ app.session.get('leveliddelib') }}&amp;idsem={{ app.session.get('semiddelib') }}&amp;specid={{ app.session.get('speciddelib') }}&amp;idses={{ app.session.get('idsesdelib')  }}&amp;idanac={{ app.session.get('idanacad') }}&amp;typesem={{ app.session.get('semtypedelib') }}" target="_blank"><i class="material-icons">list</i>PV de Déliberation</a>
+                                </li>{% endif %}
+
+
+                        </ul>
+                    </div>
+                </li>
+
 
 
                 <li>

@@ -982,7 +982,7 @@ class MyFunctionDelib
 
         $rsm->addScalarResult('ueid_id', 'ueid_id');
         $rsm->addScalarResult('creditvalue', 'creditvalue');
-        $sql = "SELECT  DISTINCT ueid_id,creditvalue FROM `ue_speciality`   WHERE  specialityid_id=:idspec  and  acadyearid=:idanac and creditvalue BETWEEN 4 AND 6 and semesterid_id=:idsem   ";
+        $sql = "SELECT  DISTINCT ueid_id,creditvalue FROM `ue_speciality`   WHERE  specialityid_id=:idspec  and  acadyearid=:idanac and creditvalue BETWEEN 4 AND 6 and semester_id=:idsem   ";
         $query = $this->manager->createNativeQuery($sql, $rsm);
         $query->setParameter('idanac', $idanac );
 
@@ -1030,7 +1030,7 @@ class MyFunctionDelib
 
         $rsm->addScalarResult('ueid_id', 'ueid_id');
         $rsm->addScalarResult('creditvalue', 'creditvalue');
-        $sql = "SELECT  DISTINCT ueid_id,creditvalue FROM `ue_speciality`   WHERE  specialityid_id=:idspec  and  acadyearid=:idanac and creditvalue BETWEEN 2 AND 3 and semesterid_id=:idsem   ";
+        $sql = "SELECT  DISTINCT ueid_id,creditvalue FROM `ue_speciality`   WHERE  specialityid_id=:idspec  and  acadyearid=:idanac and creditvalue BETWEEN 2 AND 3 and semester_id=:idsem   ";
         $query = $this->manager->createNativeQuery($sql, $rsm);
         $query->setParameter('idanac', $idanac );
 
@@ -1091,14 +1091,14 @@ class MyFunctionDelib
 
 
 
-                if ($uetype->getCreditvalue >= 4 and $uetype->getCreditvalue <= 6) {
+                if ($uetype->getCreditvalue() >= 4 and $uetype->getCreditvalue() <= 6 and $this->uemajorsemaverage($studentid, $idspec,  $idsem, $idsession, $idanac) >=10 ) {
 
 
                     $rsm = new ResultSetMapping();
 
                     $rsm->addScalarResult('ueid_id', 'ueid_id');
                     $rsm->addScalarResult('creditvalue', 'creditvalue');
-                    $sql = "SELECT  DISTINCT ueid_id,creditvalue FROM `ue_speciality`   WHERE  specialityid_id=:idspec  and  acadyearid=:idanac and creditvalue BETWEEN 4 AND 6 and semesterid_id=:idsem   ";
+                    $sql = "SELECT  DISTINCT ueid_id,creditvalue FROM `ue_speciality`   WHERE  specialityid_id=:idspec  and  acadyearid=:idanac and creditvalue BETWEEN 4 AND 6 and semester_id=:idsem   ";
                     $query = $this->manager->createNativeQuery($sql, $rsm);
                     $query->setParameter('idanac', $idanac);
 
@@ -1158,14 +1158,18 @@ class MyFunctionDelib
 
 
                 }
-                elseif($uetype->getCreditvalue >= 2 and $uetype->getCreditvalue <= 3){
+
+
+
+
+                elseif($uetype->getCreditvalue() >= 2 and $uetype->getCreditvalue() <= 3 and $this->ueminorsemaverage($studentid, $idspec,  $idsem, $idsession, $idanac) >=10){
 
 
                     $rsm = new ResultSetMapping();
 
                     $rsm->addScalarResult('ueid_id', 'ueid_id');
                     $rsm->addScalarResult('creditvalue', 'creditvalue');
-                    $sql = "SELECT  DISTINCT ueid_id,creditvalue FROM `ue_speciality`   WHERE  specialityid_id=:idspec  and  acadyearid=:idanac and creditvalue BETWEEN 2 AND 3 and semesterid_id=:idsem   ";
+                    $sql = "SELECT  DISTINCT ueid_id,creditvalue FROM `ue_speciality`   WHERE  specialityid_id=:idspec  and  acadyearid=:idanac and creditvalue BETWEEN 2 AND 3 and semester_id=:idsem   ";
                     $query = $this->manager->createNativeQuery($sql, $rsm);
                     $query->setParameter('idanac', $idanac);
 
@@ -1243,7 +1247,8 @@ class MyFunctionDelib
             return $creditvalide;
 
 
-        }else {
+        }
+        else {
 
 
 
@@ -1343,10 +1348,418 @@ class MyFunctionDelib
 
 
 
+    public function tcredit($studentid, $idspec, $idsem, $idses, $idanac)
+    {
+
+
+        if($idanac=='2019-2020'){
+
+
+            $specue = $this->manager->getRepository(UeSpeciality::class)->findBy(array('specialityid' => $idspec, 'semester' => $idsem, 'acadyearid' => $idanac));
+            $tcredit = 0;
+            foreach ($specue as $spue) {
+
+                $iduespue = $spue->getUeid();
+
+                if ($this->ueaverage($studentid, $idspec, $iduespue, $idsem, $idses, $idanac) >= 10) {
+                    $tcredit = $tcredit + $spue->getCreditvalue();
+                }
+                else{
+
+
+                    if($spue->getCreditvalue() >= 4 and $spue->getCreditvalue() <= 6 and $this->uemajorsemaverage($studentid, $idspec,  $idsem, $idses, $idanac) >=10){
+
+
+                        $rsm = new ResultSetMapping();
+
+                        $rsm->addScalarResult('ueid_id', 'ueid_id');
+                        $rsm->addScalarResult('creditvalue', 'creditvalue');
+                        $sql = "SELECT  DISTINCT ueid_id,creditvalue FROM `ue_speciality`   WHERE  specialityid_id=:idspec  and  acadyearid=:idanac and creditvalue BETWEEN 4 AND 6 and semester_id=:idsem   ";
+                        $query = $this->manager->createNativeQuery($sql, $rsm);
+                        $query->setParameter('idanac', $idanac);
+
+                        $query->setParameter('idsem', $idsem);
+
+                        $query->setParameter('idspec', $idspec);
+
+
+                        $spmaj = $query->getResult();
+                        $creditv = 1;
+
+                        foreach ($spmaj as $uemajor) {
+
+
+                            $spececucred = $this->manager->getRepository(EcuSpeciality::class)->findBy(array('specialityid' => $idspec, 'ueid' => $uemajor['ueid_id'], 'semester' => $idsem, 'acadyearid' => $idanac));
+                            $moyennetotalponderec = 0;
+
+                            foreach ($spececucred as $speucred) {
+
+
+                                $idecucr = $speucred->getEcuid();
+
+                                $moyennetotalponderec = $moyennetotalponderec + ($this->ecuaverage($studentid, $idspec, $idecucr, $idsem, $idses, $idanac) * $speucred->getCreditvalue());
+
+
+                            }
+
+                            $moyenneuecreduev = number_format(($moyennetotalponderec / $uemajor['creditvalue']), 2);
+
+
+                            if ($moyenneuecreduev < 7) {
+
+                                $creditv = 0 * $creditv;
+
+                            } else {
+
+                                $creditv = 1 * $creditv;
+
+                            }
+
+                        }
+
+
+                        if ($creditv == 0) {
+
+
+                            $tcredit = $tcredit + 0;
+
+
+                        } else {
+
+
+                            $tcredit = $tcredit + $spue->getCreditvalue();
+
+
+                        }
 
 
 
 
+
+
+
+
+
+
+
+
+                    }
+                    elseif($spue->getCreditvalue() >= 2 and $spue->getCreditvalue() <= 3 and $this->ueminorsemaverage($studentid, $idspec,  $idsem, $idses, $idanac) >=10){
+
+
+                        $rsm = new ResultSetMapping();
+
+                        $rsm->addScalarResult('ueid_id', 'ueid_id');
+                        $rsm->addScalarResult('creditvalue', 'creditvalue');
+                        $sql = "SELECT  DISTINCT ueid_id,creditvalue FROM `ue_speciality`   WHERE  specialityid_id=:idspec  and  acadyearid=:idanac and creditvalue BETWEEN 2 AND 3 and semester_id=:idsem   ";
+                        $query = $this->manager->createNativeQuery($sql, $rsm);
+                        $query->setParameter('idanac', $idanac);
+
+                        $query->setParameter('idsem', $idsem);
+
+                        $query->setParameter('idspec', $idspec);
+
+
+                        $spmin = $query->getResult();
+                        $creditv = 1;
+
+                        foreach ($spmin as $ueminor) {
+
+
+                            $spececucred = $this->manager->getRepository(EcuSpeciality::class)->findBy(array('specialityid' => $idspec, 'ueid' => $ueminor['ueid_id'], 'semester' => $idsem, 'acadyearid' => $idanac));
+                            $moyennetotalponderec = 0;
+
+                            foreach ($spececucred as $speucred) {
+
+
+                                $idecucr = $speucred->getEcuid();
+
+                                $moyennetotalponderec = $moyennetotalponderec + ($this->ecuaverage($studentid, $idspec, $idecucr, $idsem, $idses, $idanac) * $speucred->getCreditvalue());
+
+
+                            }
+
+                            $moyenneuecreduev = number_format(($moyennetotalponderec / $ueminor['creditvalue']), 2);
+
+
+                            if ($moyenneuecreduev < 7) {
+
+                                $creditv = 0 * $creditv;
+
+                            } else {
+
+                                $creditv = 1 * $creditv;
+
+                            }
+
+                        }
+
+
+                        if ($creditv == 0) {
+
+
+                            $tcredit = $tcredit + 0;
+
+
+                        } else {
+
+
+                            $tcredit = $tcredit + $spue->getCreditvalue();
+
+
+                        }
+
+
+
+
+
+
+
+                    }
+                    else {
+
+                        $tcredit = $tcredit + 0;
+                    }
+
+
+                }
+
+
+
+
+
+            }
+
+
+
+
+
+
+
+
+
+
+
+            return $tcredit;
+
+
+
+
+
+        }
+
+
+
+
+
+
+
+
+
+
+            else{
+
+            $specue = $this->manager->getRepository(UeSpeciality::class)->findBy(array('specialityid' => $idspec, 'semester' => $idsem, 'acadyearid' => $idanac));
+            $tcredit = 0;
+            foreach ($specue as $spue) {
+
+                $iduespue = $spue->getUeid();
+
+                if ($this->ueaverage($studentid, $idspec, $iduespue, $idsem, $idses, $idanac) >= 10) {
+                    $tcredit = $tcredit + $spue->getCreditvalue();
+                }
+
+
+
+                elseif ($this->ecusemaverage($studentid, $idspec, $idsem, $idses, $idanac) >= 10) {
+
+                    if ($this->ueaverage($studentid, $idspec, $iduespue, $idsem, $idses, $idanac) >= 7) {
+
+                        $em = $this->getDoctrine()
+                            ->getManager()
+                            ->getRepository('ESATICSigesBundle:UeSpeciality');
+
+                        $specuev = $em->findBy(array('specialityid' => $idspec, 'semester' => $idsem, 'acadyearid' => $idanac));
+                        $creditv = 1;
+                        foreach ($specuev as $spuev) {
+                            $iduespuev = $spuev->getUeid();
+
+
+                            if ($this->ueaverage($studentid, $idspec, $iduespuev, $idsem, $idses, $idanac) < 7) {
+
+                                $creditv = 0 * $creditv;
+
+                            } else {
+
+                                $creditv = 1 * $creditv;
+
+                            }
+
+                        }
+
+                        if ($creditv == 0) {
+
+
+                            $tcredit = $tcredit + 0;
+
+
+                        } else {
+
+
+                            $tcredit = $tcredit + $spue->getCreditvalue();
+
+
+                        }
+                    } else {
+                        $tcredit = $tcredit + 0;
+                    }
+
+
+                } else {
+
+                    $tcredit = $tcredit + 0;
+                }
+
+
+            }
+
+
+            return $tcredit;
+        }
+
+
+
+
+
+
+
+
+    }
+
+
+
+
+    public function decision($idetudiant, $idspecialite, $idsemestre, $idsession, $idanacademie)
+    {
+
+
+        if ($this->tcredit($idetudiant, $idspecialite, $idsemestre, $idsession, $idanacademie) == $this->sumcredit($idspecialite,$idsemestre,$idanacademie)) {
+
+
+            $decision = 'ADMIS';
+        } else {
+
+            $decision = 'REFUSE';
+        }
+
+
+        return $decision;
+
+
+    }
+
+
+
+    public function moyennesemecusemestrielle($idetudiant,$idsem,$idanac,$idspec,$idses)
+    {
+
+
+
+        $rsm = new ResultSetMapping();
+
+        $rsm->addScalarResult('semaverage', 'semaverage');
+
+
+
+        $sql = "SELECT  semaverage FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite  and acadyearid=:idanac  and semesterid=:idsemestre and sessionid=:idsession  ";
+        $query = $this->manager->createNativeQuery($sql, $rsm);
+
+
+
+        $query->setParameter('idanac', $idanac );
+        $query->setParameter('idetudiant', $idetudiant);
+
+        $query->setParameter('idsemestre', $idsem);
+
+        $query->setParameter('idspecialite', $idspec);
+        $query->setParameter('idsession', $idses);
+
+
+
+
+        $idetudeci = $query->getResult();
+
+        foreach ($idetudeci as $mo){
+
+
+            $moysemestrielle=$mo['semaverage'];
+
+        }
+
+
+        $moyennesemestre=$moysemestrielle;
+
+
+
+
+
+
+
+
+
+        return $moyennesemestre;
+
+    }
+    public function tcreditsemestrielle($idetudiant,$idsem,$idanac,$idspec,$idses)
+    {
+
+
+
+        $rsm = new ResultSetMapping();
+
+        $rsm->addScalarResult('tvalidatecred', 'tvalidatecred');
+
+
+
+        $sql = "SELECT  tvalidatecred FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite  and acadyearid=:idanac  and semesterid=:idsemestre and sessionid=:idsession";
+        $query = $this->manager->createNativeQuery($sql, $rsm);
+
+
+
+        $query->setParameter('idanac', $idanac );
+        $query->setParameter('idetudiant', $idetudiant);
+
+        $query->setParameter('idsemestre', $idsem);
+
+        $query->setParameter('idspecialite', $idspec);
+        $query->setParameter('idsession', $idses);
+
+
+
+
+        $idetudeci = $query->getResult();
+
+        foreach ($idetudeci as $mo){
+
+
+            $tcreditsemestrielle=$mo['tvalidatecred'];
+
+        }
+
+
+        $tcreditsemestre=$tcreditsemestrielle;
+
+
+
+
+
+
+
+
+
+        return $tcreditsemestre;
+
+    }
 
 
 

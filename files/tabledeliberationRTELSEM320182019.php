@@ -20,7 +20,7 @@ include("myfunctions.php");
 
 
 
-    <div  style="margin-top:20px; width:80%; margin-left:100px; text-align:center; font-size:18px; border: double; background-color:#CCC;"> DELIBERATION DE LA <?php echo  $libses;?> DU <?php echo  $libsem;?> <?php echo  $idanac?><BR /><span style="font-size:20px; font-weight:bold;"><?php echo  $levelname;?>&nbsp;<?php echo utf8_encode( $libspec);?><br>  </span></div>
+    <div  style="margin-top:20px; width:80%; margin-left:100px; text-align:center; font-size:18px; border: double; background-color:#CCC;"> DELIBERATION DE LA <?php echo  $libses;?> DU <?php echo  $libsem;?> <?php echo  $idanac?><BR /><span style="font-size:20px; font-weight:bold;"><?php echo  $levelname;?>&nbsp;<?php echo  $libspec;?><br>  </span></div>
 
     <br />
 
@@ -81,7 +81,7 @@ include("myfunctions.php");
             <th style="text-align: center; border: solid 1px black; " rowspan="3">GENRE </th>
             <th style="text-align: center; border: solid 1px black;  " rowspan="3">DATE DE NAISSANCE </th>
 
-            <th style="text-align: center; border: solid 1px black;  " colspan="4">UE 1 ANGLAIS</th>
+            <th style="text-align: center; border: solid 1px black;  " colspan="4">UE 1 OGE (Organisation et gestion des entreprises)</th>
             <th style="text-align: center; border: solid 1px black;  " colspan="4">UE 2 FRANCAIS</th>
             <th style="text-align: center; border: solid 1px black;  " colspan="4">UE 3 ECONOMIE</th>
             <th style="text-align: center; border: solid 1px black;  " colspan="8">UE 4 PHYSIQUE DES ONDES</th>
@@ -95,7 +95,7 @@ include("myfunctions.php");
         <tr>
 
 
-            <th style="text-align: center; border: solid 1px black;  " colspan="3">ANGLAIS</th>
+            <th style="text-align: center; border: solid 1px black;  " colspan="3">Organisation et gestion des entreprises</th>
             <th style="text-align: center; border: solid 1px black;  " rowspan="2" > CREDITS VALIDES</th>
 
             <th style="text-align: center; border: solid 1px black;  " colspan="3">TECHNIQUES D'EXPRESSION FRANCAIS</th>
@@ -203,10 +203,10 @@ SELECT  DISTINCT student_examnotes.studentid FROM `student_examnotes` INNER JOIN
                 <td style="text-align: center; border: solid 1px black; " > <?php  echo $result['datenaiss'] ;?></td>
 
 
-                <td style="text-align: center; border: solid 1px black; "><?php echo moyenneecu($idetudiant,$idspec,$idsem,'ECU1ANG3300',$idanac,$idses,$bdd); ?></td>
-                <td style="text-align: center; border: solid 1px black; " > <?php echo creditecu($idsem,'ECU1ANG3300',$idanac,$idspec,$bdd); ?></td>
-                <td style="text-align: center; border: solid 1px black; " > <?php $moyponde=moyenneecu($idetudiant,$idspec,$idsem,'ECU1ANG3300',$idanac,$idses,$bdd)*creditecu($idsem,'ECU1ANG3300',$idanac,$idspec,$bdd); echo number_format($moyponde,2); ?></td>
-                <td style="text-align: center; border: solid 1px black; "><?php echo creditvalideue($idetudiant,$idsem,'ANG3300',$idanac,$idspec,$idses,$bdd); ?></td>
+                <td style="text-align: center; border: solid 1px black; "><?php echo moyenneecu($idetudiant,$idspec,$idsem,'ECU1ECO3300',$idanac,$idses,$bdd); ?></td>
+                <td style="text-align: center; border: solid 1px black; " > <?php echo creditecu($idsem,'ECU1ECO3300',$idanac,$idspec,$bdd); ?></td>
+                <td style="text-align: center; border: solid 1px black; " > <?php $moyponde=moyenneecu($idetudiant,$idspec,$idsem,'ECU1ECO3300',$idanac,$idses,$bdd)*creditecu($idsem,'ECU1ANG3300',$idanac,$idspec,$bdd); echo number_format($moyponde,2); ?></td>
+                <td style="text-align: center; border: solid 1px black; "><?php echo creditvalideue($idetudiant,$idsem,'ECO3300',$idanac,$idspec,$idses,$bdd); ?></td>
 
 
                 <td style="text-align: center; border: solid 1px black; "><?php echo moyenneecu($idetudiant,$idspec,$idsem,'ECU1FRA3300',$idanac,$idses,$bdd); ?></td>

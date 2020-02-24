@@ -381,3 +381,77 @@ siges_viewaveragesem:
 siges_listviewaveragesem:
   path:     /delibarea/listviewaveragesem
   defaults: { _controller: App\Controller\DelibSemController::listviewaveragesem }
+
+
+
+siges_startdelibmaster:
+  path:     /delibarea/startdelibmaster
+  defaults: { _controller: App\Controller\DelibSemController::startdelibmaster }
+
+
+
+siges_startdeliblicence:
+  path:     /delibarea/startdeliblicence
+  defaults: { _controller: App\Controller\DelibSemController::startdeliblicence }
+
+
+
+siges_decisionjury:
+  path:     /delibarea/decisionjury
+  defaults: { _controller: App\Controller\DelibSemController::decisionjury }
+
+
+
+siges_delibannuel:
+  path:     /delibarea/delibannuel
+  defaults: { _controller: App\Controller\DelibSemController::delibannuel }
+
+siges_startdelib2:
+  path:     /delibarea/startdelib2
+  defaults: { _controller: App\Controller\DelibSemController::startdelib2 }
+
+
+siges_stusemvalide:
+  path:     /delibarea/stusemvalide
+  defaults: { _controller: App\Controller\DelibSemController::stusemvalide }
+
+
+
+
+siges_liststusemvalide:
+  path:     /delibarea/liststusemvalide
+  defaults: { _controller: App\Controller\DelibSemController::liststusemvalide }
+
+
+
+siges_deliberationsemestre:
+  path:     /delibarea/deliberationsemestre
+  defaults: { _controller: App\Controller\DelibSemController::deliberationsemestre }
+
+
+siges_deliberationsemestremaster:
+  path:     /delibarea/deliberationsemestremaster
+  defaults: { _controller: App\Controller\DelibSemController::deliberationsemestremaster }
+
+
+
+siges_tabledelibrtell2sem3:
+  path:     /delibarea/tabledelibrtell2sem3
+  defaults: { _controller: App\Controller\DelibSemController::tabledelibrtell2sem3 }
+
+
+
+siges_listtabledelibrtell2sem3:
+  path:     /delibarea/listtabledelibrtell2sem3
+  defaults: { _controller: App\Controller\DelibSemController::listtabledelibrtell2sem3 }
+
+
+
+siges_averclassue:
+  path:     /delibarea/averclassue
+  defaults: { _controller: App\Controller\DelibSemController::averclassue }
+
+
+siges_enddelib:
+  path:     /delibarea/enddelib
+  defaults: { _controller: App\Controller\DelibSemController::enddelib }
