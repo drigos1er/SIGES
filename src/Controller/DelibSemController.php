@@ -9,7 +9,10 @@ use App\Entity\StudentExamNotes;
 use App\Entity\UeSpeciality;
 use App\Entity\UeValidated;
 use App\Form\AcademicYearType;
+use App\Repository\AcademicYearRepository;
 use App\Repository\EcuRepository;
+use App\Repository\EcuSpecialityRepository;
+use App\Repository\HalfYearlyDelibRepository;
 use App\Repository\StudentAveragesRepository;
 use App\Repository\StudentExamNotesRepository;
 use App\Repository\StudentRepository;
@@ -2813,6 +2816,2132 @@ class DelibSemController extends AbstractController
 
 
 
+    public function averclassue()
+    {
+
+
+        return $this->render('delibsem/averclassue.html.twig');
+    }
+
+
+
+    public function listaverclassue(Request $request, MyFunctionDelib $callfunctiondelib, EcuSpecialityRepository $ecuspecrep, EcuRepository $ecurep)
+    {
+        $idses=$this->get('session')->get('idsesdelib');
+
+        $idspecialite=$this->get('session')->get('speciddelib');
+        $idsem=$this->get('session')->get('semiddelib');
+
+        $idniv=$this->get('session')->get('leveliddelib');
+        $idanac=$this->get('session')->get('anacad');
+
+
+
+
+        $length = $request->get('length');
+        $length = $length && ($length != -1) ? $length : 0;
+
+        $start = $request->get('start');
+        $start = $length ? ($start && ($start != -1) ? $start : 0) / $length : 0;
+
+        $delibsem = $request->get('delibsem');
+        $filters = [
+            'query' => @$delibsem['value']
+        ];
+
+        $users = $ecuspecrep->spececu($idspecialite,$idsem,$idanac,
+            $filters, $start, $length
+        );
+
+        $output = array(
+            'data' => array(),
+            'recordsFiltered' => count($ecuspecrep->spececu($idspecialite,$idsem,$idanac, $filters, 0, false)),
+            'recordsTotal' => count($ecuspecrep->spececu($idspecialite,$idsem,$idanac, 0, false))
+        );
+
+        foreach ($users as $user) {
+
+
+
+
+            $ecu = $ecurep->findOneBy(array('id' => $user->getEcuid()));
+
+
+
+
+            $output['data'][] = [
+                'cecu' => $ecu->getId(),
+                'lecu' => $ecu->getEcuname(),
+                'msup0'=>$callfunctiondelib->nbaveragegtzclassspec($idspecialite,$user->getEcuid(),$idsem,$idses, $idanac, $idniv),
+                'minf10'=>$callfunctiondelib->nbaveragelttclassspec($idspecialite,$user->getEcuid(),$idsem,$idses, $idanac, $idniv),
+                'msup10'=>$callfunctiondelib->nbaveragegttclassspec($idspecialite,$user->getEcuid(),$idsem,$idses, $idanac, $idniv),
+                'secu'=>$callfunctiondelib->nbaveragemaxclassspec($idspecialite,$user->getEcuid(),$idsem,$idses, $idanac, $idniv),
+                'fecu'=>$callfunctiondelib->nbaverageminclassspec($idspecialite,$user->getEcuid(),$idsem,$idses, $idanac, $idniv),
+
+                'moyclasse' => $callfunctiondelib->averageofclassspec($idspecialite,$user->getEcuid(),$idsem,$idses, $idanac, $idniv),
+
+
+
+            ];
+        }
+
+        return new Response(json_encode($output), 200, ['Content-Type' => 'application/json']);
+    }
+
+
+    public function enddelib(Request $request, MyFunctionDelib $callfunctiondelib, StudentRepository $studentrep)
+    {
+
+
+        $idses=$this->get('session')->get('idsesdelib');
+
+        $idspecialite=$this->get('session')->get('speciddelib');
+        $idsem=$this->get('session')->get('semiddelib');
+
+        $idniv=$this->get('session')->get('leveliddelib');
+        $idanac=$this->get('session')->get('anacad');
+
+
+
+
+
+
+
+        $etudiantfort = $studentrep->findOneById($callfunctiondelib->idmaxaveragesemestrielle( $idspecialite, $idsem, $idses, $idanac));
+
+
+
+        $request->getSession()->set('etudiantfort', $etudiantfort);
+
+
+
+
+        $em = $this->getDoctrine()->getManager();
+
+
+        $rsm = new ResultSetMapping();
+
+        $rsm->addScalarResult('picture', 'picture');
+        $rsm->addScalarResult('school_classeid', 'school_classeid');
+
+        $rsm->addScalarResult('state', 'state');
+
+        $sql = "SELECT picture,school_classeid,state FROM `student_speciality`  WHERE student_speciality.studentid=:idstud and student_speciality.specialityid=:idspec and student_speciality.acadyearid=:idanac and student_speciality.levelid=:idlev  ";
+        $query = $em->createNativeQuery($sql, $rsm);
+
+        $query->setParameter('idanac', $this->get('session')->get('anacad'));
+        $query->setParameter('idniv', $this->get('session')->get('idniv'));
+
+        $query->setParameter('idspec', $idspecialite);
+        $query->setParameter('idstud', $callfunctiondelib->idmaxaveragesemestrielle( $idspecialite, $idsem, $idses, $idanac));
+
+        $query->setParameter('idanac', $idanac);
+        $query->setParameter('idlev', $idniv);
+        $idclasse = $query->getResult();
+
+
+        foreach ($idclasse as $ne) {
+
+
+            $classeetud = $ne['school_classeid'];
+
+
+
+            $request->getSession()->set('etudclasseforte', $classeetud);
+            $statutetud = $ne['state'];
+
+
+            $request->getSession()->set('etudstatutfort', $statutetud);
+            $photoetud = $ne['picture'];
+
+
+            $request->getSession()->set('etudphotofort', $photoetud);
+        }
+
+        $request->getSession()->set('moyfortesemestrielle',$callfunctiondelib->maxaveragesemestrielle( $idspecialite, $idsem, $idses, $idanac));
+
+
+        $request->getSession()->set('creditfortsemestrielle',$callfunctiondelib->tcreditsemestrielle($callfunctiondelib->idmaxaveragesemestrielle( $idspecialite, $idsem, $idses, $idanac),$idsem,$idanac,$idspecialite,$idses));
+
+
+
+        $etudiantfaible = $studentrep->findOneById($callfunctiondelib->idminaveragesemestrielle( $idspecialite, $idsem, $idses, $idanac));
+
+        $request->getSession()->set('etudiantfaible', $etudiantfaible);
+
+
+
+        $em = $this->getDoctrine()->getManager();
+
+
+        $rsm = new ResultSetMapping();
+
+        $rsm->addScalarResult('picture', 'picture');
+        $rsm->addScalarResult('school_classeid', 'school_classeid');
+
+        $rsm->addScalarResult('state', 'state');
+
+        $sql = "SELECT picture,school_classeid,state FROM `student_speciality`  WHERE student_speciality.studentid=:idstud and student_speciality.specialityid=:idspec and student_speciality.acadyearid=:idanac and student_speciality.levelid=:idlev  ";
+        $query = $em->createNativeQuery($sql, $rsm);
+
+        $query->setParameter('idanac', $this->get('session')->get('anacademiq'));
+        $query->setParameter('idniv', $this->get('session')->get('idniv'));
+
+        $query->setParameter('idspec', $idspecialite);
+        $query->setParameter('idstud', $callfunctiondelib->idminaveragesemestrielle( $idspecialite, $idsem, $idses, $idanac));
+
+        $query->setParameter('idanac', $idanac);
+        $query->setParameter('idlev', $idniv);
+
+
+
+
+        $idclasse = $query->getResult();
+
+
+        foreach ($idclasse as $ne) {
+
+
+
+
+            $classeetud = $ne['school_classeid'];
+
+
+
+            $request->getSession()->set('etudclassefaible', $classeetud);
+            $statutetud = $ne['state'];
+
+
+            $request->getSession()->set('etudstatutfaible', $statutetud);
+            $photoetud = $ne['picture'];
+
+
+            $request->getSession()->set('etudphotofaible', $photoetud);
+
+
+
+
+        }
+
+
+        $request->getSession()->set('creditfaiblesemestrielle',$callfunctiondelib->tcreditsemestrielle($callfunctiondelib->idminaveragesemestrielle( $idspecialite, $idsem, $idses, $idanac),$idsem,$idanac,$idspecialite,$idses));
+
+
+
+
+        $request->getSession()->set('moyfaiblesemestrielle',$callfunctiondelib->minaveragesemestrielle( $idspecialite, $idsem, $idses, $idanac));
+
+
+        $request->getSession()->set('moyclassspecsemestrielle',$callfunctiondelib->averageofspecsemestrielle($idspecialite, $idsem, $idses, $idanac));
+
+
+
+
+
+
+
+        return $this->render('delibsem/enddelib.html.twig');
+    }
+
+
+    public function liststattranche(MyFunctionDelib $callfunctiondelib)
+    {
+
+
+
+
+        $idses=$this->get('session')->get('idsesdelib');
+
+        $idspecialite=$this->get('session')->get('speciddelib');
+        $idsem=$this->get('session')->get('semiddelib');
+
+
+        $idanac=$this->get('session')->get('anacad');
+
+
+
+
+        $nbsupz=$callfunctiondelib-> nbmoyennesemecusupzsemestrielle($idspecialite, $idsem, $idses, $idanac);
+
+        $nbinfd=$callfunctiondelib->nbmoyennesemecuinfdsemestrielle($idspecialite, $idsem, $idses, $idanac);
+
+        $nbsupdx=$callfunctiondelib->nbmoyennesemecusupdxsemestrielle($idspecialite, $idsem, $idses, $idanac);
+
+
+
+        $output = [
+            'nbsupz' =>$nbsupz,
+            'nbinfd' => $nbinfd,
+            'nbsupdx' => $nbsupdx,
+
+
+
+
+        ];
+
+
+
+
+        return new Response(json_encode($output), 200, ['Content-Type' => 'application/json']);
+    }
+
+    public function liststatdecision(MyFunctionDelib $callfunctiondelib)
+    {
+
+
+
+        $idses=$this->get('session')->get('idsesdelib');
+
+        $idspecialite=$this->get('session')->get('speciddelib');
+        $idsem=$this->get('session')->get('semiddelib');
+
+
+        $idanac=$this->get('session')->get('anacad');
+
+
+
+
+        $nbadmissem=$callfunctiondelib-> nbsemadmissemestrielle($idspecialite, $idsem, $idses, $idanac);
+
+        $nbrefusem=$callfunctiondelib->nbsemrefusesemestrielle($idspecialite, $idsem, $idses, $idanac);
+
+
+
+
+        $output1 = [
+            'nbre' =>$nbadmissem,
+            'decision' => 'ADMIS',
+            'color' => '#4caf50',
+
+
+
+
+        ];
+
+        $output2= [
+            'nbre' => $nbrefusem,
+            'decision' => 'REFUSE',
+            'color' => '#ee3639',
+
+
+
+        ];
+        $output=array($output1,$output2);
+
+
+        return new Response(json_encode($output), 200, ['Content-Type' => 'application/json']);
+    }
+
+
+    public function liststatpercentadan(Request $request, AcademicYearRepository $acadrepo)
+    {
+
+
+
+
+
+
+
+        $idses=$this->get('session')->get('idsesdelib');
+
+        $idspecialite=$this->get('session')->get('speciddelib');
+        $idsem=$this->get('session')->get('semiddelib');
+
+
+
+        $length = $request->get('length');
+        $length = $length && ($length != -1) ? $length : 0;
+
+        $start = $request->get('start');
+        $start = $length ? ($start && ($start != -1) ? $start : 0) / $length : 0;
+
+        $delibsem = $request->get('delibsem');
+        $filters = [
+            'query' => @$delibsem['value']
+        ];
+
+        $users = $acadrepo->searchanac($filters, $start, $length
+        );
+
+        $output = array(
+            'data' => array(),
+            'recordsFiltered' => count($acadrepo->searchanac( $filters, 0, false)),
+            'recordsTotal' => count($acadrepo->searchanac( 0, false))
+        );
+        $id=0;
+        foreach ($users as $user) {
+
+            $id=$id+1;
+
+            $em = $this->getDoctrine()->getManager();
+            $rsm = new ResultSetMapping();
+
+            $rsm->addScalarResult('nbdelib', 'nbdelib');
+
+
+
+            $sql = "SELECT   count(DISTINCT halfyearly_delib.studentid) as nbdelib FROM `halfyearly_delib` WHERE   specialityid=:idspecialite  and acadyearid=:idanac  and semesterid=:idsemestre and sessionid=:idsession  ";
+            $query = $em->createNativeQuery($sql, $rsm);
+
+
+
+            $query->setParameter('idanac', $user->getId() );
+
+            $query->setParameter('idsemestre', $idsem);
+
+            $query->setParameter('idspecialite', $idspecialite);
+            $query->setParameter('idsession', $idses);
+
+
+            $nbredelib = $query->getResult();
+            foreach($nbredelib as $et){
+                $nbevalue=$et['nbdelib'];
+                $request->getSession()->set('nbevalue', $nbevalue);
+
+            }
+
+
+            $em = $this->getDoctrine()->getManager();
+            $rsm = new ResultSetMapping();
+
+            $rsm->addScalarResult('nbdelibadmis', 'nbdelibadmis');
+
+
+
+            $sql = "SELECT   count(DISTINCT halfyearly_delib.studentid) as nbdelibadmis FROM `halfyearly_delib` WHERE   specialityid=:idspecialite  and acadyearid=:idanac  and semesterid=:idsemestre and sessionid=:idsession and decision='ADMIS' ";
+            $query = $em->createNativeQuery($sql, $rsm);
+
+
+
+            $query->setParameter('idanac', $user->getId() );
+
+            $query->setParameter('idsemestre', $idsem);
+
+            $query->setParameter('idspecialite', $idspecialite);
+            $query->setParameter('idsession', $idses);
+
+
+            $nbredelibadmis = $query->getResult();
+            foreach($nbredelibadmis as $et){
+                $nbevalueadmis=$et['nbdelibadmis'];
+
+
+                $request->getSession()->set('nbevalueadmis', $nbevalueadmis);
+            }
+
+            if( $this->get('session')->get('leveliddelib')=="L1" and ($idspecialite=="SRIT")) {
+
+
+                if (($user->getId() == '2012-2013') and ($idsem == "SEM1") and ($idses == "SE1")) {
+                    $percent = 42;
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM1") and ($idses == "SE2")) {
+                    $percent = 69.57;
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM2") and ($idses == "SE1")) {
+                    $percent = 39;
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM2") and ($idses == "SE2")) {
+                    $percent = 55.07;
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM1") and ($idses == "SE1")) {
+                    $percent = 38.54;
+                }
+                elseif (($user->getId() == '2013-2014') and ($idsem == "SEM1") and ($idses == "SE2")) {
+                    $percent = 69.50;
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM2") and ($idses == "SE1")) {
+                    $percent = 44.44;
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM2") and ($idses == "SE2")) {
+                    $percent = 75.40;
+                }
+
+                elseif (($user->getId() == '2014-2015') and ($idsem == "SEM1") and ($idses == "SE1")) {
+                    $percent = 38.5;
+                }
+                elseif (($user->getId() == '2014-2015') and ($idsem == "SEM1") and ($idses == "SE2")) {
+                    $percent = 61.19;
+                } elseif (($user->getId() == '2014-2015') and ($idsem == "SEM2") and ($idses == "SE1")) {
+                    $percent = 42.05;
+                } elseif (($user->getId() == '2014-2015') and ($idsem == "SEM2") and ($idses == "SE2")) {
+                    $percent = 76.12;
+                }
+                elseif (($user->getId() == '2015-2016') and ($idsem == "SEM1") and ($idses == "SE1")) {
+                    $percent = 40.96;
+                }
+                elseif (($user->getId() == '2015-2016') and ($idsem == "SEM1") and ($idses == "SE2")) {
+                    $percent = 63.16;
+                } elseif (($user->getId() == '2015-2016') and ($idsem == "SEM2") and ($idses == "SE1")) {
+                    $percent = 39.02;
+                } elseif (($user->getId() == '2015-2016') and ($idsem == "SEM2") and ($idses == "SE2")) {
+                    $percent = 66.04;
+                }
+
+                else {
+                    $percent = number_format((($nbevalueadmis * 100) / $nbevalue), 2);
+                }
+
+            }
+
+            if($this->get('session')->get('leveliddelib')=="L1" and ($idspecialite=="RTEL")) {
+
+
+                if (($user->getId() == '2012-2013') and ($idsem == "SEM1") and ($idses == "SE1")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM1") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM2") and ($idses == "SE1")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM2") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM1") and ($idses == "SE1")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2013-2014') and ($idsem == "SEM1") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM2") and ($idses == "SE1")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM2") and ($idses == "SE2")) {
+                    $percent = "-";
+                }
+
+                elseif (($user->getId() == '2014-2015') and ($idsem == "SEM1") and ($idses == "SE1")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2014-2015') and ($idsem == "SEM1") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2014-2015') and ($idsem == "SEM2") and ($idses == "SE1")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2014-2015') and ($idsem == "SEM2") and ($idses == "SE2")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2015-2016') and ($idsem == "SEM1") and ($idses == "SE1")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2015-2016') and ($idsem == "SEM1") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2015-2016') and ($idsem == "SEM2") and ($idses == "SE1")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2015-2016') and ($idsem == "SEM2") and ($idses == "SE2")) {
+                    $percent ="-";
+                }elseif (($user->getId() == '2016-2017') and ($idsem == "SEM1") and ($idses == "SE1")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2016-2017') and ($idsem == "SEM1") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2016-2017') and ($idsem == "SEM2") and ($idses == "SE1")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2016-2017') and ($idsem == "SEM2") and ($idses == "SE2")) {
+                    $percent ="-";
+                }elseif (($user->getId() == '2017-2018') and ($idsem == "SEM1") and ($idses == "SE1")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2017-2018') and ($idsem == "SEM1") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2017-2018') and ($idsem == "SEM2") and ($idses == "SE1")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2017-2018') and ($idsem == "SEM2") and ($idses == "SE2")) {
+                    $percent ="-";
+                }
+
+                else {
+                    $percent = number_format((($nbevalueadmis * 100) / $nbevalue), 2);
+                }
+
+            }
+
+            if($this->get('session')->get('leveliddelib')=="L1" and ($idspecialite=="SIGL")) {
+
+
+                if (($user->getId() == '2012-2013') and ($idsem == "SEM1") and ($idses == "SE1")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM1") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM2") and ($idses == "SE1")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM2") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM1") and ($idses == "SE1")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2013-2014') and ($idsem == "SEM1") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM2") and ($idses == "SE1")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM2") and ($idses == "SE2")) {
+                    $percent = "-";
+                }
+
+                elseif (($user->getId() == '2014-2015') and ($idsem == "SEM1") and ($idses == "SE1")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2014-2015') and ($idsem == "SEM1") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2014-2015') and ($idsem == "SEM2") and ($idses == "SE1")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2014-2015') and ($idsem == "SEM2") and ($idses == "SE2")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2015-2016') and ($idsem == "SEM1") and ($idses == "SE1")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2015-2016') and ($idsem == "SEM1") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2015-2016') and ($idsem == "SEM2") and ($idses == "SE1")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2015-2016') and ($idsem == "SEM2") and ($idses == "SE2")) {
+                    $percent ="-";
+                }elseif (($user->getId() == '2016-2017') and ($idsem == "SEM1") and ($idses == "SE1")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2016-2017') and ($idsem == "SEM1") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2016-2017') and ($idsem == "SEM2") and ($idses == "SE1")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2016-2017') and ($idsem == "SEM2") and ($idses == "SE2")) {
+                    $percent ="-";
+                }elseif (($user->getId() == '2017-2018') and ($idsem == "SEM1") and ($idses == "SE1")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2017-2018') and ($idsem == "SEM1") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2017-2018') and ($idsem == "SEM2") and ($idses == "SE1")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2017-2018') and ($idsem == "SEM2") and ($idses == "SE2")) {
+                    $percent ="-";
+                }
+
+                else {
+                    $percent = number_format((($nbevalueadmis * 100) / $nbevalue), 2);
+                }
+
+            }
+            if($this->get('session')->get('leveliddelib')=="L1" and ($idspecialite=="TWIN")) {
+
+
+                if (($user->getId() == '2012-2013') and ($idsem == "SEM1") and ($idses == "SE1")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM1") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM2") and ($idses == "SE1")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM2") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM1") and ($idses == "SE1")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2013-2014') and ($idsem == "SEM1") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM2") and ($idses == "SE1")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM2") and ($idses == "SE2")) {
+                    $percent = "-";
+                }
+
+                elseif (($user->getId() == '2014-2015') and ($idsem == "SEM1") and ($idses == "SE1")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2014-2015') and ($idsem == "SEM1") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2014-2015') and ($idsem == "SEM2") and ($idses == "SE1")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2014-2015') and ($idsem == "SEM2") and ($idses == "SE2")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2015-2016') and ($idsem == "SEM1") and ($idses == "SE1")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2015-2016') and ($idsem == "SEM1") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2015-2016') and ($idsem == "SEM2") and ($idses == "SE1")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2015-2016') and ($idsem == "SEM2") and ($idses == "SE2")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2016-2017') and ($idsem == "SEM1") and ($idses == "SE1")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2016-2017') and ($idsem == "SEM1") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2016-2017') and ($idsem == "SEM2") and ($idses == "SE1")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2016-2017') and ($idsem == "SEM2") and ($idses == "SE2")) {
+                    $percent ="-";
+                }
+
+                else {
+                    $percent = number_format((($nbevalueadmis * 100) / $nbevalue), 2);
+                }
+
+            }
+
+
+
+            if($this->get('session')->get('leveliddelib')=="L2" and ($idspecialite=="SRIT")) {
+
+
+                if (($user->getId() == '2012-2013') and ($idsem == "SEM3") and ($idses == "SE1")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM3") and ($idses == "SE2")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM4") and ($idses == "SE1")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM4") and ($idses == "SE2")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM3") and ($idses == "SE1")) {
+                    $percent = 42.86;
+                }
+                elseif (($user->getId() == '2013-2014') and ($idsem == "SEM3") and ($idses == "SE2")) {
+                    $percent = 87.5;
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM4") and ($idses == "SE1")) {
+                    $percent = 71.43;
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM4") and ($idses == "SE2")) {
+                    $percent = 75;
+                }
+
+                elseif (($user->getId() == '2014-2015') and ($idsem == "SEM3") and ($idses == "SE1")) {
+                    $percent = 71.4;
+                }
+                elseif (($user->getId() == '2014-2015') and ($idsem == "SEM3") and ($idses == "SE2")) {
+                    $percent = 100;
+                } elseif (($user->getId() == '2014-2015') and ($idsem == "SEM4") and ($idses == "SE1")) {
+                    $percent = 55.17;
+                } elseif (($user->getId() == '2014-2015') and ($idsem == "SEM4") and ($idses == "SE2")) {
+                    $percent = 75;
+                }
+                elseif (($user->getId() == '2015-2016') and ($idsem == "SEM3") and ($idses == "SE1")) {
+                    $percent = 66.67;
+                }
+                elseif (($user->getId() == '2015-2016') and ($idsem == "SEM3") and ($idses == "SE2")) {
+                    $percent = 100;
+                } elseif (($user->getId() == '2015-2016') and ($idsem == "SEM4") and ($idses == "SE1")) {
+                    $percent = 59.26;
+                } elseif (($user->getId() == '2015-2016') and ($idsem == "SEM4") and ($idses == "SE2")) {
+                    $percent = 90.91;
+                }
+
+                else {
+                    $percent = number_format((($nbevalueadmis * 100) / $nbevalue), 2);
+                }
+
+            }
+
+
+            if($this->get('session')->get('leveliddelib')=="L2" and ($idspecialite=="RTEL")) {
+
+
+                if (($user->getId() == '2012-2013') and ($idsem == "SEM3") and ($idses == "SE1")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM3") and ($idses == "SE2")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM4") and ($idses == "SE1")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM4") and ($idses == "SE2")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM3") and ($idses == "SE1")) {
+                    $percent = 52.38;
+                }
+                elseif (($user->getId() == '2013-2014') and ($idsem == "SEM3") and ($idses == "SE2")) {
+                    $percent = 81.8;
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM4") and ($idses == "SE1")) {
+                    $percent = 52.38;
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM4") and ($idses == "SE2")) {
+                    $percent = 72.7;
+                }
+
+                elseif (($user->getId() == '2014-2015') and ($idsem == "SEM3") and ($idses == "SE1")) {
+                    $percent = 67.9;
+                }
+                elseif (($user->getId() == '2014-2015') and ($idsem == "SEM3") and ($idses == "SE2")) {
+                    $percent = 66.66;
+                } elseif (($user->getId() == '2014-2015') and ($idsem == "SEM4") and ($idses == "SE1")) {
+                    $percent = 64.51;
+                } elseif (($user->getId() == '2014-2015') and ($idsem == "SEM4") and ($idses == "SE2")) {
+                    $percent = 100;
+                }
+                elseif (($user->getId() == '2015-2016') and ($idsem == "SEM3") and ($idses == "SE1")) {
+                    $percent = 63.41;
+                }
+                elseif (($user->getId() == '2015-2016') and ($idsem == "SEM3") and ($idses == "SE2")) {
+                    $percent = 93.33;
+                } elseif (($user->getId() == '2015-2016') and ($idsem == "SEM4") and ($idses == "SE1")) {
+                    $percent = 86.84;
+                } elseif (($user->getId() == '2015-2016') and ($idsem == "SEM4") and ($idses == "SE2")) {
+                    $percent = 80;
+                }
+
+                else {
+                    $percent = number_format((($nbevalueadmis * 100) / $nbevalue), 2);
+                }
+
+            }
+
+
+            if($this->get('session')->get('leveliddelib')=="L2" and ($idspecialite=="TWIN")) {
+
+
+                if (($user->getId() == '2012-2013') and ($idsem == "SEM3") and ($idses == "SE1")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM3") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM4") and ($idses == "SE1")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM4") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM3") and ($idses == "SE1")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2013-2014') and ($idsem == "SEM3") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM4") and ($idses == "SE1")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM4") and ($idses == "SE2")) {
+                    $percent = "-";
+                }
+
+                elseif (($user->getId() == '2014-2015') and ($idsem == "SEM3") and ($idses == "SE1")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2014-2015') and ($idsem == "SEM3") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2014-2015') and ($idsem == "SEM4") and ($idses == "SE1")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2014-2015') and ($idsem == "SEM4") and ($idses == "SE2")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2015-2016') and ($idsem == "SEM3") and ($idses == "SE1")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2015-2016') and ($idsem == "SEM3") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2015-2016') and ($idsem == "SEM4") and ($idses == "SE1")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2015-2016') and ($idsem == "SEM4") and ($idses == "SE2")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2016-2017') and ($idsem == "SEM3") and ($idses == "SE1")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2016-2017') and ($idsem == "SEM3") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2016-2017') and ($idsem == "SEM4") and ($idses == "SE1")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2016-2017') and ($idsem == "SEM4") and ($idses == "SE2")) {
+                    $percent ="-";
+                }elseif (($user->getId() == '2017-2018') and ($idsem == "SEM3") and ($idses == "SE1")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2017-2018') and ($idsem == "SEM3") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2017-2018') and ($idsem == "SEM4") and ($idses == "SE1")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2017-2018') and ($idsem == "SEM4") and ($idses == "SE2")) {
+                    $percent ="-";
+                }
+
+                else {
+                    $percent = number_format((($nbevalueadmis * 100) / $nbevalue), 2);
+                }
+
+            }
+
+            if($this->get('session')->get('leveliddelib')=="L2" and ($idspecialite=="SIGL")) {
+
+
+                if (($user->getId() == '2012-2013') and ($idsem == "SEM3") and ($idses == "SE1")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM3") and ($idses == "SE2")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM4") and ($idses == "SE1")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM4") and ($idses == "SE2")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM3") and ($idses == "SE1")) {
+                    $percent = 90.91;
+                }
+                elseif (($user->getId() == '2013-2014') and ($idsem == "SEM3") and ($idses == "SE2")) {
+                    $percent = 100;
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM4") and ($idses == "SE1")) {
+                    $percent = 18.18;
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM4") and ($idses == "SE2")) {
+                    $percent = 88.9;
+                }
+
+                elseif (($user->getId() == '2014-2015') and ($idsem == "SEM3") and ($idses == "SE1")) {
+                    $percent = 54.2;
+                }
+                elseif (($user->getId() == '2014-2015') and ($idsem == "SEM3") and ($idses == "SE2")) {
+                    $percent = 36.36;
+                } elseif (($user->getId() == '2014-2015') and ($idsem == "SEM4") and ($idses == "SE1")) {
+                    $percent = 30.76;
+                } elseif (($user->getId() == '2014-2015') and ($idsem == "SEM4") and ($idses == "SE2")) {
+                    $percent = 66.66;
+                }
+                elseif (($user->getId() == '2015-2016') and ($idsem == "SEM3") and ($idses == "SE1")) {
+                    $percent = 43.48;
+                }
+                elseif (($user->getId() == '2015-2016') and ($idsem == "SEM3") and ($idses == "SE2")) {
+                    $percent = 62.23;
+                } elseif (($user->getId() == '2015-2016') and ($idsem == "SEM4") and ($idses == "SE1")) {
+                    $percent = 80;
+                } elseif (($user->getId() == '2015-2016') and ($idsem == "SEM4") and ($idses == "SE2")) {
+                    $percent = 50;
+                }
+
+                else {
+                    $percent = number_format((($nbevalueadmis * 100) / $nbevalue), 2);
+                }
+
+            }
+            if($this->get('session')->get('leveliddelib')=="L3" and ($idspecialite=="SRIT")) {
+
+
+                if (($user->getId() == '2012-2013') and ($idsem == "SEM5") and ($idses == "SE1")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM5") and ($idses == "SE2")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM6") and ($idses == "SE1")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM6") and ($idses == "SE2")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM5") and ($idses == "SE1")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2013-2014') and ($idsem == "SEM5") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM6") and ($idses == "SE1")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM6") and ($idses == "SE2")) {
+                    $percent = "-";
+                }
+
+                elseif (($user->getId() == '2014-2015') and ($idsem == "SEM5") and ($idses == "SE1")) {
+                    $percent = 73.1;
+                }
+                elseif (($user->getId() == '2014-2015') and ($idsem == "SEM5") and ($idses == "SE2")) {
+                    $percent = 100;
+                } elseif (($user->getId() == '2014-2015') and ($idsem == "SEM6") and ($idses == "SE1")) {
+                    $percent = 69.57;
+                } elseif (($user->getId() == '2014-2015') and ($idsem == "SEM6") and ($idses == "SE2")) {
+                    $percent = 69.57;
+                }
+                elseif (($user->getId() == '2015-2016') and ($idsem == "SEM5") and ($idses == "SE1")) {
+                    $percent = 96.15;
+                }
+                elseif (($user->getId() == '2015-2016') and ($idsem == "SEM5") and ($idses == "SE2")) {
+                    $percent = 25;
+                } elseif (($user->getId() == '2015-2016') and ($idsem == "SEM6") and ($idses == "SE1")) {
+                    $percent = 69.57;
+                } elseif (($user->getId() == '2015-2016') and ($idsem == "SEM6") and ($idses == "SE2")) {
+                    $percent = 69.57;
+                }
+
+                else {
+                    $percent = number_format((($nbevalueadmis * 100) / $nbevalue), 2);
+                }
+
+            }
+
+            if($this->get('session')->get('leveliddelib')=="L3" and ($idspecialite=="SIGL")) {
+
+
+                if (($user->getId() == '2012-2013') and ($idsem == "SEM5") and ($idses == "SE1")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM5") and ($idses == "SE2")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM6") and ($idses == "SE1")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM6") and ($idses == "SE2")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM5") and ($idses == "SE1")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2013-2014') and ($idsem == "SEM5") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM6") and ($idses == "SE1")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM6") and ($idses == "SE2")) {
+                    $percent = "-";
+                }
+
+                elseif (($user->getId() == '2014-2015') and ($idsem == "SEM5") and ($idses == "SE1")) {
+                    $percent =76.2;
+                }
+                elseif (($user->getId() == '2014-2015') and ($idsem == "SEM5") and ($idses == "SE2")) {
+                    $percent = 100;
+                } elseif (($user->getId() == '2014-2015') and ($idsem == "SEM6") and ($idses == "SE1")) {
+                    $percent = 69.57;
+                } elseif (($user->getId() == '2014-2015') and ($idsem == "SEM6") and ($idses == "SE2")) {
+                    $percent = 69.57;
+                }
+                elseif (($user->getId() == '2015-2016') and ($idsem == "SEM5") and ($idses == "SE1")) {
+                    $percent = 100;
+                }
+                elseif (($user->getId() == '2015-2016') and ($idsem == "SEM5") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2015-2016') and ($idsem == "SEM6") and ($idses == "SE1")) {
+                    $percent = 69.57;
+                } elseif (($user->getId() == '2015-2016') and ($idsem == "SEM6") and ($idses == "SE2")) {
+                    $percent = 69.57;
+                }
+
+                else {
+                    $percent = number_format((($nbevalueadmis * 100) / $nbevalue), 2);
+                }
+
+            }
+
+            if($this->get('session')->get('leveliddelib')=="L3" and ($idspecialite=="RTEL")) {
+
+
+                if (($user->getId() == '2012-2013') and ($idsem == "SEM5") and ($idses == "SE1")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM5") and ($idses == "SE2")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM6") and ($idses == "SE1")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM6") and ($idses == "SE2")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM5") and ($idses == "SE1")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2013-2014') and ($idsem == "SEM5") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM6") and ($idses == "SE1")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM6") and ($idses == "SE2")) {
+                    $percent = "-";
+                }
+
+                elseif (($user->getId() == '2014-2015') and ($idsem == "SEM5") and ($idses == "SE1")) {
+                    $percent =77.8;
+                }
+                elseif (($user->getId() == '2014-2015') and ($idsem == "SEM5") and ($idses == "SE2")) {
+                    $percent = 100;
+                } elseif (($user->getId() == '2014-2015') and ($idsem == "SEM6") and ($idses == "SE1")) {
+                    $percent = 69.57;
+                } elseif (($user->getId() == '2014-2015') and ($idsem == "SEM6") and ($idses == "SE2")) {
+                    $percent = 69.57;
+                }
+                elseif (($user->getId() == '2015-2016') and ($idsem == "SEM5") and ($idses == "SE1")) {
+                    $percent = 84.62;
+                }
+                elseif (($user->getId() == '2015-2016') and ($idsem == "SEM5") and ($idses == "SE2")) {
+                    $percent = 100;
+                } elseif (($user->getId() == '2015-2016') and ($idsem == "SEM6") and ($idses == "SE1")) {
+                    $percent = 69.57;
+                } elseif (($user->getId() == '2015-2016') and ($idsem == "SEM6") and ($idses == "SE2")) {
+                    $percent = 69.57;
+                }
+
+                else {
+                    $percent = number_format((($nbevalueadmis * 100) / $nbevalue), 2);
+                }
+
+            }
+
+
+            if($this->get('session')->get('leveliddelib')=="M1" and ($idspecialite=="TCSIGLSITW")) {
+
+
+                if (($user->getId() == '2012-2013') and ($idsem == "SEM7") and ($idses == "SE1")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM7") and ($idses == "SE2")) {
+                    $percent ="-";
+                }  elseif (($user->getId() == '2013-2014') and ($idsem == "SEM7") and ($idses == "SE1")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2013-2014') and ($idsem == "SEM7") and ($idses == "SE2")) {
+                    $percent = "-";
+                }
+
+                elseif (($user->getId() == '2014-2015') and ($idsem == "SEM7") and ($idses == "SE1")) {
+                    $percent ="-";
+                }
+                elseif (($user->getId() == '2014-2015') and ($idsem == "SEM7") and ($idses == "SE2")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2015-2016') and ($idsem == "SEM7") and ($idses == "SE1")) {
+                    $percent = 81.81;
+                }
+                elseif (($user->getId() == '2015-2016') and ($idsem == "SEM7") and ($idses == "SE2")) {
+                    $percent = 75;
+                }
+
+                else {
+                    $percent = number_format((($nbevalueadmis * 100) / $nbevalue), 2);
+                }
+
+            }
+            if($this->get('session')->get('leveliddelib')=="M1" and ($idspecialite=="SIGL")) {
+
+
+                if (($user->getId() == '2012-2013') and ($idsem == "SEM8") and ($idses == "SE1")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM8") and ($idses == "SE2")) {
+                    $percent ="-";
+                }  elseif (($user->getId() == '2013-2014') and ($idsem == "SEM8") and ($idses == "SE1")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2013-2014') and ($idsem == "SEM8") and ($idses == "SE2")) {
+                    $percent = "-";
+                }
+
+                elseif (($user->getId() == '2014-2015') and ($idsem == "SEM8") and ($idses == "SE1")) {
+                    $percent ="-";
+                }
+                elseif (($user->getId() == '2014-2015') and ($idsem == "SEM8") and ($idses == "SE2")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2015-2016') and ($idsem == "SEM8") and ($idses == "SE1")) {
+                    $percent = 100;
+                }
+                elseif (($user->getId() == '2015-2016') and ($idsem == "SEM8") and ($idses == "SE2")) {
+                    $percent = "-";
+                }
+
+                else {
+                    $percent = number_format((($nbevalueadmis * 100) / $nbevalue), 2);
+                }
+
+            }
+            if($this->get('session')->get('leveliddelib')=="M1" and ($idspecialite=="SITW")) {
+
+
+                if (($user->getId() == '2012-2013') and ($idsem == "SEM8") and ($idses == "SE1")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM8") and ($idses == "SE2")) {
+                    $percent ="-";
+                }  elseif (($user->getId() == '2013-2014') and ($idsem == "SEM8") and ($idses == "SE1")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2013-2014') and ($idsem == "SEM8") and ($idses == "SE2")) {
+                    $percent = "-";
+                }
+
+                elseif (($user->getId() == '2014-2015') and ($idsem == "SEM8") and ($idses == "SE1")) {
+                    $percent ="-";
+                }
+                elseif (($user->getId() == '2014-2015') and ($idsem == "SEM8") and ($idses == "SE2")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2015-2016') and ($idsem == "SEM8") and ($idses == "SE1")) {
+                    $percent = 69.23;
+                }
+                elseif (($user->getId() == '2015-2016') and ($idsem == "SEM8") and ($idses == "SE2")) {
+                    $percent = 100;
+                }
+
+                else {
+                    $percent = number_format((($nbevalueadmis * 100) / $nbevalue), 2);
+                }
+
+            }
+            if($this->get('session')->get('leveliddelib')=="M1" and ($idspecialite=="RTEL")) {
+
+
+                if (($user->getId() == '2012-2013') and ($idsem == "SEM7") and ($idses == "SE1")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM7") and ($idses == "SE2")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM8") and ($idses == "SE1")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM8") and ($idses == "SE2")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM7") and ($idses == "SE1")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2013-2014') and ($idsem == "SEM7") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM8") and ($idses == "SE1")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM8") and ($idses == "SE2")) {
+                    $percent = "-";
+                }
+
+                elseif (($user->getId() == '2014-2015') and ($idsem == "SEM7") and ($idses == "SE1")) {
+                    $percent ="-";
+                }
+                elseif (($user->getId() == '2014-2015') and ($idsem == "SEM7") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2014-2015') and ($idsem == "SEM8") and ($idses == "SE1")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2014-2015') and ($idsem == "SEM8") and ($idses == "SE2")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2015-2016') and ($idsem == "SEM7") and ($idses == "SE1")) {
+                    $percent = 73.33;
+                }
+                elseif (($user->getId() == '2015-2016') and ($idsem == "SEM7") and ($idses == "SE2")) {
+                    $percent = 75;
+                } elseif (($user->getId() == '2015-2016') and ($idsem == "SEM8") and ($idses == "SE1")) {
+                    $percent = 86.67;
+                } elseif (($user->getId() == '2015-2016') and ($idsem == "SEM8") and ($idses == "SE2")) {
+                    $percent = 100;
+                }
+
+                else {
+                    $percent = number_format((($nbevalueadmis * 100) / $nbevalue), 2);
+                }
+
+            }
+
+
+
+            if($this->get('session')->get('leveliddelib')=="M1" and ($idspecialite=="MDSI")) {
+
+
+                if (($user->getId() == '2012-2013') and ($idsem == "SEM7") and ($idses == "SE1")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM7") and ($idses == "SE2")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM8") and ($idses == "SE1")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM8") and ($idses == "SE2")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM7") and ($idses == "SE1")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2013-2014') and ($idsem == "SEM7") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM8") and ($idses == "SE1")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM8") and ($idses == "SE2")) {
+                    $percent = "-";
+                }
+
+                elseif (($user->getId() == '2014-2015') and ($idsem == "SEM7") and ($idses == "SE1")) {
+                    $percent ="-";
+                }
+                elseif (($user->getId() == '2014-2015') and ($idsem == "SEM7") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2014-2015') and ($idsem == "SEM8") and ($idses == "SE1")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2014-2015') and ($idsem == "SEM8") and ($idses == "SE2")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2015-2016') and ($idsem == "SEM7") and ($idses == "SE1")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2015-2016') and ($idsem == "SEM7") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2015-2016') and ($idsem == "SEM8") and ($idses == "SE1")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2015-2016') and ($idsem == "SEM8") and ($idses == "SE2")) {
+                    $percent = "-";
+                }
+
+                else {
+                    $percent = number_format((($nbevalueadmis * 100) / $nbevalue), 2);
+                }
+
+            }
+
+            if($this->get('session')->get('leveliddelib')=="M1" and ($idspecialite=="MBDS")) {
+
+
+                if (($user->getId() == '2012-2013') and ($idsem == "SEM7") and ($idses == "SE1")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM7") and ($idses == "SE2")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM8") and ($idses == "SE1")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM8") and ($idses == "SE2")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM7") and ($idses == "SE1")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2013-2014') and ($idsem == "SEM7") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM8") and ($idses == "SE1")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM8") and ($idses == "SE2")) {
+                    $percent = "-";
+                }
+
+                elseif (($user->getId() == '2014-2015') and ($idsem == "SEM7") and ($idses == "SE1")) {
+                    $percent ="-";
+                }
+                elseif (($user->getId() == '2014-2015') and ($idsem == "SEM7") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2014-2015') and ($idsem == "SEM8") and ($idses == "SE1")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2014-2015') and ($idsem == "SEM8") and ($idses == "SE2")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2015-2016') and ($idsem == "SEM7") and ($idses == "SE1")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2015-2016') and ($idsem == "SEM7") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2015-2016') and ($idsem == "SEM8") and ($idses == "SE1")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2015-2016') and ($idsem == "SEM8") and ($idses == "SE2")) {
+                    $percent = "-";
+                }
+
+                elseif (($user->getId() == '2016-2017') and ($idsem == "SEM7") and ($idses == "SE1")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2016-2017') and ($idsem == "SEM7") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2016-2017') and ($idsem == "SEM8") and ($idses == "SE1")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2016-2017') and ($idsem == "SEM8") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2017-2018') and ($idsem == "SEM7") and ($idses == "SE1")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2017-2018') and ($idsem == "SEM7") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2017-2018') and ($idsem == "SEM8") and ($idses == "SE1")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2017-2018') and ($idsem == "SEM8") and ($idses == "SE2")) {
+                    $percent = "-";
+                }
+
+
+                else {
+                    $percent = number_format((($nbevalueadmis * 100) / $nbevalue), 2);
+                }
+
+            }
+
+            if($this->get('session')->get('leveliddelib')=="M2" and ($idspecialite=="MDSI")) {
+
+
+                if (($user->getId() == '2012-2013') and ($idsem == "SEM9") and ($idses == "SE1")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM9") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM10") and ($idses == "SE1")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM10") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM9") and ($idses == "SE1")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2013-2014') and ($idsem == "SEM9") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM10") and ($idses == "SE1")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM10") and ($idses == "SE2")) {
+                    $percent = "-";
+                }
+
+                elseif (($user->getId() == '2014-2015') and ($idsem == "SEM9") and ($idses == "SE1")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2014-2015') and ($idsem == "SEM9") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2014-2015') and ($idsem == "SEM10") and ($idses == "SE1")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2014-2015') and ($idsem == "SEM10") and ($idses == "SE2")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2015-2016') and ($idsem == "SEM9") and ($idses == "SE1")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2015-2016') and ($idsem == "SEM9") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2015-2016') and ($idsem == "SEM10") and ($idses == "SE1")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2015-2016') and ($idsem == "SEM10") and ($idses == "SE2")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2016-2017') and ($idsem == "SEM9") and ($idses == "SE1")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2016-2017') and ($idsem == "SEM9") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2016-2017') and ($idsem == "SEM10") and ($idses == "SE1")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2016-2017') and ($idsem == "SEM10") and ($idses == "SE2")) {
+                    $percent ="-";
+                }elseif (($user->getId() == '2017-2018') and ($idsem == "SEM9") and ($idses == "SE1")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2017-2018') and ($idsem == "SEM9") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2017-2018') and ($idsem == "SEM10") and ($idses == "SE1")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2017-2018') and ($idsem == "SEM10") and ($idses == "SE2")) {
+                    $percent ="-";
+                }
+
+                else {
+                    $percent = number_format((($nbevalueadmis * 100) / $nbevalue), 2);
+                }
+
+            }
+
+
+
+            if($this->get('session')->get('leveliddelib')=="M2" and ($idspecialite=="RTEL")) {
+
+
+                if (($user->getId() == '2012-2013') and ($idsem == "SEM9") and ($idses == "SE1")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM9") and ($idses == "SE2")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM10") and ($idses == "SE1")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM10") and ($idses == "SE2")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM9") and ($idses == "SE1")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2013-2014') and ($idsem == "SEM9") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM10") and ($idses == "SE1")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM10") and ($idses == "SE2")) {
+                    $percent = "-";
+                }
+
+                elseif (($user->getId() == '2014-2015') and ($idsem == "SEM9") and ($idses == "SE1")) {
+                    $percent ="-";
+                }
+                elseif (($user->getId() == '2014-2015') and ($idsem == "SEM9") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2014-2015') and ($idsem == "SEM10") and ($idses == "SE1")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2014-2015') and ($idsem == "SEM10") and ($idses == "SE2")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2015-2016') and ($idsem == "SEM9") and ($idses == "SE1")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2015-2016') and ($idsem == "SEM9") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2015-2016') and ($idsem == "SEM10") and ($idses == "SE1")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2015-2016') and ($idsem == "SEM10") and ($idses == "SE2")) {
+                    $percent = "-";
+                }
+
+                else {
+                    $percent = number_format((($nbevalueadmis * 100) / $nbevalue), 2);
+                }
+
+            }
+            if($this->get('session')->get('leveliddelib')=="M2" and ($idspecialite=="SIGL")) {
+
+
+                if (($user->getId() == '2012-2013') and ($idsem == "SEM9") and ($idses == "SE1")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM9") and ($idses == "SE2")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM10") and ($idses == "SE1")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM10") and ($idses == "SE2")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM9") and ($idses == "SE1")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2013-2014') and ($idsem == "SEM9") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM10") and ($idses == "SE1")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM10") and ($idses == "SE2")) {
+                    $percent = "-";
+                }
+
+                elseif (($user->getId() == '2014-2015') and ($idsem == "SEM9") and ($idses == "SE1")) {
+                    $percent ="-";
+                }
+                elseif (($user->getId() == '2014-2015') and ($idsem == "SEM9") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2014-2015') and ($idsem == "SEM10") and ($idses == "SE1")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2014-2015') and ($idsem == "SEM10") and ($idses == "SE2")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2015-2016') and ($idsem == "SEM9") and ($idses == "SE1")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2015-2016') and ($idsem == "SEM9") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2015-2016') and ($idsem == "SEM10") and ($idses == "SE1")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2015-2016') and ($idsem == "SEM10") and ($idses == "SE2")) {
+                    $percent = "-";
+                }
+
+                else {
+                    $percent = number_format((($nbevalueadmis * 100) / $nbevalue), 2);
+                }
+
+            }
+            if($this->get('session')->get('leveliddelib')=="M2" and ($idspecialite=="SITW")) {
+
+
+                if (($user->getId() == '2012-2013') and ($idsem == "SEM9") and ($idses == "SE1")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM9") and ($idses == "SE2")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM10") and ($idses == "SE1")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2012-2013') and ($idsem == "SEM10") and ($idses == "SE2")) {
+                    $percent ="-";
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM9") and ($idses == "SE1")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2013-2014') and ($idsem == "SEM9") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM10") and ($idses == "SE1")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2013-2014') and ($idsem == "SEM10") and ($idses == "SE2")) {
+                    $percent = "-";
+                }
+
+                elseif (($user->getId() == '2014-2015') and ($idsem == "SEM9") and ($idses == "SE1")) {
+                    $percent ="-";
+                }
+                elseif (($user->getId() == '2014-2015') and ($idsem == "SEM9") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2014-2015') and ($idsem == "SEM10") and ($idses == "SE1")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2014-2015') and ($idsem == "SEM10") and ($idses == "SE2")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2015-2016') and ($idsem == "SEM9") and ($idses == "SE1")) {
+                    $percent = "-";
+                }
+                elseif (($user->getId() == '2015-2016') and ($idsem == "SEM9") and ($idses == "SE2")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2015-2016') and ($idsem == "SEM10") and ($idses == "SE1")) {
+                    $percent = "-";
+                } elseif (($user->getId() == '2015-2016') and ($idsem == "SEM10") and ($idses == "SE2")) {
+                    $percent = "-";
+                }
+
+                else {
+                    $percent = number_format((($nbevalueadmis * 100) / $nbevalue), 2);
+                }
+
+            }
+
+            $output['data'][] = [
+                'id' => $id,
+                'percent' => $percent,
+                'anac' => $user->getId()
+
+
+
+            ];
+        }
+
+        return new Response(json_encode($output), 200, ['Content-Type' => 'application/json']);
+    }
+
+
+
+
+
+    public function deliberationsemestreuniq(Request $request, StudentSpecialityRepository $studspecrepo, UeSpecialityRepository $uespecrepo, UeValidatedRepository $uevalidrepo, MyFunctionDelib $callfunctiondelib, HalfYearlyDelibRepository $halfyearlyrep)
+    {
+        $idetudiant = $request->query->get('idetudiant');
+        $specid= $this->get('session')->get('speciddelib');
+        $semid = $this->get('session')->get('semiddelib');
+        $sessionid= $this->get('session')->get('idsesdelib');
+        $acadid = $this->get('session')->get('anacad');
+        $userdelib = $this->getUser()->getUsername();
+
+
+
+
+
+        $pue=$uespecrepo->findBy(array('specialityid' => $specid,'semester' => $semid,'acadyearid'=>$acadid));
+        foreach ($pue as $puev) {
+
+
+
+            $uevalids = $uevalidrepo->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $specid, 'semesterid' =>$semid, 'ueid' => $puev->getUeid()->getId()));
+
+
+
+            if(!$uevalids){
+
+                if($callfunctiondelib->creditsvalide($idetudiant,$semid,$puev->getUeid()->getId(),$acadid,$specid,$sessionid)==$callfunctiondelib->creditue($specid,$puev->getUeid()->getId(),$semid,$acadid)){
+
+                    $deliberationue = new UeValidated();
+
+                    $deliberationue->setStudentid($idetudiant);
+
+                    $deliberationue->setAcadyearid($acadid);
+                    $deliberationue->setSpecialityid($specid);
+                    $deliberationue->setUeid($puev->getUeid()->getId());
+                    $deliberationue->setSemesterid($semid);
+                    $deliberationue->setSessionid($sessionid);
+                    $deliberationue->setCreditvalided($callfunctiondelib->creditsvalide($idetudiant,$semid,$puev->getUeid(),$acadid,$specid,$sessionid));
+                    $deliberationue->setUeaverage($callfunctiondelib>ueaverage($idetudiant, $specid,$puev->getUeid(), $semid, $sessionid, $acadid));
+
+                    $deliberationue->setDelibDate(new \Datetime());
+                    $deliberationue->setDelibUser($userdelib);
+
+
+                    $em = $this->getDoctrine()->getManager();
+
+                    $em->persist($deliberationue);
+                    $em->flush();
+
+                }
+            }else{
+
+                if($callfunctiondelib->ueaverage($idetudiant, $specid,$puev->getUeid(), $semid, $sessionid, $acadid)!= $uevalids->getUeaverage()){
+
+
+
+
+
+
+                    $uevalids->setSemesterid($semid);
+                    $uevalids->setSessionid($sessionid);
+
+                    $uevalids->setUeaverage($callfunctiondelib->ueaverage($idetudiant, $specid,$puev->getUeid(), $semid, $sessionid, $acadid));
+
+                    $uevalids->setDelibDate(new \Datetime());
+                    $uevalids->setDelibUser($userdelib);
+
+
+                    $em = $this->getDoctrine()->getManager();
+
+                    $em->persist($uevalids);
+                    $em->flush();
+
+                }
+
+
+
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            $deliberation = $halfyearlyrep->findOneBy(array('studentid' => $idetudiant,'specialityid' =>$specid,'semesterid' => $semid,'acadyearid'=>$acadid,'sessionid'=>$sessionid));
+
+
+
+
+            $creditvalide = $callfunctiondelib->tcredit($idetudiant, $specid, $semid, $sessionid, $acadid);
+            $moyennesemestre = $callfunctiondelib->ecusemaverage($idetudiant, $specid, $semid, $sessionid, $acadid);
+            $decisionsem = $callfunctiondelib->decision($idetudiant, $specid, $semid, $sessionid, $acadid);
+
+
+
+            $deliberation->setStudentid($idetudiant);
+
+            $deliberation->setAcadyearid($acadid);
+            $deliberation->setSpecialityid($specid);
+            $deliberation->setSemesterid($semid);
+            $deliberation->setSessionid($sessionid);
+            $deliberation->setTcreditvalide($creditvalide);
+            $deliberation->setSemaverage($moyennesemestre);
+            $deliberation->setDecision($decisionsem);
+            $deliberation->setDelibDate(new \Datetime());
+            $deliberation->setDelibUser($userdelib);
+
+
+            $em = $this->getDoctrine()->getManager();
+
+            $em->persist($deliberation);
+            $em->flush();
+
+        }
+
+        return $this->redirectToRoute('siges_startdelib2');
+    }
+
+
+    public function consultationecu(Request $request, UeRepository $uerepo)
+    {
+
+
+        $request->getSession()->set('ueconsultation', $request->query->get('idue'));
+
+        $request->getSession()->set('idetudiant', $request->query->get('idetudiant'));
+
+
+
+
+
+        $ue = $uerepo->findOneById($request->query->get('idue'));
+
+        $request->getSession()->set('libueconsultation', $ue->getUename());
+
+
+
+
+        return  $this->render('delibsem/consultecu.html.twig',array('current_menu'=>'startdeliblicence'));
+    }
+
+
+
+
+    public function listconsultationecu(Request $request, MyFunctionDelib $callfunctiondelib, EcuSpecialityRepository $ecuspecrepo, EcuRepository $ecurepo, UeValidatedRepository $uevalidrepo, StudentExamNotesRepository $studexamrepo)
+    {
+
+        $idses=$this->get('session')->get('idsesdelib');
+
+        $idspecialite=$this->get('session')->get('speciddelib');
+        $idsem=$this->get('session')->get('semiddelib');
+
+
+        $idanac=$this->get('session')->get('idanacademiq');;
+        $idue=$this->get('session')->get('ueconsultation') ;
+        $idstudent=$this->get('session')->get('idetudiant') ;
+
+
+        $length = $request->get('length');
+        $length = $length && ($length!=-1)?$length:0;
+
+        $start = $request->get('start');
+        $start = $length?($start && ($start!=-1)?$start:0)/$length:0;
+
+        $search = $request->get('search');
+        $filters = [
+            'query' => @$search['value']
+        ];
+
+        $users = $ecuspecrepo->ueecu($idspecialite,$idsem,$idue,$idanac,
+            $filters, $start, $length
+        );
+
+        $output = array(
+            'data' => array(),
+            'recordsFiltered' => count($ecuspecrepo->ueecu($idspecialite,$idsem,$idue,$idanac,$filters, 0, false)),
+            'recordsTotal' => count($ecuspecrepo->ueecu($idspecialite,$idsem,$idue,$idanac, 0, false))
+        );
+
+        foreach ($users as $user) {
+
+
+
+
+
+
+
+
+            $ecu = $ecurepo->findOneById($user->getEcuid());
+
+
+
+            $uevalide = $uevalidrepo->findOneBy(array('studentid' => $idstudent, 'specialityid' => $idspecialite, 'semesterid' => $idsem, 'ueid' => $idue));
+            if ($uevalide) {
+
+                if ($uevalide->getSessionid() == 'SE1') {
+
+
+
+                    $averagcc=$callfunctiondelib->averagecc($idstudent,$idspecialite,$uevalide->getSemesterid(), $idue,$user->getEcuid(),$uevalide->getAcadyearid());
+                    $notexam=$callfunctiondelib->examnotes($idstudent,$idspecialite,$uevalide->getSemesterid(),$uevalide->getSessionid(),$idue,$user->getEcuid(),$uevalide->getAcadyearid());
+
+
+                    $averagcctp=$callfunctiondelib->averagecctp($idstudent,$idspecialite,$uevalide->getSemesterid(), $idue,$user->getEcuid(),$uevalide->getAcadyearid());
+                    $notexamtp=$callfunctiondelib->examnotestp($idstudent,$idspecialite,$uevalide->getSemesterid(),$uevalide->getSessionid(),$idue,$user->getEcuid(),$uevalide->getAcadyearid());
+
+
+
+
+
+                    if ($averagcc == "") {
+                        $aversem = "";
+                    }else{
+                        $aversem = number_format((4 * $averagcc + 6 * $notexam) / 10, 2);
+                    }
+
+
+
+
+
+
+
+
+
+
+                    if ($averagcctp == "") {
+                        $aversemtp = "";
+                    }else{
+                        $aversemtp = number_format((4 * $averagcctp + 6 * $notexamtp) / 10, 2);
+                    }
+
+
+
+
+
+
+                    if ($aversemtp == "") {
+                        $averageecu = $aversem;
+                    } else {
+                        $averageecu = number_format((0.6 * $aversem + 0.4 * $aversemtp), 2);
+                    }
+
+
+
+                }
+                else {
+
+
+
+                    $averagcc=$callfunctiondelib->averagecc($idstudent,$idspecialite,$uevalide->getSemesterid(), $idue,$user->getEcuid(),$uevalide->getAcadyearid());
+
+
+
+
+                    $etudiant101 = $studexamrepo->findOneBy(array(
+                        'studentid' => $idstudent, 'specialityid' => $idspecialite, 'ecuid' => $user->getEcuid(), 'semesterid' => $uevalide->getSemesterid(), 'sessionid' => $uevalide->getSessionid(), 'typeofexamnotes' => 'EXCC', 'acadyearid' => $uevalide->getAcadyearid()
+                    ));
+                    if ($etudiant101 != NULL) {
+
+                        if ($etudiant101->getExamnotes() == 99) {
+
+                            $notexam = "NC";
+
+
+                        } else {
+
+                            $notexam = $etudiant101->getExamnotes();
+
+                        }
+
+                    } else {
+                        $notexam = "";
+                    }
+
+
+
+
+
+                    if ($uevalide->getAcadyearid() == '2015-2016') {
+                        $averagcc = number_format((float)$notexam, 2);
+                        $aversem = number_format((float)$notexam, 2);
+
+                    } else {
+                        $aversem = number_format((4 * $averagcc + 6 * $notexam) / 10, 2);
+                    }
+
+
+
+                    $averagcctp=$callfunctiondelib->averagecctp($idstudent,$idspecialite,$uevalide->getSemesterid(), $idue,$user->getEcuid(),$uevalide->getAcadyearid());
+
+
+
+                    $etudiant103 =$studexamrepo->findOneBy(array('studentid' => $idstudent, 'specialityid' => $idspecialite, 'ecuid' => $user->getEcuid(), 'semesterid' => $uevalide->getSemesterid(), 'sessionid' => $uevalide->getSessionid(), 'typeofexamnotes' => 'EXTP', 'acadyearid' => $uevalide->getAcadyearid()));
+                    if($etudiant103!=NULL){
+
+                        if($etudiant103->getExamnotes()==99){
+
+                            $notexamtp="NC";
+
+
+                        }else{
+
+                            $notexamtp=$etudiant103->getExamnotes();
+
+                        }
+
+                    }else{
+                        $notexamtp="";
+                    }
+
+
+
+                    if ($averagcctp == ""  ) {
+                        $aversemtp = "";
+                    }else{
+                        $aversemtp = number_format((4 * $averagcctp + 6 * $notexamtp) / 10, 2);
+                    }
+
+
+
+
+
+
+
+                    if($aversemtp==""){
+
+                        if($etudiant101->getEntryuser()=='admin'){
+                            $averageecu=$aversem;
+
+                        }else{
+
+
+                            $averageecu1=$aversem ;
+                            if($averageecu1 < $notexam){
+                                $averageecu=$notexam;
+                            }else{
+                                $averageecu=$averageecu1;
+                            }
+
+                        }
+
+                    }else{
+                        if($etudiant101->getEntryuser()=='admin'){
+                            $m1=$aversem;
+
+                        }else{
+
+                            $averageecu1=$aversem ;
+                            if($averageecu1 < $notexam){
+
+                                $m1=$notexam;
+                                $aversem=$notexam;
+
+                            }else{
+                                $m1=$averageecu1;
+                            }
+
+                        }
+
+                        if($etudiant103->getEntryuser()=='admin'){
+                            $m2=$aversemtp;
+
+                        }else{
+
+
+                            $averageecu2=$aversemtp ;
+                            if($averageecu2 < $notexamtp){
+                                $m2=$notexamtp;
+                                $aversemtp=$notexamtp;
+
+                            }else{
+                                $m2=$averageecu2;
+                            }
+
+
+
+
+                        }
+
+
+
+
+
+                        $averageecu=number_format((0.6*$m1+0.4*$m2),2);
+
+                    }
+
+
+
+
+
+
+
+
+                }
+            }
+            else {
+
+
+
+
+
+
+                $averagcc=$callfunctiondelib->averagecc($idstudent,$idspecialite,$idsem, $idue,$user->getEcuid(),$idanac);
+                $notexam=$callfunctiondelib->examnotes($idstudent,$idspecialite,$idsem,$idses,$idue,$user->getEcuid(),$idanac);
+
+
+
+
+
+                if($averagcc==""){
+                    $aversem = "";
+                }else{
+                    $aversem = number_format((4 * $averagcc + 6 * $notexam) / 10, 2);
+                }
+
+
+
+
+
+
+
+
+
+                $averagcctp=$callfunctiondelib->averagecctp($idstudent,$idspecialite,$idsem, $idue,$user->getEcuid(),$idanac);
+                $notexamtp=$callfunctiondelib->examnotestp($idstudent,$idspecialite,$idsem,$idses,$idue,$user->getEcuid(),$idanac);
+
+
+
+
+                if($averagcctp==""){
+                    $aversemtp = "";
+                }else{
+                    $aversemtp = number_format((4 * $averagcctp + 6 * $notexamtp) / 10, 2);
+                }
+
+
+
+
+
+                if ( $aversemtp == "") {
+                    $averageecu = $aversem;
+                } else {
+                    $averageecu = number_format((0.6 * $aversem + 0.4 * $aversemtp), 2);
+                }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            }
+
+            $lienmoycc='<a style="color:#13b9ce; font-weight:bold"  target="_blank" href="/SIGES/public/delibarea/redirectaverageccedituniq?idue=' . $idue. '&amp;idecu=' . $ecu->getId(). '&amp;idetud=' . $idstudent. '&amp;moycc=' . $averagcc. '&amp;libue=' . $this->get('session')->get('libueconsultation'). '&amp;libecu=' . $ecu->getEcuname(). '&amp;catnote=MCC">'.$averagcc.'  </a>';
+
+            $lienmoyex='<a style="color:#13b9ce; font-weight:bold"  target="_blank" href="/SIGES/public/delibarea/delibarea/redirectnotexamedituniq?idue=' . $idue. '&amp;idecu=' . $ecu->getId(). '&amp;idetud=' . $idstudent. '&amp;moyex=' . $notexam. '&amp;libue=' . $this->get('session')->get('libueconsultation'). '&amp;libecu=' . $ecu->getEcuname(). '&amp;catnote=EXCC">'.$notexam.'  </a>';
+
+            $lienmoycctp='<a style="color:#13b9ce; font-weight:bold"  target="_blank" href="/SIGES/public/delibarea/redirectaverageccedituniq?idue=' . $idue. '&amp;idecu=' . $ecu->getId(). '&amp;idetud=' . $idstudent. '&amp;moytp=' . $averagcctp. '&amp;libue=' . $this->get('session')->get('libueconsultation'). '&amp;libecu=' . $ecu->getEcuname(). '&amp;catnote=MTP">'.$averagcctp.'  </a>';
+
+            $lienmoyextp='<a style="color:#13b9ce; font-weight:bold"  target="_blank" href="/SIGES/public/delibarea/redirectnotexamedituniq?idue=' . $idue. '&amp;idecu=' . $ecu->getId(). '&amp;idetud=' . $idstudent. '&amp;moyex=' . $notexamtp. '&amp;libue=' . $this->get('session')->get('libueconsultation'). '&amp;libecu=' . $ecu->getEcuname(). '&amp;catnote=EXTP">'.$notexamtp.'  </a>';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            $output['data'][] = [
+
+
+
+                'ecu' => $ecu->getEcuname(),
+
+                'cc' => $lienmoycc,
+
+
+                'examen' => $lienmoyex,
+                'moyenne' =>'<span style="font-weight:bold">'.$aversem.'</span>' ,
+                'cctp' => $lienmoycctp,
+                'examentp' => $lienmoyextp,
+                'moyennetp' => '<span style="font-weight:bold">'.$aversemtp.'</span>',
+                'moyenneecu' => '<span style="font-weight:bold">'.$averageecu.'</span>',
+
+
+
+            ];
+        }
+
+        return new Response(json_encode($output), 200, ['Content-Type' => 'application/json']);
+    }
+
+
+
+
+    public function redirectaverageccedituniq(Request $request)
+    {
+
+
+        $request->getSession()->set('ueidedituniq', $request->query->get('idue'));
+        $request->getSession()->set('ecuidedituniq', $request->query->get('idecu'));
+        $request->getSession()->set('typaveredituniq', $request->query->get('catnote'));
+        $request->getSession()->set('idetuduniq', $request->query->get('idetud'));
+        $request->getSession()->set('uenamedituniq', $request->query->get('libue'));
+        $request->getSession()->set('ecunamedituniq', $request->query->get('libecu'));
+
+
+
+
+        $idanac=$this->get('session')->get('idanacademiq');
+        $idspec=$this->get('session')->get('speciddelib');
+        $idsem=$this->get('session')->get('semiddelib');
+        $leconnecte=$this->getUser()->getUsername();
+        $idue=$request->query->get('idue') ;
+        $idecu=$request->query->get('idecu');
+        $typeofaver=$request->query->get('catnote');
+        $idetud=$request->query->get('idetud');
+        $idses=$this->get('session')->get('idsesdelib');
+
+
+
+        return $this->redirect("/SIGES/averageccedituniq.php?idanac=$idanac&&idspec=$idspec&&idsem=$idsem&&idue=$idue&&&idecu=$idecu&&typeofaver=$typeofaver&&idetud=$idetud&&leconnecte=$leconnecte&&idses=$idses");
+
+        //return $this->redirectToRoute('esatic_siges__averagedit');
+    }
+
+
+    public function edituniqaveragecc()
+    {
+        return  $this->render('delibsem/edituniqaveragecc.html.twig');
+    }
+
+
+
+    public function redirectnotexamedituniq(Request $request)
+    {
+
+        $request->getSession()->set('ueidedituniq', $request->query->get('idue'));
+        $request->getSession()->set('ecuidedituniq', $request->query->get('idecu'));
+        $request->getSession()->set('typaveredituniq', $request->query->get('catnote'));
+        $request->getSession()->set('idetuduniq', $request->query->get('idetud'));
+        $request->getSession()->set('uenamedituniq', $request->query->get('libue'));
+        $request->getSession()->set('ecunamedituniq', $request->query->get('libecu'));
+
+
+
+
+        $idanac=$this->get('session')->get('idanacademiq');
+        $idspec=$this->get('session')->get('speciddelib');
+        $idsem=$this->get('session')->get('semiddelib');
+        $leconnecte=$this->getUser()->getUsername();
+        $idue=$request->query->get('idue') ;
+        $idecu=$request->query->get('idecu');
+        $typeofaver=$request->query->get('catnote');
+        $idetud=$request->query->get('idetud');
+        $idses=$this->get('session')->get('idsesdelib');
+
+
+
+        return $this->redirect("/SIGES/notexamedituniq.php?idanac=$idanac&&idspec=$idspec&&idsem=$idsem&&idue=$idue&&&idecu=$idecu&&typeofaver=$typeofaver&&idetud=$idetud&&leconnecte=$leconnecte&&idses=$idses");
+
+
+    }
+
+
+    public function edituniqnotexam()
+    {
+        return  $this->render('@ESATICSiges/delibsem/edituniqnotexam.html.twig');
+    }
 
 
 

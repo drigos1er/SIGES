@@ -1762,6 +1762,1018 @@ class MyFunctionDelib
     }
 
 
+    public function nbaveragegtzclassspec($idspec,$idecu,$idsem,$idses, $idanac, $idlevel)
+    {
+
+
+
+        $rsm = new ResultSetMapping();
+
+        $rsm->addScalarResult('studentid', 'studentid');
+        $sql = "SELECT  DISTINCT student_speciality.studentid FROM `student_speciality` INNER JOIN student_examnotes on student_speciality.studentid=student_examnotes.studentid  WHERE  student_examnotes.specialityid=:idspec  and  student_examnotes.acadyearid=:idanac  and student_examnotes.semesterid=:idsem and student_speciality.levelid=:levelid  ";
+        $query = $this->manager->createNativeQuery($sql, $rsm);
+        $query->setParameter('idanac', $idanac );
+
+        $query->setParameter('idsem', $idsem);
+
+        $query->setParameter('idspec', $idspec);
+        $query->setParameter('levelid', $idlevel);
+
+
+
+
+        $idstud = $query->getResult();
+        $nbgtz=0;
+
+        foreach($idstud as $stude){
+
+
+
+
+            if($this->ecuaverage($stude['studentid'],$idspec, $idecu, $idsem,$idses,$idanac)>=0 and $this->ecuaverage($stude['studentid'],$idspec, $idecu, $idsem,$idses,$idanac)<8){
+
+
+
+
+                $nbgtz=$nbgtz+ 1;
+            }
+
+
+
+
+
+
+
+
+
+        }
+        $nbstudgtz=$nbgtz;
+
+
+        return $nbstudgtz;
+
+
+
+
+
+
+
+
+
+
+
+
+    }
+
+
+    public function nbaveragelttclassspec($idspec,$idecu,$idsem,$idses, $idanac, $idlevel)
+    {
+
+
+
+        $rsm = new ResultSetMapping();
+
+        $rsm->addScalarResult('studentid', 'studentid');
+        $sql = "SELECT  DISTINCT student_speciality.studentid FROM `student_speciality` INNER JOIN student_examnotes on student_speciality.studentid=student_examnotes.studentid  WHERE  student_examnotes.specialityid=:idspec  and  student_examnotes.acadyearid=:idanac  and student_examnotes.semesterid=:idsem and student_speciality.levelid=:levelid  ";
+        $query = $this->manager->createNativeQuery($sql, $rsm);
+        $query->setParameter('idanac', $idanac );
+
+        $query->setParameter('idsem', $idsem);
+
+        $query->setParameter('idspec', $idspec);
+        $query->setParameter('levelid', $idlevel);
+
+
+
+
+        $idstud = $query->getResult();
+        $nbltt=0;
+
+        foreach($idstud as $stude){
+
+
+
+
+            if($this->ecuaverage($stude['studentid'],$idspec, $idecu, $idsem,$idses,$idanac)>=8 and $this->ecuaverage($stude['studentid'],$idspec, $idecu, $idsem,$idses,$idanac)<10){
+
+
+
+
+                $nbltt=$nbltt+ 1;
+            }
+
+
+
+
+
+
+
+
+
+        }
+        $nbstudltt=$nbltt;
+
+
+        return $nbstudltt;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    }
+
+
+
+
+    public function nbaveragegttclassspec($idspec,$idecu,$idsem,$idses, $idanac, $idlevel)
+    {
+
+
+
+        $rsm = new ResultSetMapping();
+
+        $rsm->addScalarResult('studentid', 'studentid');
+        $sql = "SELECT  DISTINCT student_speciality.studentid FROM `student_speciality` INNER JOIN student_examnotes on student_speciality.studentid=student_examnotes.studentid  WHERE  student_examnotes.specialityid=:idspec  and  student_examnotes.acadyearid=:idanac  and student_examnotes.semesterid=:idsem and student_speciality.levelid=:levelid ";
+        $query = $this->manager->createNativeQuery($sql, $rsm);
+        $query->setParameter('idanac', $idanac );
+
+        $query->setParameter('idsem', $idsem);
+
+        $query->setParameter('idspec', $idspec);
+        $query->setParameter('levelid', $idlevel);
+
+
+
+
+        $idstud = $query->getResult();
+        $nbgtt=0;
+
+        foreach($idstud as $stude){
+
+
+
+
+            if($this->ecuaverage($stude['studentid'],$idspec, $idecu, $idsem,$idses,$idanac)>=10){
+
+
+
+
+                $nbgtt=$nbgtt+ 1;
+            }
+
+
+
+
+
+
+
+
+
+        }
+        $nbstudgtt=$nbgtt;
+
+
+        return $nbstudgtt;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    }
+
+
+    public function nbaveragemaxclassspec($idspec,$idecu,$idsem,$idses, $idanac, $idlevel)
+    {
+
+
+        $rsm = new ResultSetMapping();
+
+        $rsm->addScalarResult('studentid', 'studentid');
+        $sql = "SELECT  DISTINCT student_speciality.studentid FROM `student_speciality` INNER JOIN student_examnotes on student_speciality.studentid=student_examnotes.studentid  WHERE  student_examnotes.specialityid=:idspec  and  student_examnotes.acadyearid=:idanac  and student_examnotes.semesterid=:idsem and student_speciality.levelid=:levelid  ";
+        $query = $this->manager->createNativeQuery($sql, $rsm);
+        $query->setParameter('idanac', $idanac );
+
+        $query->setParameter('idsem', $idsem);
+
+        $query->setParameter('idspec', $idspec);
+        $query->setParameter('levelid', $idlevel);
+
+
+
+
+        $idstud = $query->getResult();
+        $avermax=0;
+
+        foreach($idstud as $stude){
+
+
+
+
+            if($this->ecuaverage($stude['studentid'],$idspec, $idecu, $idsem,$idses,$idanac)>=$avermax){
+
+                $avermax=$this->ecuaverage($stude['studentid'],$idspec, $idecu, $idsem,$idses,$idanac);
+            }
+
+
+
+
+
+
+
+
+
+        }
+        $maxaverage=$avermax;
+
+
+        return $maxaverage;
+
+
+
+
+
+
+
+
+
+
+    }
+
+
+
+
+    public function nbaverageminclassspec($idspec,$idecu,$idsem,$idses, $idanac, $idlevel)
+    {
+
+
+
+
+
+        $rsm = new ResultSetMapping();
+
+        $rsm->addScalarResult('studentid', 'studentid');
+        $sql = "SELECT  DISTINCT student_speciality.studentid FROM `student_speciality` INNER JOIN student_examnotes on student_speciality.studentid=student_examnotes.studentid  WHERE  student_examnotes.specialityid=:idspec and student_examnotes.exam_notes BETWEEN 0 AND 20 and  student_examnotes.acadyearid=:idanac  and student_examnotes.semesterid=:idsem and student_speciality.levelid=:levelid  ";
+        $query = $this->manager->createNativeQuery($sql, $rsm);
+        $query->setParameter('idanac', $idanac );
+
+        $query->setParameter('idsem', $idsem);
+
+        $query->setParameter('idspec', $idspec);
+        $query->setParameter('levelid', $idlevel);
+
+
+
+
+        $idstud = $query->getResult();
+        $avermin=21;
+
+        foreach($idstud as $stude){
+
+
+
+
+            if($this->ecuaverage($stude['studentid'],$idspec, $idecu, $idsem,$idses,$idanac)<=$avermin){
+
+                $avermin=$this->ecuaverage($stude['studentid'],$idspec, $idecu, $idsem,$idses,$idanac);
+            }
+
+
+
+
+
+
+
+
+
+        }
+        $minaverage=$avermin;
+
+
+        return $minaverage;
+
+
+
+
+
+
+
+
+
+
+
+    }
+
+
+
+
+    public function averageofclassspec($idspec,$idecu,$idsem,$idses, $idanac, $idlevel)
+    {
+
+
+
+        $rsm = new ResultSetMapping();
+
+        $rsm->addScalarResult('studentid', 'studentid');
+        $sql = "SELECT  DISTINCT student_speciality.studentid FROM `student_speciality` INNER JOIN student_examnotes on student_speciality.studentid=student_examnotes.studentid  WHERE  student_examnotes.specialityid=:idspec and student_examnotes.exam_notes BETWEEN 0 AND 20 and  student_examnotes.acadyearid=:idanac  and student_examnotes.semesterid=:idsem and student_speciality.levelid=:levelid  ";
+        $query = $this->manager->createNativeQuery($sql, $rsm);
+        $query->setParameter('idanac', $idanac );
+
+        $query->setParameter('idsem', $idsem);
+
+        $query->setParameter('idspec', $idspec);
+        $query->setParameter('levelid', $idlevel);
+
+
+
+
+        $idstud = $query->getResult();
+        $nbstudclass=0;
+        $averclass=0;
+
+
+        foreach($idstud as $stude){
+
+            $nbstudclass=$nbstudclass + 1;
+
+            $avercl=$this->ecuaverage($stude['studentid'],$idspec, $idecu, $idsem,$idses,$idanac);
+            $averclass=$averclass + $avercl;
+
+
+
+
+
+
+
+
+
+
+
+        }
+        $numstdclass=$nbstudclass;
+        $averofclass=$averclass;
+
+        $averageofclass=number_format(($averofclass/$numstdclass),2);
+
+        return $averageofclass ;
+
+
+
+
+
+
+
+
+
+
+    }
+
+
+
+    public function idmaxaveragesemestrielle( $idspec, $idsem, $idses, $idanac)
+    {
+
+
+        $rsm = new ResultSetMapping();
+
+        $rsm->addScalarResult('studentid', 'studentid');
+
+
+
+        $sql = "SELECT  DISTINCT studentid FROM `halfyearly_delib` WHERE   specialityid=:idspecialite  and acadyearid=:idanac  and semesterid=:idsemestre and sessionid=:idsession  ";
+        $query = $this->manager->createNativeQuery($sql, $rsm);
+
+
+
+        $query->setParameter('idanac', $idanac );
+
+        $query->setParameter('idsemestre', $idsem);
+
+        $query->setParameter('idspecialite', $idspec);
+        $query->setParameter('idsession', $idses);
+
+
+
+
+        $idetudevaf = $query->getResult();
+        $moyforte=0;
+        $idmoyforte="";
+        foreach($idetudevaf as $etf){
+
+
+
+
+
+
+
+
+
+
+            if($this->moyennesemecusemestrielle($etf['studentid'],$idsem,$idanac,$idspec,$idses)>= $moyforte){
+
+                $moyforte=$this->moyennesemecusemestrielle($etf['studentid'],$idsem,$idanac,$idspec,$idses);
+                $idmoyforte=$etf['studentid'];
+            }
+
+
+        }
+        $idfortemoyennesemestrielle=$idmoyforte ;
+
+        return $idfortemoyennesemestrielle ;
+
+
+
+
+
+
+
+
+
+
+
+
+    }
+
+
+
+    public function maxaveragesemestrielle( $idspec, $idsem, $idses, $idanac)
+    {
+
+
+        $rsm = new ResultSetMapping();
+
+        $rsm->addScalarResult('studentid', 'studentid');
+
+
+
+        $sql = "SELECT  DISTINCT studentid FROM `halfyearly_delib` WHERE   specialityid=:idspecialite  and acadyearid=:idanac  and semesterid=:idsemestre and sessionid=:idsession  ";
+        $query = $this->manager->createNativeQuery($sql, $rsm);
+
+
+
+        $query->setParameter('idanac', $idanac );
+
+        $query->setParameter('idsemestre', $idsem);
+
+        $query->setParameter('idspecialite', $idspec);
+        $query->setParameter('idsession', $idses);
+
+
+
+        $idetudevaf = $query->getResult();
+        $moyforte=0;
+        foreach($idetudevaf as $etf){
+
+
+
+
+
+
+
+
+            if($this->moyennesemecusemestrielle($etf['studentid'],$idsem,$idanac,$idspec,$idses)>= $moyforte){
+
+                $moyforte=$this->moyennesemecusemestrielle($etf['studentid'],$idsem,$idanac,$idspec,$idses);
+
+            }
+
+
+        }
+        $fortemoyennesemestrielle=$moyforte ;
+
+        return $fortemoyennesemestrielle ;
+
+
+
+
+
+
+
+
+
+
+
+
+    }
+
+
+
+
+    public function idminaveragesemestrielle( $idspec, $idsem, $idses, $idanac)
+    {
+
+
+        $rsm = new ResultSetMapping();
+
+        $rsm->addScalarResult('studentid', 'studentid');
+
+
+
+        $sql = "SELECT  DISTINCT studentid FROM `halfyearly_delib` WHERE   specialityid=:idspecialite  and acadyearid=:idanac  and semesterid=:idsemestre and sessionid=:idsession  ";
+        $query = $this->manager->createNativeQuery($sql, $rsm);
+
+
+
+        $query->setParameter('idanac', $idanac );
+
+        $query->setParameter('idsemestre', $idsem);
+
+        $query->setParameter('idspecialite', $idspec);
+        $query->setParameter('idsession', $idses);
+
+
+
+
+
+        $idetudevafa = $query->getResult();
+        $moyfai=21;
+        foreach($idetudevafa as $etfa){
+
+
+
+
+
+
+
+
+
+            if($this->moyennesemecusemestrielle($etfa['studentid'],$idsem,$idanac,$idspec,$idses)<= $moyfai){
+
+                $moyfai=$this->moyennesemecusemestrielle($etfa['studentid'],$idsem,$idanac,$idspec,$idses);
+                $idmoyfai=$etfa['studentid'];
+            }
+
+
+        }
+        $idfaiblemoyennesemestrielle=$idmoyfai ;
+
+        return $idfaiblemoyennesemestrielle ;
+
+
+
+
+
+
+
+
+
+
+
+
+    }
+
+
+    public function minaveragesemestrielle( $idspec, $idsem, $idses, $idanac)
+    {
+
+
+
+
+
+        $rsm = new ResultSetMapping();
+
+        $rsm->addScalarResult('studentid', 'studentid');
+
+
+
+        $sql = "SELECT  DISTINCT studentid FROM `halfyearly_delib` WHERE   specialityid=:idspecialite  and acadyearid=:idanac  and semesterid=:idsemestre and sessionid=:idsession  ";
+        $query = $this->manager->createNativeQuery($sql, $rsm);
+
+
+
+        $query->setParameter('idanac', $idanac );
+
+        $query->setParameter('idsemestre', $idsem);
+
+        $query->setParameter('idspecialite', $idspec);
+        $query->setParameter('idsession', $idses);
+
+
+
+
+        $idetudevafa = $query->getResult();
+        $moyfai=21;
+        foreach($idetudevafa as $etfa){
+
+
+
+
+
+
+
+
+
+            if($this->moyennesemecusemestrielle($etfa['studentid'],$idsem,$idanac,$idspec,$idses) <= $moyfai){
+
+                $moyfai=$this->moyennesemecusemestrielle($etfa['studentid'],$idsem,$idanac,$idspec,$idses);
+
+            }
+
+
+        }
+        $faiblemoyennesemestrielle=$moyfai ;
+
+        return $faiblemoyennesemestrielle ;
+
+
+
+
+
+
+
+
+
+
+
+
+    }
+
+
+
+    public function averageofspecsemestrielle($idspec, $idsem, $idses, $idanac)
+    {
+
+
+
+
+
+        $rsm = new ResultSetMapping();
+
+        $rsm->addScalarResult('studentid', 'studentid');
+
+
+
+        $sql = "SELECT  DISTINCT studentid FROM `halfyearly_delib` WHERE   specialityid=:idspecialite  and acadyearid=:idanac  and semesterid=:idsemestre and sessionid=:idsession  ";
+        $query = $this->manager->createNativeQuery($sql, $rsm);
+
+
+
+        $query->setParameter('idanac', $idanac );
+
+        $query->setParameter('idsemestre', $idsem);
+
+        $query->setParameter('idspecialite', $idspec);
+        $query->setParameter('idsession', $idses);
+
+
+
+
+
+        $idstud = $query->getResult();
+        $nbstudclass=0;
+        $averclass=0;
+
+
+        foreach($idstud as $stude){
+
+            $nbstudclass=$nbstudclass + 1;
+
+            $avercl=$this->moyennesemecusemestrielle($stude['studentid'],$idsem,$idanac,$idspec,$idses);
+            $averclass=$averclass + $avercl;
+
+
+
+
+
+
+
+
+
+
+
+        }
+        $numstdclass=$nbstudclass;
+        $averofclass=$averclass;
+
+        $averageofclass=number_format(($averofclass/$numstdclass),2);
+
+        return $averageofclass ;
+
+
+
+
+
+
+
+
+
+
+    }
+
+
+
+
+    public function nbmoyennesemecusupzsemestrielle( $idspec, $idsem, $idses, $idanac)
+    {
+
+
+        $rsm = new ResultSetMapping();
+
+        $rsm->addScalarResult('studentid', 'studentid');
+
+
+
+        $sql = "SELECT  DISTINCT studentid FROM `halfyearly_delib` WHERE   specialityid=:idspecialite  and acadyearid=:idanac  and semesterid=:idsemestre and sessionid=:idsession  ";
+        $query = $this->manager->createNativeQuery($sql, $rsm);
+
+
+
+        $query->setParameter('idanac', $idanac );
+
+        $query->setParameter('idsemestre', $idsem);
+
+        $query->setParameter('idspecialite', $idspec);
+        $query->setParameter('idsession', $idses);
+
+
+
+
+        $idetudeva = $query->getResult();
+        $nbmoysup=0;
+        foreach($idetudeva as $et){
+
+
+
+            if($this->moyennesemecusemestrielle($et['studentid'],$idsem,$idanac,$idspec,$idses) >=0 and $this->moyennesemecusemestrielle($et['studentid'],$idsem,$idanac,$idspec,$idses)<8){
+
+                $nbmoysup=$nbmoysup + 1;
+
+            }
+
+
+        }
+        $nbsupsemestrielle=$nbmoysup ;
+
+        return $nbsupsemestrielle ;
+
+
+
+
+
+
+
+
+
+
+
+
+    }
+
+
+
+    public function nbmoyennesemecuinfdsemestrielle( $idspec, $idsem, $idses, $idanac)
+    {
+
+
+        $rsm = new ResultSetMapping();
+
+        $rsm->addScalarResult('studentid', 'studentid');
+
+
+
+        $sql = "SELECT  DISTINCT studentid FROM `halfyearly_delib` WHERE   specialityid=:idspecialite  and acadyearid=:idanac  and semesterid=:idsemestre and sessionid=:idsession  ";
+        $query = $this->manager->createNativeQuery($sql, $rsm);
+
+
+
+        $query->setParameter('idanac', $idanac );
+
+        $query->setParameter('idsemestre', $idsem);
+
+        $query->setParameter('idspecialite', $idspec);
+        $query->setParameter('idsession', $idses);
+
+
+
+
+        $idetudeva = $query->getResult();
+        $nbmoysupi=0;
+        foreach($idetudeva as $et){
+
+
+
+
+
+
+
+
+            if($this->moyennesemecusemestrielle($et['studentid'],$idsem,$idanac,$idspec,$idses)>=8 and $this->moyennesemecusemestrielle($et['studentid'],$idsem,$idanac,$idspec,$idses) <10){
+
+                $nbmoysupi=$nbmoysupi + 1;
+
+            }
+
+
+        }
+        $nbsupisemestrielle=$nbmoysupi ;
+
+        return $nbsupisemestrielle;
+
+
+
+
+
+
+
+
+
+
+
+
+    }
+
+
+
+    public function nbmoyennesemecusupdxsemestrielle( $idspec, $idsem, $idses, $idanac)
+    {
+
+
+        $rsm = new ResultSetMapping();
+
+        $rsm->addScalarResult('studentid', 'studentid');
+
+
+
+        $sql = "SELECT  DISTINCT studentid FROM `halfyearly_delib` WHERE   specialityid=:idspecialite  and acadyearid=:idanac  and semesterid=:idsemestre and sessionid=:idsession  ";
+        $query = $this->manager->createNativeQuery($sql, $rsm);
+
+
+
+        $query->setParameter('idanac', $idanac );
+
+        $query->setParameter('idsemestre', $idsem);
+
+        $query->setParameter('idspecialite', $idspec);
+        $query->setParameter('idsession', $idses);
+
+
+
+
+        $idetudeva = $query->getResult();
+        $nbmoysupdx=0;
+        foreach($idetudeva as $et){
+
+
+
+
+
+
+
+
+
+
+
+            if($this->moyennesemecusemestrielle($et['studentid'],$idsem,$idanac,$idspec,$idses) >=10){
+
+                $nbmoysupdx=$nbmoysupdx + 1;
+
+            }
+
+
+        }
+        $nbsupdxsemestrielle=$nbmoysupdx ;
+
+        return $nbsupdxsemestrielle ;
+
+
+
+
+
+
+
+
+
+
+
+
+    }
+
+
+    public function nbsemadmissemestrielle( $idspec, $idsem, $idses, $idanac)
+    {
+
+
+
+
+        $rsm = new ResultSetMapping();
+
+        $rsm->addScalarResult('nbidetudiant', 'nbidetudiant');
+
+
+
+        $sql = "SELECT   count(DISTINCT halfyearly_delib.studentid) as nbidetudiant FROM `halfyearly_delib` WHERE   specialityid=:idspecialite  and acadyearid=:idanac  and semesterid=:idsemestre and sessionid=:idsession and decision='ADMIS'  ";
+        $query = $this->manager->createNativeQuery($sql, $rsm);
+
+
+
+        $query->setParameter('idanac', $idanac );
+
+        $query->setParameter('idsemestre', $idsem);
+
+        $query->setParameter('idspecialite', $idspec);
+        $query->setParameter('idsession', $idses);
+
+
+
+
+        $idetudevad = $query->getResult();
+
+        foreach($idetudevad as $eta){
+
+
+
+            $nombreetudiant=$eta['nbidetudiant'];
+
+
+
+
+        }
+
+
+        return    $nombreetudiant;
+    }
+
+
+
+
+
+
+
+
+
+    public function nbsemrefusesemestrielle( $idspec, $idsem, $idses, $idanac)
+    {
+
+
+
+
+
+        $rsm = new ResultSetMapping();
+
+        $rsm->addScalarResult('nbidetudiantrefuse', 'nbidetudiantrefuse');
+
+
+
+        $sql = "SELECT   count(DISTINCT halfyearly_delib.studentid) as nbidetudiantrefuse FROM `halfyearly_delib` WHERE   specialityid=:idspecialite  and acadyearid=:idanac  and semesterid=:idsemestre and sessionid=:idsession and decision='REFUSE' ";
+        $query = $this->manager->createNativeQuery($sql, $rsm);
+
+
+
+        $query->setParameter('idanac', $idanac );
+
+        $query->setParameter('idsemestre', $idsem);
+
+        $query->setParameter('idspecialite', $idspec);
+        $query->setParameter('idsession', $idses);
+
+
+
+
+        $idetudevadref = $query->getResult();
+
+        foreach($idetudevadref as $etaref){
+
+
+
+            $nombreetudiantrefuse=$etaref['nbidetudiantrefuse'];
+
+
+
+
+        }
+
+
+        return    $nombreetudiantrefuse;
+    }
+
 
 
     //end functions

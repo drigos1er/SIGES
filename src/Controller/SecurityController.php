@@ -147,7 +147,7 @@ class SecurityController extends AbstractController
 
 
         $userprofile= $this->getUser();
-        if($userprofile->getUsername()=="usersoutenance" || $userprofile->getUsername()=="usermdsimcc" || $userprofile->getUsername()=="usermdsinex"  ){
+        if($userprofile->getUsername()=="usersoutenance" || $userprofile->getUsername()=="usermdsimcc" || $userprofile->getUsername()=="usermdsinex" || $userprofile->getUsername()=="userrmmcc"  ){
 
             $anacad = '2018-2019';
             $request->getSession()->set('anacad', $anacad);
@@ -214,7 +214,7 @@ class SecurityController extends AbstractController
 
 
 
-            $deadline='2020-02-19 00:00:00';
+            $deadline='2020-02-28 00:00:00';
             $request->getSession()->set('deadline', $deadline);
             if ($userprofile->getPassword()== '$2y$13$NWNUsZWJCUM91KaoWBcbaO0KRGfU6XCQl6gWH9/rtv8f9bUc7FCAi') {
                 return $this->redirectToRoute('security_updpwd', array('id'=>$userprofile->getId()));
@@ -231,7 +231,7 @@ class SecurityController extends AbstractController
 
             $request->getSession()->set('semtype', $semtype);
 
-            $deadline='2020-02-19 00:00:00';
+            $deadline='2020-02-28 00:00:00';
             $request->getSession()->set('deadline', $deadline);
             if ($userprofile->getPassword()== '$2y$13$NWNUsZWJCUM91KaoWBcbaO0KRGfU6XCQl6gWH9/rtv8f9bUc7FCAi') {
                 return $this->redirectToRoute('security_updpwd', array('id'=>$userprofile->getId()));
@@ -249,7 +249,7 @@ class SecurityController extends AbstractController
 
             $request->getSession()->set('semtype', $semtype);
 
-            $deadline='2020-02-15 00:00:00';
+            $deadline='2020-02-28 00:00:00';
             $request->getSession()->set('deadline', $deadline);
             if ($userprofile->getPassword()== '$2y$13$NWNUsZWJCUM91KaoWBcbaO0KRGfU6XCQl6gWH9/rtv8f9bUc7FCAi') {
                 return $this->redirectToRoute('security_updpwd', array('id'=>$userprofile->getId()));

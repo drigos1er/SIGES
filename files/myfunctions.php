@@ -161,8 +161,6 @@ if (  $levelid=='M2'){
 }
 
 
-
-
 $result = $bdd->prepare('SELECT *  FROM  speciality where id=:idspec  ');
 $result->execute(array( 'idspec' => $idspec));
 
@@ -171,20 +169,6 @@ $respec = $result->fetch();
 
 
 $libspec=$respec['specname'];
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -266,11 +250,6 @@ function tpaverages($studentid,$semesterid,$ueid,$ecuid,$idanac,$bdd)
 
 
 }
-
-
-
-
-
 function tpaveragespv($studentid,$semesterid,$ueid,$ecuid,$idanac,$bdd)
 {
     $reptp = $bdd->prepare('SELECT average  FROM  student_averages where studentid=:studentid and semesterid=:idsem and typeof_averages=:typeaver and ueid=:idue and ecuid=:idecu and acadyearid=:idanac');
@@ -350,14 +329,6 @@ function averages($studentid,$semesterid,$ueid,$ecuid,$idanac,$typeaver,$bdd)
 
 
 }
-
-
-
-
-
-
-
-
 function examnotes($studentid,$semesterid,$idses,$ueid,$ecuid,$idanac,$typeaver,$bdd)
 {
     $reptp = $bdd->prepare('SELECT exam_notes  FROM  student_examnotes where studentid=:studentid and semesterid=:idsem and sessionid=:idses and typeof_examnotes=:typeaver and ueid=:idue and ecuid=:idecu and acadyearid=:idanac');
@@ -375,7 +346,6 @@ function examnotes($studentid,$semesterid,$idses,$ueid,$ecuid,$idanac,$typeaver,
 
 
 }
-
 
 
 function ecuaverage($studentid,$idspec,$idsem,$idecu,$idanac,$idses,$bdd){
@@ -788,9 +758,6 @@ function ecuaverage($studentid,$idspec,$idsem,$idecu,$idanac,$idses,$bdd){
 
 
 }
-
-
-
 function moyenneecu($studentid,$idspec,$idsem,$idecu,$idanac,$idses,$bdd){
 
     $results = $bdd->prepare('SELECT *  FROM  ecu_speciality  where  semester_id=:idsem  and specialityid_id=:idspec and acadyearid=:idanac and ecuid_id=:idecu ');
@@ -810,8 +777,8 @@ function moyenneecu($studentid,$idspec,$idsem,$idecu,$idanac,$idses,$bdd){
             if($idses=='SE1'){
 
 
-                  $avercc=theoaveragespv($studentid,$idsem,$resecu['ueid_id'],$idecu,$idanac,$bdd);
-                  $notex=theoexamnotes($studentid,$idsem,$idses,$resecu['ueid_id'],$idecu,$idanac,$bdd);
+                $avercc=theoaveragespv($studentid,$idsem,$resecu['ueid_id'],$idecu,$idanac,$bdd);
+                $notex=theoexamnotes($studentid,$idsem,$idses,$resecu['ueid_id'],$idecu,$idanac,$bdd);
 
 
 
@@ -1029,7 +996,7 @@ function moyenneecu($studentid,$idspec,$idsem,$idecu,$idanac,$idses,$bdd){
 
 
 
-                if ( $moyccs=="") {
+                if ( $reso['average']=="") {
                     $moyccs ="";
                 } else {
                     $moyccs = 0.4 * $reso['average'] + 0.6 * $resx['exam_notes'];
@@ -1219,7 +1186,6 @@ function moyenneecu($studentid,$idspec,$idsem,$idecu,$idanac,$idses,$bdd){
 }
 
 
-
 function creditue($idsem,$idue,$idanac,$idspec,$bdd){
 
 
@@ -1247,9 +1213,6 @@ function creditue($idsem,$idue,$idanac,$idspec,$bdd){
 
 
 }
-
-
-
 
 
 function moyenneue($idetudiant,$idsem,$idue,$idanac,$idspec,$idses,$bdd){
@@ -1342,9 +1305,7 @@ function creditecu($idsem,$idecu,$idanac,$idspec,$bdd){
 }
 
 
-
-
-public function sumcreditmajor($idspec,$idsem,$idanac,$bdd)
+ function sumcreditmajor($idspec,$idsem,$idanac,$bdd)
 {
 
     $credmaj= $bdd->prepare('SELECT SUM(creditvalue) as somcreditmajor FROM `ue_speciality`   WHERE specialityid_id=:idspec and semester_id=:idsem and acadyearid=:idanac and creditvalue BETWEEN 4 AND 6 ' );
@@ -1361,7 +1322,7 @@ public function sumcreditmajor($idspec,$idsem,$idanac,$bdd)
 
 }
 
-public function sumcreditminor($idspec,$idsem,$idanac,$bdd)
+function sumcreditminor($idspec,$idsem,$idanac,$bdd)
 {
 
     $credmin= $bdd->prepare('SELECT SUM(creditvalue) as somcreditminor FROM `ue_speciality`   WHERE specialityid_id=:idspec and semester_id=:idsem and acadyearid=:idanac and creditvalue BETWEEN 2 AND 3 ' );
@@ -1380,7 +1341,7 @@ public function sumcreditminor($idspec,$idsem,$idanac,$bdd)
 
 
 
-public function uemajorsemaverage($studentid, $idspec,  $idsem, $idsession, $idanac,$bdd)
+function uemajorsemaverage($studentid, $idspec,  $idsem, $idsession, $idanac,$bdd)
 {
 
 
@@ -1393,13 +1354,13 @@ public function uemajorsemaverage($studentid, $idspec,  $idsem, $idsession, $ida
     while($uemaj = $resulmaj->fetch()) {
 
 
-        $moyennemajorpondere = number_format(($moyennemajorpondere + (moyenneue($studentid, $idsem, $uemaj['ueid_id'], $idsem, $idsession, $idanac)* $uemaj['creditvalue'])), 2);
+        $moyennemajorpondere = number_format(($moyennemajorpondere + (moyenneue($studentid, $idsem, $uemaj['ueid_id'], $idanac, $idspec, $idsession,$bdd)* $uemaj['creditvalue'])), 2);
 
     }
 
 
 
-    $moyennesemestremajor = number_format(($moyennemajorpondere /sumcreditmajor($idspec,$idsem,$idanac)), 2);
+    $moyennesemestremajor = number_format(($moyennemajorpondere /sumcreditmajor($idspec,$idsem,$idanac,$bdd)), 2);
 
     return $moyennesemestremajor;
 
@@ -1412,7 +1373,7 @@ public function uemajorsemaverage($studentid, $idspec,  $idsem, $idsession, $ida
 
 
 
-public function ueminorsemaverage($studentid, $idspec,  $idsem, $idsession, $idanac,$bdd)
+function ueminorsemaverage($studentid, $idspec,  $idsem, $idsession, $idanac,$bdd)
 {
 
 
@@ -1425,13 +1386,13 @@ public function ueminorsemaverage($studentid, $idspec,  $idsem, $idsession, $ida
     while($uemin = $resulmin->fetch()) {
 
 
-        $moyenneminorpondere = number_format(($moyenneminorpondere + (moyenneue($studentid, $idsem, $uemin['ueid_id'], $idsem, $idsession, $idanac)* $uemin['creditvalue'])), 2);
+        $moyenneminorpondere = number_format(($moyenneminorpondere + (moyenneue($studentid, $idsem, $uemin['ueid_id'], $idanac, $idspec, $idsession,$bdd)* $uemin['creditvalue'])), 2);
 
     }
 
 
 
-    $moyennesemestreminor = number_format(($moyenneminorpondere /sumcreditminor($idspec,$idsem,$idanac)), 2);
+    $moyennesemestreminor = number_format(($moyenneminorpondere /sumcreditminor($idspec,$idsem,$idanac,$bdd)), 2);
 
     return $moyennesemestreminor;
 
@@ -1449,80 +1410,80 @@ public function ueminorsemaverage($studentid, $idspec,  $idsem, $idsession, $ida
 function creditvalideue($idetudiant,$idsem,$idue,$idanac,$idspec,$idses,$bdd)
 {
 
-  if($idanac=='2019-2020'){
+    if($idanac=='2019-2020'){
 
-      $creditvalideue=0;
+        $creditvalideue=0;
 
-      if(moyenneue($idetudiant,$idsem,$idue,$idanac,$idspec,$idses,$bdd) >= 10){
+        if(moyenneue($idetudiant,$idsem,$idue,$idanac,$idspec,$idses,$bdd) >= 10){
 
-          $creditvalideue=creditue($idsem,$idue,$idanac,$idspec,$bdd);
-      }else{
+            $creditvalideue=creditue($idsem,$idue,$idanac,$idspec,$bdd);
+        }else{
 
-          $typeue= $bdd->prepare('SELECT * FROM `ue_speciality`   WHERE specialityid_id=:idspec and semester_id=:idsem and acadyearid=:idanac and ueid=:ueid ' );
-          $typeue->execute(array('idsem'=> $idsem,'idspec'=>$idspec,'idanac'=>$idanac,'ueid'=>$idue));
+            $typeue= $bdd->prepare('SELECT * FROM `ue_speciality`   WHERE specialityid_id=:idspec and semester_id=:idsem and acadyearid=:idanac and ueid_id=:ueid ' );
+            $typeue->execute(array('idsem'=> $idsem,'idspec'=>$idspec,'idanac'=>$idanac,'ueid'=>$idue));
 
-          $uetype = $typeue->fetch();
+            $uetype = $typeue->fetch();
 
 
-          if ($uetype['creditvalue'] >= 4 and $uetype['creditvalue'] <= 6 and uemajorsemaverage($idetudiant, $idspec,  $idsem, $idses, $idanac,$bdd) >=10 ) {
 
+            if ($uetype['creditvalue'] >= 4 and $uetype['creditvalue'] <= 6 and uemajorsemaverage($idetudiant, $idspec,  $idsem, $idses, $idanac,$bdd) >=10 ) {
 
 
 
 
-              $resmaj= $bdd->prepare('SELECT  DISTINCT ueid_id,creditvalue FROM `ue_speciality`   WHERE  specialityid_id=:idspec  and  acadyearid=:idanac and creditvalue BETWEEN 4 AND 6 and semester_id=:idsem ' );
-              $resmaj->execute(array('idsem'=> $idsem,'idspec'=> $idspec,'idanac'=> $idanac));
 
+                $resmaj= $bdd->prepare('SELECT  DISTINCT ueid_id,creditvalue FROM `ue_speciality`   WHERE  specialityid_id=:idspec  and  acadyearid=:idanac and creditvalue BETWEEN 4 AND 6 and semester_id=:idsem ' );
+                $resmaj->execute(array('idsem'=> $idsem,'idspec'=> $idspec,'idanac'=> $idanac));
 
-              $credit = 1;
-              while($uemajo = $resmaj->fetch()) {
 
-                  $resulecu= $bdd->prepare('SELECT  * FROM `ecu_speciality`   WHERE  specialityid_id=:idspec  and  acadyearid=:idanac and ueid=:ueid and semester_id=:idsem ' );
-                  $resulecu->execute(array('idsem'=> $idsem,'idspec'=> $idspec,'idanac'=> $idanac,'ueid' => $uemajo['ueid_id']));
+                $credit = 1;
+                while($uemajo = $resmaj->fetch()) {
 
+                    $resulecu= $bdd->prepare('SELECT  * FROM `ecu_speciality`   WHERE  specialityid_id=:idspec  and  acadyearid=:idanac and ueid_id=:ueid and semester_id=:idsem ' );
+                    $resulecu->execute(array('idsem'=> $idsem,'idspec'=> $idspec,'idanac'=> $idanac,'ueid' => $uemajo['ueid_id']));
 
-                  $moyennetotalponderec = 0;
-                  while($ecumaj = $resulecu->fetch()) {
-                      $moyennetotalponderec = $moyennetotalponderec + (moyenneecu($idetudiant, $idspec,  $idsem,$ecumaj['ecuid_id'], $idses, $idanac,$bdd) * $ecumaj['creditvalue']);
 
-                  }
+                    $moyennetotalponderec = 0;
+                    while($ecumaj = $resulecu->fetch()) {
 
-                  $moyenneuecreduev = number_format(($moyennetotalponderec / $uemajo['creditvalue']), 2);
 
 
+                        $moyennetotalponderec = $moyennetotalponderec + (moyenneecu($idetudiant,$idspec,$idsem,$ecumaj['ecuid_id'], $idanac, $idses,$bdd) * $ecumaj['creditvalue']);
 
-                  if ($moyenneuecreduev < 7) {
+                    }
 
-                      $credit = 0 * $credit;
+                    $moyenneuecreduev = number_format(($moyennetotalponderec / $uemajo['creditvalue']), 2);
 
-                  } else {
 
-                      $credit = 1 * $credit;
 
-                  }
+                    if ($moyenneuecreduev < 7) {
 
+                        $credit = 0 * $credit;
 
+                    } else {
 
+                        $credit = 1 * $credit;
 
-                  }
+                    }
 
-              if ($credit == 0) {
 
 
-                  $creditvalideue = 0;
 
+                }
 
-              } else {
+                if ($credit == 0) {
 
 
-                  $creditvalideue=creditue($idsem,$idue,$idanac,$idspec,$bdd);
+                    $creditvalideue = 0;
 
 
-              }
+                } else {
 
 
+                    $creditvalideue=creditue($idsem,$idue,$idanac,$idspec,$bdd);
 
 
+                }
 
 
 
@@ -1530,68 +1491,68 @@ function creditvalideue($idetudiant,$idsem,$idue,$idanac,$idspec,$idses,$bdd)
 
 
 
-          }
 
 
 
 
-          elseif ($uetype['creditvalue'] >= 2 and $uetype['creditvalue'] <= 3 and ueminorsemaverage($idetudiant, $idspec,  $idsem, $idses, $idanac,$bdd) >=10 ) {
+            }
 
 
+            elseif ($uetype['creditvalue'] >= 2 and $uetype['creditvalue'] <= 3 and ueminorsemaverage($idetudiant, $idspec,  $idsem, $idses, $idanac,$bdd) >=10 ) {
 
 
 
-              $resmin= $bdd->prepare('SELECT  DISTINCT ueid_id,creditvalue FROM `ue_speciality`   WHERE  specialityid_id=:idspec  and  acadyearid=:idanac and creditvalue BETWEEN 2 AND 3 and semester_id=:idsem ' );
-              $resmin->execute(array('idsem'=> $idsem,'idspec'=> $idspec,'idanac'=> $idanac));
 
 
-              $credit = 1;
-              while($uemino = $resmin->fetch()) {
+                $resmin= $bdd->prepare('SELECT  DISTINCT ueid_id,creditvalue FROM `ue_speciality`   WHERE  specialityid_id=:idspec  and  acadyearid=:idanac and creditvalue BETWEEN 2 AND 3 and semester_id=:idsem ' );
+                $resmin->execute(array('idsem'=> $idsem,'idspec'=> $idspec,'idanac'=> $idanac));
 
-                  $resulecu= $bdd->prepare('SELECT  * FROM `ecu_speciality`   WHERE  specialityid_id=:idspec  and  acadyearid=:idanac and ueid=:ueid and semester_id=:idsem ' );
-                  $resulecu->execute(array('idsem'=> $idsem,'idspec'=> $idspec,'idanac'=> $idanac,'ueid' => $uemino['ueid_id']));
 
+                $credit = 1;
+                while($uemino = $resmin->fetch()) {
 
-                  $moyennetotalponderec = 0;
-                  while($ecumin = $resulecu->fetch()) {
-                      $moyennetotalponderec = $moyennetotalponderec + (moyenneecu($idetudiant, $idspec,  $idsem,$ecumin['ecuid_id'], $idses, $idanac,$bdd) * $ecumin['creditvalue']);
+                    $resulecu= $bdd->prepare('SELECT  * FROM `ecu_speciality`   WHERE  specialityid_id=:idspec  and  acadyearid=:idanac and ueid_id=:ueid and semester_id=:idsem ' );
+                    $resulecu->execute(array('idsem'=> $idsem,'idspec'=> $idspec,'idanac'=> $idanac,'ueid' => $uemino['ueid_id']));
 
-                  }
 
-                  $moyenneuecreduev = number_format(($moyennetotalponderec / $uemino['creditvalue']), 2);
+                    $moyennetotalponderec = 0;
+                    while($ecumin = $resulecu->fetch()) {
+                        $moyennetotalponderec = $moyennetotalponderec + (moyenneecu($idetudiant, $idspec,  $idsem,$ecumin['ecuid_id'], $idanac, $idses,$bdd) * $ecumin['creditvalue']);
 
+                    }
 
+                    $moyenneuecreduev = number_format(($moyennetotalponderec / $uemino['creditvalue']), 2);
 
-                  if ($moyenneuecreduev < 7) {
 
-                      $credit = 0 * $credit;
 
-                  } else {
+                    if ($moyenneuecreduev < 7) {
 
-                      $credit = 1 * $credit;
+                        $credit = 0 * $credit;
 
-                  }
+                    } else {
 
+                        $credit = 1 * $credit;
 
+                    }
 
 
-              }
 
-              if ($credit == 0) {
 
+                }
 
-                  $creditvalideue = 0;
+                if ($credit == 0) {
 
 
-              } else {
+                    $creditvalideue = 0;
 
 
-                  $creditvalideue=creditue($idsem,$idue,$idanac,$idspec,$bdd);
+                } else {
 
 
-              }
+                    $creditvalideue=creditue($idsem,$idue,$idanac,$idspec,$bdd);
 
 
+                }
 
 
 
@@ -1601,25 +1562,25 @@ function creditvalideue($idetudiant,$idsem,$idue,$idanac,$idspec,$idses,$bdd)
 
 
 
-          }
 
 
+            }
 
-          else{
 
-              $creditvalideue=0;
-          }
 
+            else{
 
+                $creditvalideue=0;
+            }
 
 
 
+        }
 
 
-      }
+        return $creditvalideue;
 
 
-      return $creditvalideue;
 
 
 
@@ -1627,73 +1588,71 @@ function creditvalideue($idetudiant,$idsem,$idue,$idanac,$idspec,$idses,$bdd)
 
 
 
+    }
+    else{
 
 
-  }
-  else{
+        $creditvalideue=0;
 
+        if(moyenneue($idetudiant,$idsem,$idue,$idanac,$idspec,$idses,$bdd) >= 10){
 
-      $creditvalideue=0;
+            $creditvalideue=creditue($idsem,$idue,$idanac,$idspec,$bdd);
+        }
 
-      if(moyenneue($idetudiant,$idsem,$idue,$idanac,$idspec,$idses,$bdd) >= 10){
+        elseif(moyennesemestre($idetudiant,$idsem,$idanac,$idspec,$idses,$bdd)>= 10)
+        {
 
-          $creditvalideue=creditue($idsem,$idue,$idanac,$idspec,$bdd);
-      }
+            $resul= $bdd->prepare('SELECT *  FROM  `ue_speciality`   WHERE semester_id=:idsem  and specialityid_id=:idspec and acadyearid=:idanac' );
+            $resul->execute(array('idsem'=> $idsem,'idspec'=> $idspec,'idanac'=> $idanac));
+            $uecredit=1;
+            while($rue = $resul->fetch()){
 
-      elseif(moyennesemestre($idetudiant,$idsem,$idanac,$idspec,$idses,$bdd)>= 10)
-      {
+                $iduec=$rue['ueid_id'];
 
-          $resul= $bdd->prepare('SELECT *  FROM  `ue_speciality`   WHERE semester_id=:idsem  and specialityid_id=:idspec and acadyearid=:idanac' );
-          $resul->execute(array('idsem'=> $idsem,'idspec'=> $idspec,'idanac'=> $idanac));
-          $uecredit=1;
-          while($rue = $resul->fetch()){
 
-              $iduec=$rue['ueid_id'];
 
 
+                if(moyenneue($idetudiant,$idsem,$iduec,$idanac,$idspec,$idses,$bdd) < 7){
 
+                    $uecredit= 0 * $uecredit;
 
-              if(moyenneue($idetudiant,$idsem,$iduec,$idanac,$idspec,$idses,$bdd) < 7){
+                }else{
 
-                  $uecredit= 0 * $uecredit;
+                    $uecredit= 1 * $uecredit;
 
-              }else{
+                }
+                $_SESSION['valcred']=$uecredit;
+            }
 
-                  $uecredit= 1 * $uecredit;
+            if( $_SESSION['valcred']==0){
 
-              }
-              $_SESSION['valcred']=$uecredit;
-          }
 
-          if( $_SESSION['valcred']==0){
+                $creditvalideue=0;
 
 
-              $creditvalideue=0;
 
+            }else{
 
 
-          }else{
+                $creditvalideue=creditue($idsem,$idue,$idanac,$idspec,$bdd);
 
 
-              $creditvalideue=creditue($idsem,$idue,$idanac,$idspec,$bdd);
+            }
 
 
-          }
 
 
 
+        }else{
 
+            $creditvalideue=0;
+        }
 
-      }else{
+        return $creditvalideue;
 
-          $creditvalideue=0;
-      }
 
-      return $creditvalideue;
 
-
-
-  }
+    }
 
 
 
@@ -1806,71 +1765,128 @@ function tcredit($idetudiant,$idsem,$idanac,$idspec,$idses,$bdd)
 {
 
 
-    $res = $bdd->prepare('SELECT *  FROM  `ue_speciality`   WHERE semester_id=:idsem  and specialityid_id=:idspec and acadyearid=:idanac  ');
-    $res->execute(array('idsem' => $idsem, 'idspec' => $idspec,'idanac' => $idanac));
-    $tcredit=0;
-    while ($resecucred = $res->fetch()) {
-
-        $idues=$resecucred['ueid_id'];
+    if($idanac=='2019-2020'){
 
 
 
+        $res = $bdd->prepare('SELECT *  FROM  `ue_speciality`   WHERE semester_id=:idsem  and specialityid_id=:idspec and acadyearid=:idanac  ');
+        $res->execute(array('idsem' => $idsem, 'idspec' => $idspec,'idanac' => $idanac));
+        $tcredit=0;
+        while ($resecucred = $res->fetch()) {
 
-
-
-        if (moyenneue($idetudiant,$idsem,$idues,$idanac,$idspec,$idses,$bdd) >= 10) {
-
-            $tcredit = $tcredit + $resecucred['creditvalue'];
-
-
-        }
-        elseif (moyennesemestre($idetudiant,$idsem,$idanac,$idspec,$idses,$bdd) >= 10) {
-
-            if (moyenneue($idetudiant,$idsem,$idues,$idanac,$idspec,$idses,$bdd) >= 7) {
-
-
-
-                $ress = $bdd->prepare('SELECT *  FROM  `ue_speciality`   WHERE semester_id=:idsem  and specialityid_id=:idspec and acadyearid=:idanac  ');
-                $ress->execute(array('idsem' => $idsem, 'idspec' => $idspec,'idanac'=> $idanac));
-                $creditv = 1;
-                while ($resecucredv = $ress->fetch()) {
-
-                    $iduesv=$resecucredv['ueid_id'];
+            $idues=$resecucred['ueid_id'];
 
 
 
 
-                    if (moyenneue($idetudiant,$idsem,$iduesv,$idanac,$idspec,$idses,$bdd) < 7) {
 
-                        $creditv = 0 * $creditv;
+
+            if (moyenneue($idetudiant,$idsem,$idues,$idanac,$idspec,$idses,$bdd) >= 10) {
+
+                $tcredit = $tcredit + $resecucred['creditvalue'];
+            }else{
+
+                if ($resecucred['creditvalue'] >= 4 and $resecucred['creditvalue'] <= 6 and uemajorsemaverage($idetudiant, $idspec, $idsem, $idses, $idanac, $bdd) >= 10) {
+
+                    $resmaj = $bdd->prepare('SELECT  DISTINCT ueid_id,creditvalue FROM `ue_speciality`   WHERE  specialityid_id=:idspec  and  acadyearid=:idanac and creditvalue BETWEEN 4 AND 6 and semester_id=:idsem ');
+                    $resmaj->execute(array('idsem' => $idsem, 'idspec' => $idspec, 'idanac' => $idanac));
+                    $creditv = 1;
+                    while ($uemajo = $resmaj->fetch()) {
+
+
+                        if (moyenneue($idetudiant,$idsem,$uemajo['ueid_id'],$idanac,$idspec,$idses,$bdd)< 7) {
+
+                            $creditv = 0 * $creditv;
+
+                        } else {
+
+                            $creditv = 1 * $creditv;
+
+                        }
+
+
+
+                    }
+
+
+                    if ($creditv == 0) {
+
+
+                        $tcredit = $tcredit + 0;
+
 
                     } else {
 
-                        $creditv = 1 * $creditv;
+
+                        $tcredit = $tcredit + $resecucred['creditvalue'];
+
+
+                    }
+
+
+
+
+
+
+                }
+
+                elseif ($resecucred['creditvalue'] >= 2 and $resecucred['creditvalue'] <= 3 and ueminorsemaverage($idetudiant, $idspec, $idsem, $idses, $idanac, $bdd) >= 10) {
+
+
+                    $resmin = $bdd->prepare('SELECT  DISTINCT ueid_id,creditvalue FROM `ue_speciality`   WHERE  specialityid_id=:idspec  and  acadyearid=:idanac and creditvalue BETWEEN 2 AND 3 and semester_id=:idsem ');
+                    $resmin->execute(array('idsem' => $idsem, 'idspec' => $idspec, 'idanac' => $idanac));
+
+
+                    $creditv = 1;
+                    while ($uemino = $resmin->fetch()) {
+
+
+                        if (moyenneue($idetudiant,$idsem,$uemino['ueid_id'],$idanac,$idspec,$idses,$bdd)< 7) {
+
+                            $creditv = 0 * $creditv;
+
+                        } else {
+
+                            $creditv = 1 * $creditv;
+
+                        }
+
+
+                    }
+
+                    if ($creditv == 0) {
+
+
+                        $tcredit = $tcredit + 0;
+
+
+                    } else {
+
+
+                        $tcredit = $tcredit + $resecucred['creditvalue'];
+
 
                     }
 
 
                 }
-
-                if ($creditv == 0) {
-
+                else {
 
                     $tcredit = $tcredit + 0;
-
-
-                } else {
-
-
-                    $tcredit = $tcredit + $resecucred['creditvalue'];
-
-
                 }
 
+
+
+
+
+
+
+
             }
-            else {
-                $tcredit = $tcredit + 0;
-            }
+
+
+
+
 
         }
 
@@ -1878,10 +1894,8 @@ function tcredit($idetudiant,$idsem,$idanac,$idspec,$idses,$bdd)
 
 
 
-        else {
+        return $tcredit;
 
-            $tcredit = $tcredit + 0;
-        }
 
 
 
@@ -1892,7 +1906,113 @@ function tcredit($idetudiant,$idsem,$idanac,$idspec,$idses,$bdd)
 
 
 
-    return $tcredit;
+    else{
+
+
+
+        $res = $bdd->prepare('SELECT *  FROM  `ue_speciality`   WHERE semester_id=:idsem  and specialityid_id=:idspec and acadyearid=:idanac  ');
+        $res->execute(array('idsem' => $idsem, 'idspec' => $idspec,'idanac' => $idanac));
+        $tcredit=0;
+        while ($resecucred = $res->fetch()) {
+
+            $idues=$resecucred['ueid_id'];
+
+
+
+
+
+
+            if (moyenneue($idetudiant,$idsem,$idues,$idanac,$idspec,$idses,$bdd) >= 10) {
+
+                $tcredit = $tcredit + $resecucred['creditvalue'];
+            } elseif (moyennesemestre($idetudiant,$idsem,$idanac,$idspec,$idses,$bdd) >= 10) {
+
+                if (moyenneue($idetudiant,$idsem,$idues,$idanac,$idspec,$idses,$bdd) >= 7) {
+
+
+
+                    $ress = $bdd->prepare('SELECT *  FROM  `ue_speciality`   WHERE semester_id=:idsem  and specialityid_id=:idspec and acadyearid=:idanac  ');
+                    $ress->execute(array('idsem' => $idsem, 'idspec' => $idspec,'idanac'=> $idanac));
+                    $creditv = 1;
+                    while ($resecucredv = $ress->fetch()) {
+
+                        $iduesv=$resecucredv['ueid_id'];
+
+
+
+
+                        if (moyenneue($idetudiant,$idsem,$iduesv,$idanac,$idspec,$idses,$bdd) < 7) {
+
+                            $creditv = 0 * $creditv;
+
+                        } else {
+
+                            $creditv = 1 * $creditv;
+
+                        }
+
+
+                    }
+
+                    if ($creditv == 0) {
+
+
+                        $tcredit = $tcredit + 0;
+
+
+                    } else {
+
+
+                        $tcredit = $tcredit + $resecucred['creditvalue'];
+
+
+                    }
+
+                }
+                else {
+                    $tcredit = $tcredit + 0;
+                }
+
+            }
+
+
+
+
+
+            else {
+
+                $tcredit = $tcredit + 0;
+            }
+
+
+
+
+        }
+
+
+
+
+
+        return $tcredit;
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
 
 function tcreditmaster($idetudiant,$idsem,$idanac,$idspec,$idses,$bdd)
@@ -2038,4 +2158,4 @@ function teachervalid($semesterid,$ueid,$ecuid,$idanac,$idclasse,$bdd)
 
 
 
-}
+

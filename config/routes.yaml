@@ -452,6 +452,71 @@ siges_averclassue:
   defaults: { _controller: App\Controller\DelibSemController::averclassue }
 
 
+
+siges_listaverclassue:
+  path:     /delibarea/listaverclassue
+  defaults: { _controller: App\Controller\DelibSemController::listaverclassue }
+
+
+
+
 siges_enddelib:
   path:     /delibarea/enddelib
   defaults: { _controller: App\Controller\DelibSemController::enddelib }
+
+
+
+
+
+siges_liststattranche:
+  path:     /delibarea/liststattranche
+  defaults: { _controller: App\Controller\DelibSemController::liststattranche }
+
+
+
+siges_liststatdecision:
+  path:     /delibarea/liststatdecision
+  defaults: { _controller: App\Controller\DelibSemController::liststatdecision }
+
+
+
+
+siges_liststatpercentadan:
+  path:     /delibarea/liststatpercentadan
+  defaults: { _controller: App\Controller\DelibSemController::liststatpercentadan }
+
+
+
+siges_deliberationsemestreuniq:
+  path:     /delibarea/deliberationsemestreuniq
+  defaults: { _controller: App\Controller\DelibSemController::deliberationsemestreuniq }
+
+
+
+
+siges_consultationecu:
+  path:     /delibarea/consultationecu
+  defaults: { _controller: App\Controller\DelibSemController::consultationecu }
+
+
+
+
+
+siges_listconsultationecu:
+  path:     /delibarea/listconsultationecu
+  defaults: { _controller: App\Controller\DelibSemController::listconsultationecu }
+
+
+
+
+
+siges_redirectaverageccedituniq:
+  path:     /delibarea/redirectaverageccedituniq
+  defaults: { _controller: App\Controller\DelibSemController::redirectaverageccedituniq }
+
+
+
+
+siges_edituniqaveragecc:
+  path:     /delibarea/edituniqaveragecc
+  defaults: { _controller: App\Controller\DelibSemController::edituniqaveragecc }

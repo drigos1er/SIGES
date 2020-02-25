@@ -1,0 +1,82 @@
+{% extends"layoutdelib.html.twig" %}
+{% block body %}
+
+    <!-- page content -->
+    <div class="container-fluid">
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header card-header-icon" data-background-color="blue">
+                        <i class="material-icons">attachment</i>
+                    </div>
+                    <div class="card-content">
+                        <h4 class="card-title">Consultation de Notes/Moyennes:<span style="font-style: italic; color: grey; font-size: 14px;">  &nbsp;&nbsp;<span style="font-style: italic; color: grey; text-align: center; font-size: 14px;"><span style="font-style: italic; color: grey">  Matricule:{{ app.session.get('idetudiant') }} &nbsp;&nbsp;UE:{{ app.session.get('libueconsultation') }}</span> </h4>
+                        <table id="consultationecu" class="display" cellspacing="0" width="100%">
+                            <thead>
+                            <tr>
+                                <th>ECU</th>
+
+
+
+
+
+                                <th> Contrôle Continu</th>
+
+                                <th> Examen</th>
+                                <th> Moyenne</th>
+                                <th> Contrôle Continu TP</th>
+
+                                <th> Examen TP</th>
+
+                                <th> Moyennne TP</th>
+
+                                <th> Moyennne Final ECU</th>
+
+
+
+
+
+                            </tr>
+                            </thead>
+                            <tfoot>
+                            <tr>
+                                <th>ECU</th>
+
+
+
+
+                                <th> Contrôle Continu</th>
+
+                                <th> Examen</th>
+                                <th> Moyenne</th>
+                                <th> Contrôle Continu TP</th>
+
+                                <th> Examen TP</th>
+
+                                <th> Moyennne TP</th>
+
+                                <th> Moyennne Final ECU</th>
+
+
+
+
+
+                            </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+
+
+    <!-- /page content -->
+
+
+
+{% endblock %}

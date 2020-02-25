@@ -1,0 +1,63 @@
+{% extends"layoutaverclasseue.html.twig" %}
+{% block body %}
+
+    <!-- page content -->
+    <div class="container-fluid">
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header card-header-icon" data-background-color="blue">
+                        <i class="material-icons">timeline</i>
+                    </div>
+                    <div class="card-content">
+                        <h4 class="card-title">TABLEAU DE DELIBERATION &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp&nbsp;&nbsp&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp&nbsp;&nbsp&nbsp;&nbsp; <button class="btn btn-info"> Moyenne Classe par ECU</button>  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp&nbsp;&nbsp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp&nbsp;&nbsp&nbsp;&nbsp; <span style="font-size: 12px;">{{ app.session.get('idspec') }}&nbsp;&nbsp;{{ app.session.get('anacad') }}&nbsp;&nbsp;{{ app.session.get('niv') }}&nbsp;&nbsp;{{ app.session.get('sem') }}&nbsp;&nbsp;{{ app.session.get('ses') }}</h4>
+                        <table id="averclassue"  class="display" cellspacing="0" width="100%" style="width:100%" >
+                            <thead>
+                            <tr>
+                                <th>Code ECU</th>
+                                <th>Libellé ECU</th>
+                                <th>0&le;Moy< 8</th>
+                                <th>8&le;Moy< 10</th>
+                                <th>Moy&ge;10</th>
+                                <th>Forte Moyenne </th>
+                                <th>Faible Moyenne </th>
+                                <th>Moyenne Classe</th>
+
+                            </tr>
+                            </thead>
+
+                            <tfoot><tr>
+
+                                <th>Code ECU</th>
+                                <th>Libellé ECU</th>
+                                <th>0&le;Moy< 8</th>
+                                <th>8&le;Moy< 10</th>
+                                <th>Moy&ge;10</th>
+                                <th>Forte Moyenne </th>
+                                <th>Faible Moyenne </th>
+                                <th>Moyenne Classe</th>
+
+
+                            </tr></tfoot>
+                            <tbody class="card-title">
+
+                            </tbody>
+                        </table>
+
+
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+
+
+    </div>
+    <!-- /page content -->
+
+
+
+{% endblock %}

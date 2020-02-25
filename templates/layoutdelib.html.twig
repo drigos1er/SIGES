@@ -176,7 +176,7 @@
                     <div class="collapse" id="tablesExamples">
                         <ul class="nav">
                             {%if( (app.session.get('speciddelib') =='RTEL') and (app.session.get('semiddelib')=='SEM3') and (app.session.get('anacad')=='2019-2020') )%}
-                                <li class="sub_menu"><a href="/SIGES/files/pvdelibRTELSEM320182019.php?levelid={{ app.session.get('leveliddelib') }}&amp;idsem={{ app.session.get('semiddelib') }}&amp;specid={{ app.session.get('speciddelib') }}&amp;idses={{ app.session.get('idsesdelib')  }}&amp;idanac={{ app.session.get('idanacad') }}&amp;typesem={{ app.session.get('semtypedelib') }}" target="_blank"><i class="material-icons">list</i>PV de Déliberation</a>
+                                <li class="sub_menu"><a href="/SIGES/files/pvdelibRTELSEM320182019.php?levelid={{ app.session.get('leveliddelib') }}&amp;idsem={{ app.session.get('semiddelib') }}&amp;specid={{ app.session.get('speciddelib') }}&amp;idses={{ app.session.get('idsesdelib')  }}&amp;idanac={{ app.session.get('anacad') }}&amp;typesem={{ app.session.get('semtypedelib') }}" target="_blank"><i class="material-icons">list</i>PV de Déliberation</a>
                                 </li>{% endif %}
 
 
@@ -355,7 +355,7 @@
     $('#consultationecu').DataTable({
 
 
-        "ajax": "",
+        "ajax": "{{ path('siges_listconsultationecu') }}",
         "sAjaxDataProp": "data",
         "pageLength": 10,
         "columns":[

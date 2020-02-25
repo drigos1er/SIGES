@@ -1,0 +1,118 @@
+{% extends"layouttabledeliberation.html.twig" %}
+{% block body %}
+    <style type="text/css"> @page {
+    size: landscape;
+    }    </style>
+    <!-- page content -->
+    <div class="container-fluid">
+
+        <div class="row" >
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header card-header-icon" data-background-color="blue">
+                        <i class="material-icons">timeline </i>
+                    </div>
+                    <div class="card-content">
+                        <h4 class="card-title">STATISTIQUES DE LA DELIBERATION</h4>
+                        <div class="row">
+
+
+                            <div class="col-md-12">
+
+                                <div class=" col-md-4">
+
+                                    <div class="card card-profile">
+
+                                        <div class="card-avatar">
+                                            <a href="#pablo">
+                                                <i class="material-icons"><img src="{{ asset('build/img/faces/user.png')}}" alt="photoprofile" style="height: 150px;"/> </i>
+                                            </a>
+                                        </div>
+                                        <div class="card-content">
+                                            <h5 class="card-title"><span style="color:#b56e80; "> Moyenne de la Spécialité</span></h5>
+
+                                            <br><br><br><br><br><br><br>
+                                            <a href="#" class="btn btn-info btn-round">{{ app.session.get('moyclassspecsemestrielle')}}</a>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+
+                                <div class=" col-md-4">
+
+                                    <div class="card card-profile">
+
+                                        <div class="card-avatar">
+                                            <a href="#pablo">
+                                                <img class="img" onclick="window.open(this.src,'_blank','toolbar=0, location=0, directories=0, status=0, scrollbars=0, resizable=0, copyhistory=0, menuBar=0, width='+this.width+', height='+this.height);" src="http://localhost/SIGESV2/SIGESV2/web/photoetudiant/{{ app.session.get('etudphotofaible')}}" style="height: 150px;"/>
+                                            </a>
+                                        </div>
+                                        <div class="card-content">
+                                            <h5 class="card-title"><span style="color:#b56e80; ">+ Faible Rendement</span></h5>
+                                            <h6 class="card-title">{{ app.session.get('etudiantfaible').id }}<br>{{ app.session.get('etudiantfaible').firstname }}<br>{{ app.session.get('etudiantfaible').lastname }}</h6>
+    {%if( app.session.get('leveliddelib') =='L1')%} <h6>Série BAC: {{ app.session.get('etudiantfaible').series }}&nbsp;&nbsp;&nbsp; Mention: {{ app.session.get('etudiantfaible').mention }}&nbsp;&nbsp;&nbsp; Rang Concours: {{ app.session.get('etudiantfaible').rankofexams }}</h6>{% endif %}
+                                            <h6>Classe: {{ app.session.get('etudclassefaible') }}&nbsp;&nbsp;&nbsp;Statut: {{ app.session.get('etudstatutfaible') }}</h6>
+                                            <a href="#" class="btn btn-warning btn-round">{{ app.session.get('moyfaiblesemestrielle')}}<br> ({{ app.session.get('creditfaiblesemestrielle')}}) crédit(s)</a>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+
+
+                                <div class=" col-md-4">
+
+                                    <div class="card card-profile">
+
+                                        <div class="card-avatar">
+                                            <a href="#pablo">
+                                                <img class="img" onclick="window.open(this.src,'_blank','toolbar=0, location=0, directories=0, status=0, scrollbars=0, resizable=0, copyhistory=0, menuBar=0, width='+this.width+', height='+this.height);" src="http://localhost/SIGESV2/SIGESV2/web/photoetudiant/{{ app.session.get('etudphotofort')}}" style="height: 150px;"/>
+                                            </a>
+                                        </div>
+                                        <div class="card-content">
+                                            <h5 class="card-title"><span style="color:#b56e80; ">+ Fort Rendement</span></h5>
+                                            <h6 class="card-title">{{ app.session.get('etudiantfort').id }}<br>{{ app.session.get('etudiantfort').firstname }}<br>{{ app.session.get('etudiantfort').lastname }}</h6>
+    {%if( app.session.get('leveliddelib') =='L1')%}  <h6>Série BAC: {{ app.session.get('etudiantfort').series }}&nbsp;&nbsp;&nbsp; Mention: {{ app.session.get('etudiantfort').mention }}&nbsp;&nbsp;&nbsp; Rang Concours: {{ app.session.get('etudiantfort').rankofexams }}</h6>{% endif %}
+                                            <h6 >Classe: {{ app.session.get('etudclasseforte') }}&nbsp;&nbsp;&nbsp;Statut: {{ app.session.get('etudstatutfort') }}</h6>
+                                            <a href="#" class="btn btn-success btn-round">{{ app.session.get('moyfortesemestrielle')}} <br>({{ app.session.get('creditfortsemestrielle')}}) crédit(s)</a>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+
+
+                            </div>
+
+                            <div class="col-md-8 col-md-offset-2" >
+                                <div class="card">
+                                    <div id="tranche" style="width:400px;margin-left:350px;" ></div> <br />
+                                    <div id="chartDiv" style="width:400px;height:250px;margin-left:350px;"></div>
+
+                                </div>
+                            </div>
+
+                            <div class="col-md-8 col-md-offset-2">
+                                <h3 class="title text-center">Graphe Taux de Réussite par Année </h3>
+                                <br />
+                                <div id="chartDivan" style="width:700px;height:250px;margin-left:250px;"></div>
+                            </div>
+
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+    </div>
+    <!-- /page content -->
+    <!-- /page content -->
+
+
+
+
+{% endblock %}
