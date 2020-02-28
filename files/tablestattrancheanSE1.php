@@ -7,7 +7,7 @@ include("myfunctions.php");
 
     <table width="auto" border="0" cellspacing="0">
         <tr>
-            <td><img src="esatic.png"  alt="logoesatic" style="margin-left: 50px;" /> </td> <td><span style="font-size:14px; margin-left:600px;">REPUBLIQUE DE CÔTE D'IVOIRE</span></td>
+            <td><img src="esatic.jpg"  alt="logoesatic" style="margin-left: 50px;" /> </td> <td><span style="font-size:14px; margin-left:600px;">REPUBLIQUE DE CÔTE D'IVOIRE</span></td>
         </tr> <tr><td style="font-size:14px; margin-left:50px; ">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.....................</td> <td><span style="font-size:14px; margin-left:670px;">.....................</span></td> </tr>
         <tr> <td><span style="font-size:14px; margin-left:12px; ">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>DIRECTION DE LA PEDAGOGIE</strong></span></td><td><span style="font-size:14px; margin-left:630px;"><strong>Union-Discipline-Travail</strong> </span></td></tr>
     </table>

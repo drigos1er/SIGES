@@ -1662,69 +1662,327 @@ function creditvalideue($idetudiant,$idsem,$idue,$idanac,$idspec,$idses,$bdd)
 
 function creditvalideuemaster($idetudiant,$idsem,$idue,$idanac,$idspec,$idses,$bdd)
 {
-    $creditvalideuem=0;
 
-    if(moyenneue($idetudiant,$idsem,$idue,$idanac,$idspec,$idses,$bdd) >= 10){
-
-
-        $resul= $bdd->prepare('SELECT *  FROM   ecu_speciality  where  semester_id=:idsem  and specialityid_id=:idspec and acadyearid=:idanac  and ueid_id=:idue' );
-        $resul->execute(array('idsem'=> $idsem,'idspec'=> $idspec,'idanac'=> $idanac,'idue'=> $idue));
+    if($idanac=='2019-2020'){
 
 
-        $creditvm=1;
-        while($rue = $resul->fetch()) {
 
-            $iduec = $rue['ecuid_id'];
+        $creditvalideuem=0;
+
+        if(moyenneue($idetudiant,$idsem,$idue,$idanac,$idspec,$idses,$bdd) >= 10){
 
 
-            if (moyenneecu($idetudiant, $idspec, $idsem, $iduec, $idanac, $idses, $bdd) >= 7) {
+            $resul= $bdd->prepare('SELECT *  FROM   ecu_speciality  where  semester_id=:idsem  and specialityid_id=:idspec and acadyearid=:idanac  and ueid_id=:idue' );
+            $resul->execute(array('idsem'=> $idsem,'idspec'=> $idspec,'idanac'=> $idanac,'idue'=> $idue));
 
-                $creditvm = 1 * $creditvm;
+
+            $creditvm=1;
+            while($rue = $resul->fetch()) {
+
+                $iduec = $rue['ecuid_id'];
+
+
+                if (moyenneecu($idetudiant, $idspec, $idsem, $iduec, $idanac, $idses, $bdd) >= 7) {
+
+                    $creditvm = 1 * $creditvm;
+
+                } else {
+
+                    $creditvm = 0 * $creditvm;
+
+                }
+
+
+            }
+            if ($creditvm == 0) {
+
+
+                $creditvalideuem=$creditvalideuem + 0;
+
 
             } else {
 
-                $creditvm = 0 * $creditvm;
+
+                $creditvalideuem=$creditvalideuem + creditue($idsem,$idue,$idanac,$idspec,$bdd);
+
 
             }
 
 
+
         }
-        if ($creditvm == 0) {
+        else {
 
 
-            $creditvalideuem=$creditvalideuem + 0;
+            $typeue= $bdd->prepare('SELECT * FROM `ue_speciality`   WHERE specialityid_id=:idspec and semester_id=:idsem and acadyearid=:idanac and ueid_id=:ueid ' );
+            $typeue->execute(array('idsem'=> $idsem,'idspec'=>$idspec,'idanac'=>$idanac,'ueid'=>$idue));
+
+            $uetype = $typeue->fetch();
+
+
+
+            if ($uetype['creditvalue'] >= 4 and $uetype['creditvalue'] <= 6 and uemajorsemaverage($idetudiant, $idspec,  $idsem, $idses, $idanac,$bdd) >=10 ) {
+
+                $resmaj= $bdd->prepare('SELECT  DISTINCT ueid_id,creditvalue FROM `ue_speciality`   WHERE  specialityid_id=:idspec  and  acadyearid=:idanac and creditvalue BETWEEN 4 AND 6 and semester_id=:idsem ' );
+                $resmaj->execute(array('idsem'=> $idsem,'idspec'=> $idspec,'idanac'=> $idanac));
+
+
+                $creditstate = 1;
+                while($uemajo = $resmaj->fetch()) {
+
+                    $ress = $bdd->prepare('SELECT *  FROM   ecu_speciality  where  semester_id=:idsem  and specialityid_id=:idspec and acadyearid=:idanac and ueid_id=:ueid');
+                    $ress->execute(array('idsem' => $idsem, 'idspec' => $idspec, 'idanac' => $idanac,'ueid' => $uemajo['ueid_id']));
+                    $creditvms = 1;
+                    while ($resecucredvm = $ress->fetch()) {
+
+                        $iduesvms = $resecucredvm['ecuid_id'];
+
+
+                        if (moyenneecu($idetudiant, $idspec, $idsem, $iduesvms, $idanac, $idses, $bdd) < 7) {
+
+                            $creditvms = 0 * $creditvms;
+
+                        } else {
+
+                            $creditvms = 1 * $creditvms;
+
+                        }
+
+
+                    }
+
+
+
+                    if ($creditvms==0) {
+
+                        $creditstate = 0 * $creditstate;
+
+                    } else {
+
+                        $creditstate = 1 * $creditstate;
+
+                    }
+
+
+
+
+
+                }
+
+
+
+                if ($creditstate == 0) {
+
+
+                    $creditvalideuem = $creditvalideuem + 0;
+
+
+                } else {
+
+
+                    $creditvalideuem = $creditvalideuem + creditue($idsem, $idue, $idanac, $idspec, $bdd);
+
+
+                }
+
+
+
+
+
+            }
+            elseif ($uetype['creditvalue'] >= 2 and $uetype['creditvalue'] <= 3 and ueminorsemaverage($idetudiant, $idspec,  $idsem, $idses, $idanac,$bdd) >=10 ) {
+
+                $resmaj= $bdd->prepare('SELECT  DISTINCT ueid_id,creditvalue FROM `ue_speciality`   WHERE  specialityid_id=:idspec  and  acadyearid=:idanac and creditvalue BETWEEN 2 AND 3 and semester_id=:idsem ' );
+                $resmaj->execute(array('idsem'=> $idsem,'idspec'=> $idspec,'idanac'=> $idanac));
+
+
+                $creditstate = 1;
+                while($uemajo = $resmaj->fetch()) {
+
+                    $ress = $bdd->prepare('SELECT *  FROM   ecu_speciality  where  semester_id=:idsem  and specialityid_id=:idspec and acadyearid=:idanac and ueid_id=:ueid');
+                    $ress->execute(array('idsem' => $idsem, 'idspec' => $idspec, 'idanac' => $idanac,'ueid' => $uemajo['ueid_id']));
+                    $creditvms = 1;
+                    while ($resecucredvm = $ress->fetch()) {
+
+                        $iduesvms = $resecucredvm['ecuid_id'];
+
+
+                        if (moyenneecu($idetudiant, $idspec, $idsem, $iduesvms, $idanac, $idses, $bdd) < 7) {
+
+                            $creditvms = 0 * $creditvms;
+
+                        } else {
+
+                            $creditvms = 1 * $creditvms;
+
+                        }
+
+
+                    }
+
+
+
+                    if ($creditvms==0) {
+
+                        $creditstate = 0 * $creditstate;
+
+                    } else {
+
+                        $creditstate = 1 * $creditstate;
+
+                    }
+
+
+
+
+
+                }
+
+
+
+                if ($creditstate == 0) {
+
+
+                    $creditvalideuem = $creditvalideuem + 0;
+
+
+                } else {
+
+
+                    $creditvalideuem = $creditvalideuem + creditue($idsem, $idue, $idanac, $idspec, $bdd);
+
+
+                }
+
+
+
+
+
+            }
+
+            else{
+                $creditvalideuem = $creditvalideuem + 0;
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        }
+
+
+
+        return $creditvalideuem;
+
+
+
+
+
+
+
+
+
+    }
+    else{
+
+
+
+        $creditvalideuem=0;
+
+        if(moyenneue($idetudiant,$idsem,$idue,$idanac,$idspec,$idses,$bdd) >= 10){
+
+
+            $resul= $bdd->prepare('SELECT *  FROM   ecu_speciality  where  semester_id=:idsem  and specialityid_id=:idspec and acadyearid=:idanac  and ueid_id=:idue' );
+            $resul->execute(array('idsem'=> $idsem,'idspec'=> $idspec,'idanac'=> $idanac,'idue'=> $idue));
+
+
+            $creditvm=1;
+            while($rue = $resul->fetch()) {
+
+                $iduec = $rue['ecuid_id'];
+
+
+                if (moyenneecu($idetudiant, $idspec, $idsem, $iduec, $idanac, $idses, $bdd) >= 7) {
+
+                    $creditvm = 1 * $creditvm;
+
+                } else {
+
+                    $creditvm = 0 * $creditvm;
+
+                }
+
+
+            }
+            if ($creditvm == 0) {
+
+
+                $creditvalideuem=$creditvalideuem + 0;
+
+
+            } else {
+
+
+                $creditvalideuem=$creditvalideuem + creditue($idsem,$idue,$idanac,$idspec,$bdd);
+
+
+            }
+
 
 
         } else {
 
 
-            $creditvalideuem=$creditvalideuem + creditue($idsem,$idue,$idanac,$idspec,$bdd);
+            if (moyennesemestre($idetudiant, $idsem, $idanac, $idspec, $idses, $bdd) >= 10) {
+
+                $ress = $bdd->prepare('SELECT *  FROM   ecu_speciality  where  semester_id=:idsem  and specialityid_id=:idspec and acadyearid=:idanac ');
+                $ress->execute(array('idsem' => $idsem, 'idspec' => $idspec, 'idanac' => $idanac));
+                $creditvms = 1;
+                while ($resecucredvm = $ress->fetch()) {
+
+                    $iduesvms = $resecucredvm['ecuid_id'];
 
 
-        }
+                    if (moyenneecu($idetudiant, $idspec, $idsem, $iduesvms, $idanac, $idses, $bdd) < 7) {
+
+                        $creditvms = 0 * $creditvms;
+
+                    } else {
+
+                        $creditvms = 1 * $creditvms;
+
+                    }
 
 
-
-    } else {
-
-
-        if (moyennesemestre($idetudiant, $idsem, $idanac, $idspec, $idses, $bdd) >= 10) {
-
-            $ress = $bdd->prepare('SELECT *  FROM   ecu_speciality  where  semester_id=:idsem  and specialityid_id=:idspec and acadyearid=:idanac ');
-            $ress->execute(array('idsem' => $idsem, 'idspec' => $idspec, 'idanac' => $idanac));
-            $creditvms = 1;
-            while ($resecucredvm = $ress->fetch()) {
-
-                $iduesvms = $resecucredvm['ecuid_id'];
+                }
 
 
-                if (moyenneecu($idetudiant, $idspec, $idsem, $iduesvms, $idanac, $idses, $bdd) < 7) {
+                if ($creditvms == 0) {
 
-                    $creditvms = 0 * $creditvms;
+
+                    $creditvalideuem = $creditvalideuem + 0;
+
 
                 } else {
 
-                    $creditvms = 1 * $creditvms;
+
+                    $creditvalideuem = $creditvalideuem + creditue($idsem, $idue, $idanac, $idspec, $bdd);
+
 
                 }
 
@@ -1732,29 +1990,21 @@ function creditvalideuemaster($idetudiant,$idsem,$idue,$idanac,$idspec,$idses,$b
             }
 
 
-            if ($creditvms == 0) {
-
-
-                $creditvalideuem = $creditvalideuem + 0;
-
-
-            } else {
-
-
-                $creditvalideuem = $creditvalideuem + creditue($idsem, $idue, $idanac, $idspec, $bdd);
-
-
-            }
-
-
         }
+
+
+
+        return $creditvalideuem;
+
 
 
     }
 
 
 
-    return $creditvalideuem;
+
+
+
 
 
 }
@@ -2156,6 +2406,13191 @@ function teachervalid($semesterid,$ueid,$ecuid,$idanac,$idclasse,$bdd)
 
 
 
+function nbstudentfofclassspec($idanac,$idspec,$idlevel,$bdd)
+{
+
+    $repns=$bdd->prepare(" SELECT count(student.id)as  nbstudent FROM `student` INNER JOIN student_speciality on student.id=student_speciality.studentid WHERE student_speciality.levelid=:levelid and student_speciality.specialityid=:idspec and student_speciality.acadyearid=:idanac and student.kind like '%F%' ");
+    $repns->execute(array('idanac'=> $idanac, 'levelid'=> $idlevel,'idspec'=> $idspec));
+    $nbstudf = $repns->fetch();
+
+
+
+    $numbstudentf=$nbstudf['nbstudent'];
+
+
+
+
+    return $numbstudentf;
+
+}
+
+
+
+
+function nbstudentofclassspec($idanac,$idspec,$idlevel,$bdd)
+{
+
+    $repns=$bdd->prepare(" SELECT count(student.id)as  nbstudent FROM `student` INNER JOIN student_speciality on student.id=student_speciality.studentid WHERE student_speciality.levelid=:idlevel and student_speciality.specialityid=:idspec and student_speciality.acadyearid=:idanac  ");
+    $repns->execute(array('idanac'=> $idanac, 'idlevel'=> $idlevel,'idspec'=> $idspec));
+    $nbstud = $repns->fetch();
+
+
+
+    $numbstudentspec=$nbstud['nbstudent'];
+
+
+
+
+    return $numbstudentspec;
+
+}
+function nbstudentfofclass($idanac,$idspec,$idclass,$bdd)
+{
+
+    $repns=$bdd->prepare(" SELECT count(student.id)as  nbstudent FROM `student` INNER JOIN student_speciality on student.id=student_speciality.studentid WHERE student_speciality.school_classeid=:idclass and student_speciality.specialityid=:idspec and student_speciality.acadyearid=:idanac and student.kind like '%F%' ");
+    $repns->execute(array('idanac'=> $idanac, 'idclass'=> $idclass,'idspec'=> $idspec));
+    $nbstudf = $repns->fetch();
+
+
+
+    $numbstudentf=$nbstudf['nbstudent'];
+
+
+
+
+    return $numbstudentf;
+
+}
+
+
+
+
+
+
+function nbpresent($idanac,$idspec,$idsem,$idses,$bdd)
+{
+
+
+
+    $repns=$bdd->prepare(" SELECT  count(DISTINCT halfyearly_delib.studentid) as nbetudiant  FROM `halfyearly_delib` WHERE   specialityid=:idspecialite  and acadyearid=:idanac  and semesterid=:idsemestre and sessionid=:idsession  ");
+    $repns->execute(array('idanac'=> $idanac, 'idsemestre'=> $idsem,'idspecialite'=> $idspec,'idsession'=> $idses));
+    $nbetudp = $repns->fetch();
+
+
+
+    $nombrepresent=$nbetudp['nbetudiant'];
+
+
+
+
+    return $nombrepresent;
+
+
+
+
+}
+
+
+
+
+function nbpresentan($idanac,$idspec,$idniv,$bdd)
+{
+
+    $repns=$bdd->prepare(" SELECT  count(DISTINCT halfyearly_delib.studentid) as nbetudiant  FROM `halfyearly_delib`   INNER JOIN student_speciality on student_speciality.studentid=halfyearly_delib.studentid WHERE student_speciality.levelid=:idniv and student_speciality.specialityid=:idspec and student_speciality.acadyearid=:idanac  ");
+    $repns->execute(array('idanac'=> $idanac, 'idniv'=> $idniv,'idspec'=> $idspec));
+    $nbetudpan = $repns->fetch();
+
+
+
+    $nombrepresentan=$nbetudpan['nbetudiant'];
+
+
+
+
+    return $nombrepresentan;
+
+}
+
+
+
+function nbpresentanse2($idanac,$idspec,$idniv,$bdd)
+{
+
+
+
+    if(($idniv=='M1' and $idspec=='SIGL')|| ($idniv=='M1' and $idspec=='SITW')){
+
+
+        $repns=$bdd->prepare("  SELECT count( DISTINCT halfyearly_delib.studentid)as  nbetudiant FROM `halfyearly_delib` WHERE halfyearly_delib.specialityid='TCSIGLSITW' and halfyearly_delib.acadyearid=:idanac and halfyearly_delib.sessionid='SE1' and halfyearly_delib.decision='REFUSE' and halfyearly_delib.semesterid='SEM7' and halfyearly_delib.studentid in (select studentid from student_speciality where levelid=:idniv and acadyearid=:idanac and specialityid=:idspec) ");
+        $repns->execute(array('idanac'=> $idanac, 'idniv'=> $idniv,'idspec'=> $idspec));
+        $nbetudpan = $repns->fetch();
+
+
+
+        $nombrepresentan=$nbetudpan['nbetudiant'];
+
+
+
+
+        return $nombrepresentan;
+    }else{
+
+
+        $repns=$bdd->prepare("
+  SELECT count( DISTINCT halfyearly_delib.studentid)as  nbetudiant FROM `halfyearly_delib` WHERE halfyearly_delib.specialityid=:idspec and halfyearly_delib.acadyearid=:idanac and halfyearly_delib.sessionid='SE1' and halfyearly_delib.decision='REFUSE'  and halfyearly_delib.studentid in (select studentid from student_speciality where levelid=:idniv and acadyearid=:idanac and specialityid=:idspec)
+  
+  
+  ");
+        $repns->execute(array('idanac'=> $idanac, 'idniv'=> $idniv,'idspec'=> $idspec));
+        $nbetudpan = $repns->fetch();
+
+
+
+        $nombrepresentan=$nbetudpan['nbetudiant'];
+
+
+
+
+        return $nombrepresentan;
+
+    }
+
+
+
+}
+
+
+
+
+function nbstudentgofclass($idanac,$idspec,$idclass,$bdd)
+{
+
+    $repns=$bdd->prepare(" SELECT count(student.id)as  nbstudent FROM `student` INNER JOIN student_speciality on student.id=student_speciality.studentid WHERE student_speciality.school_classeid=:idclass and student_speciality.specialityid=:idspec and student_speciality.acadyearid=:idanac and student.kind like '%M%' ");
+    $repns->execute(array('idanac'=> $idanac, 'idclass'=> $idclass,'idspec'=> $idspec));
+    $nbstudg = $repns->fetch();
+
+
+
+    $numbstudentg=$nbstudg['nbstudent'];
+
+
+
+
+    return $numbstudentg;
+
+}
+
+function nbstudentgofclassspec($idanac,$idspec,$idlevel,$bdd)
+{
+
+    $repns=$bdd->prepare(" SELECT count(student.id)as  nbstudent FROM `student` INNER JOIN student_speciality on student.id=student_speciality.studentid WHERE student_speciality.levelid=:levelid and student_speciality.specialityid=:idspec and student_speciality.acadyearid=:idanac and student.kind like '%M%' ");
+    $repns->execute(array('idanac'=> $idanac, 'levelid'=> $idlevel,'idspec'=> $idspec));
+    $nbstudg = $repns->fetch();
+
+
+
+    $numbstudentg=$nbstudg['nbstudent'];
+
+
+
+
+    return $numbstudentg;
+
+}
+
+function nbpresentofclass($idanac,$idspec,$idsem,$idue,$idecu,$typeaver,$idclass,$bdd)
+{
+
+
+
+    $repns=$bdd->prepare("SELECT count(  DISTINCT student_averages.`studentid`) as nbpresent FROM `student_averages` INNER JOIN student_speciality on student_speciality.studentid=student_averages.studentid 
+WHERE  student_averages.acadyearid=:acadyearid and student_averages.specialityid=:specialityid and student_averages.semesterid=:semesterid and  student_averages.ueid=:ueid and student_averages.ecuid=:ecuid and student_averages.typeof_averages=:typeaver  and student_averages.average !='' and student_speciality.school_classeid=:idclasse ");
+    $repns->execute(array('acadyearid'=> $idanac, 'semesterid'=> $idsem,'specialityid'=> $idspec,'ueid'=> $idue,'ecuid'=> $idecu,'typeaver'=> $typeaver,'idclasse'=> $idclass));
+    $nbpre = $repns->fetch();
+
+
+
+    $numpresent=$nbpre['nbpresent'];
+
+
+
+
+    return $numpresent;
+
+
+
+
+}
+
+function nbpresentofclassaverspec($idanac,$idspec,$idsem,$idue,$idecu,$typeaver,$idlevel,$bdd)
+{
+
+
+
+    $repns=$bdd->prepare("SELECT count(  DISTINCT student_averages.`studentid`) as nbpresent FROM `student_averages` INNER JOIN student_speciality on student_speciality.studentid=student_averages.studentid 
+WHERE  student_averages.acadyearid=:acadyearid and student_averages.specialityid=:specialityid and student_averages.semesterid=:semesterid and  student_averages.ueid=:ueid and student_averages.ecuid=:ecuid and student_averages.typeof_averages=:typeaver  and student_averages.average !='' and student_speciality.levelid=:levelid ");
+    $repns->execute(array('acadyearid'=> $idanac, 'semesterid'=> $idsem,'specialityid'=> $idspec,'ueid'=> $idue,'ecuid'=> $idecu,'typeaver'=> $typeaver,'levelid'=> $idlevel));
+    $nbpre = $repns->fetch();
+
+
+
+    $numpresent=$nbpre['nbpresent'];
+
+
+
+
+    return $numpresent;
+
+
+
+
+}
+
+
+function nbpresentofclasssem($idanac,$idspec,$idsem,$idses,$idue,$idecu,$idclass,$bdd)
+{
+
+
+
+    $repns=$bdd->prepare("SELECT count(  DISTINCT student_examnotes.`studentid`) as nbpresent FROM `student_examnotes` INNER JOIN student_speciality on student_speciality.studentid=student_examnotes.studentid 
+WHERE  student_examnotes.acadyearid=:acadyearid and student_examnotes.specialityid=:specialityid and student_examnotes.semesterid=:semesterid and  student_examnotes.ueid=:ueid and student_examnotes.ecuid=:ecuid and student_examnotes.sessionid=:idses  and student_examnotes.exam_notes !='' and student_speciality.school_classeid=:idclasse ");
+    $repns->execute(array('acadyearid'=> $idanac, 'semesterid'=> $idsem,'specialityid'=> $idspec,'ueid'=> $idue,'ecuid'=> $idecu,'idses'=> $idses,'idclasse'=> $idclass));
+    $nbpre = $repns->fetch();
+
+
+
+    $numpresentsem=$nbpre['nbpresent'];
+
+
+
+
+    return $numpresentsem;
+
+
+
+
+}
+
+
+function nbpresentofclassspec($idanac,$idspec,$idsem,$idses,$idue,$idecu,$idlevel,$bdd)
+{
+
+
+
+    $repns=$bdd->prepare("SELECT count(  DISTINCT student_examnotes.`studentid`) as nbpresent FROM `student_examnotes` INNER JOIN student_speciality on student_speciality.studentid=student_examnotes.studentid 
+WHERE  student_examnotes.acadyearid=:acadyearid and student_examnotes.specialityid=:specialityid and student_examnotes.semesterid=:semesterid and  student_examnotes.ueid=:ueid and student_examnotes.ecuid=:ecuid and student_examnotes.sessionid=:idses  and student_examnotes.exam_notes !='' and student_speciality.levelid=:levelid ");
+    $repns->execute(array('acadyearid'=> $idanac, 'semesterid'=> $idsem,'specialityid'=> $idspec,'ueid'=> $idue,'ecuid'=> $idecu,'idses'=> $idses,'levelid'=> $idlevel));
+    $nbpre = $repns->fetch();
+
+
+
+    $numpresentsem=$nbpre['nbpresent'];
+
+
+
+
+    return $numpresentsem;
+
+
+
+
+}
+
+
+
+
+function nbpresentofclassexam($idanac,$idspec,$idsem,$idses,$idue,$idecu,$typeaver,$idclass,$bdd)
+{
+
+
+
+    $repns=$bdd->prepare("SELECT count(  DISTINCT student_examnotes.`studentid`) as nbpresent FROM `student_examnotes` INNER JOIN student_speciality on student_speciality.studentid=student_examnotes.studentid 
+WHERE  student_examnotes.acadyearid=:acadyearid and student_examnotes.specialityid=:specialityid and student_examnotes.semesterid=:semesterid and  student_examnotes.ueid=:ueid and student_examnotes.ecuid=:ecuid and student_examnotes.sessionid=:idses and student_examnotes.typeof_examnotes=:typeaver  and student_examnotes.exam_notes !='' and student_speciality.school_classeid=:idclasse ");
+    $repns->execute(array('acadyearid'=> $idanac, 'semesterid'=> $idsem,'specialityid'=> $idspec,'ueid'=> $idue,'ecuid'=> $idecu,'idses'=> $idses,'typeaver'=> $typeaver,'idclasse'=> $idclass));
+    $nbpre = $repns->fetch();
+
+
+
+    $numpresentsem=$nbpre['nbpresent'];
+
+
+
+
+    return $numpresentsem;
+
+
+
+
+}
+
+
+
+
+function nbpresentofclassexamspec($idanac,$idspec,$idsem,$idses,$idue,$idecu,$typeaver,$idlevel,$bdd)
+{
+
+
+
+    $repns=$bdd->prepare("SELECT count(  DISTINCT student_examnotes.`studentid`) as nbpresent FROM `student_examnotes` INNER JOIN student_speciality on student_speciality.studentid=student_examnotes.studentid 
+WHERE  student_examnotes.acadyearid=:acadyearid and student_examnotes.specialityid=:specialityid and student_examnotes.semesterid=:semesterid and  student_examnotes.ueid=:ueid and student_examnotes.ecuid=:ecuid and student_examnotes.sessionid=:idses and student_examnotes.typeof_examnotes=:typeaver  and student_examnotes.exam_notes !='' and student_speciality.levelid=:levelid ");
+    $repns->execute(array('acadyearid'=> $idanac, 'semesterid'=> $idsem,'specialityid'=> $idspec,'ueid'=> $idue,'ecuid'=> $idecu,'idses'=> $idses,'typeaver'=> $typeaver,'levelid'=> $idlevel));
+    $nbpre = $repns->fetch();
+
+
+
+    $numpresentsem=$nbpre['nbpresent'];
+
+
+
+
+    return $numpresentsem;
+
+
+
+
+}
+
+
+
+function nbadmissupzf($idanac,$idspec,$idsem,$idses,$bdd)
+{
+
+    $repns=$bdd->prepare(" SELECT count(DISTINCT halfyearly_delib.studentid) as nbetudiant  FROM `halfyearly_delib` INNER JOIN student on student.id=halfyearly_delib.studentid WHERE halfyearly_delib.semesterid=:idsem and halfyearly_delib.sessionid=:idses and halfyearly_delib.specialityid=:idspec and halfyearly_delib.acadyearid=:idanac  and halfyearly_delib.semaverage >=0 and halfyearly_delib.semaverage < 8  and student.kind like '%F%' ");
+    $repns->execute(array('idanac'=> $idanac, 'idsem'=> $idsem,'idspec'=> $idspec,'idses'=> $idses));
+    $nbetudadf = $repns->fetch();
+
+
+
+    $nombreadmissupzf=$nbetudadf['nbetudiant'];
+
+
+
+
+    return $nombreadmissupzf;
+
+}
+
+
+
+function nbadmissupzfan($idanac,$idspec,$idniv,$bdd)
+{
+
+
+    $repos=$bdd->query("SET OPTION SQL_BIG_SELECTS=1");
+
+    $repos = $bdd->prepare(' SELECT  DISTINCT halfyearly_delib.studentid FROM `halfyearly_delib` INNER JOIN student on student.id=halfyearly_delib.studentid INNER JOIN student_speciality on student_speciality.studentid=student.id WHERE student_speciality.specialityid=:idspec  and student_speciality.acadyearid=:idanac and student_speciality.levelid=:idniv   order by student.firstname,student.lastname ' );
+
+    $repos->execute(array('idspec'=>$idspec,'idanac'=>$idanac,'idniv'=>$idniv));
+
+    $nombreadmissupzfan=0;
+
+
+
+    while($resultat = $repos->fetch()) {
+
+        if($idniv=="L1"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+
+
+            $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM1'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac1 = $repost->fetch();
+
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+            $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM2'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac2 = $repost2->fetch();
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+
+
+
+            $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+        if($idniv=="L2"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+
+
+            $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM3'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac1 = $repost->fetch();
+
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+            $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM4'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac2 = $repost2->fetch();
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+
+
+
+            $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+        if($idniv=="L3"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+
+
+            $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM5'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac1 = $repost->fetch();
+
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+            $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM6'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac2 = $repost2->fetch();
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+
+
+
+            $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+
+        if($idniv=="M1"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+            if($idspec=='RTEL'|| $idspec=="MDSI" || $idspec=='MBDS'){
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+
+
+            }else{
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid='TCSIGLSITW' and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+            }
+
+        }
+
+
+
+        if($idniv=="M2"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+
+
+            $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM9'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac1 = $repost->fetch();
+
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+            $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM10'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac2 = $repost2->fetch();
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+
+
+
+            $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+
+
+        if($moyennean >=0 and $moyennean <8 and $genreetud['kind']=="F" )
+
+        {
+            $nombreadmissupzfan=$nombreadmissupzfan+ 1;
+        }
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    return     $nombreadmissupzfan;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
+function nbadmissupzfanse2($idanac,$idspec,$idniv,$bdd)
+{
+
+
+
+
+
+
+
+    if(($idniv=='M1' and $idspec=='SIGL')|| ($idniv=='M1' and $idspec=='SITW')){
+
+
+        $repos=$bdd->query("SET OPTION SQL_BIG_SELECTS=1");
+
+        $repos = $bdd->prepare('  
+  
+  SELECT DISTINCT halfyearly_delib.studentid FROM `halfyearly_delib` WHERE halfyearly_delib.specialityid="TCSIGLSITW" and halfyearly_delib.acadyearid=:idanac and halfyearly_delib.sessionid="SE1" and halfyearly_delib.decision="REFUSE" and halfyearly_delib.semesterid="SEM7" and halfyearly_delib.studentid in (select studentid from student_speciality where levelid=:idniv and acadyearid=:idanac and specialityid=:idspec)
+  
+  
+  ' );
+
+        $repos->execute(array('idspec'=>$idspec,'idanac'=>$idanac,'idniv'=>$idniv));
+
+        $nombreadmissupzfan=0;
+
+
+
+        while($resultat = $repos->fetch()) {
+
+
+
+
+            if($idniv=="L1"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM1'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM2'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+            if($idniv=="L2"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM3'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM4'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+            if($idniv=="L3"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM5'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM6'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+
+            if($idniv=="M1"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+                if($idspec=='RTEL'|| $idspec=="MDSI" || $idspec=='MBDS'){
+
+
+                    $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac1 = $repost->fetch();
+
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+                    $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac2 = $repost2->fetch();
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+
+
+
+                    $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+
+
+                }else{
+
+
+
+
+                    $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid='TCSIGLSITW' and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost->execute(array('idetudiant'=>$resultat['studentid']));
+
+                    $anac1 = $repost->fetch();
+
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd)==""){
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE1',$bdd);
+                    }else{
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd);
+                    }
+
+
+
+
+                    $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac2 = $repost2->fetch();
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+
+
+
+                    $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+                }
+
+            }
+
+
+
+            if($idniv=="M2"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM9'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM10'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+
+
+            if($moyennean >=0 and $moyennean <8 and $genreetud['kind']=="F" )
+
+            {
+                $nombreadmissupzfan=$nombreadmissupzfan+ 1;
+            }
+
+
+
+
+
+
+
+
+
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        return     $nombreadmissupzfan;
+
+
+
+
+
+
+
+
+
+    }else{
+
+
+
+        $repos=$bdd->query("SET OPTION SQL_BIG_SELECTS=1");
+
+        $repos = $bdd->prepare('  
+ 
+  SELECT DISTINCT halfyearly_delib.studentid   FROM `halfyearly_delib` WHERE halfyearly_delib.specialityid=:idspec and halfyearly_delib.acadyearid=:idanac and halfyearly_delib.sessionid="SE1" and halfyearly_delib.decision="REFUSE"  and halfyearly_delib.studentid in (select studentid from student_speciality where levelid=:idniv and acadyearid=:idanac and specialityid=:idspec)
+  
+ 
+ 
+ ' );
+
+        $repos->execute(array('idspec'=>$idspec,'idanac'=>$idanac,'idniv'=>$idniv));
+
+        $nombreadmissupzfan=0;
+
+
+
+        while($resultat = $repos->fetch()) {
+
+
+
+            if($idniv=="L1"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM1'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM2'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+            if($idniv=="L2"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM3'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM4'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+            if($idniv=="L3"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM5'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM6'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+
+            if($idniv=="M1"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+                if($idspec=='RTEL'|| $idspec=="MDSI" || $idspec=='MBDS'){
+
+
+                    $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac1 = $repost->fetch();
+
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+                    $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac2 = $repost2->fetch();
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+
+
+
+                    $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+
+
+                }else{
+
+
+
+
+                    $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid='TCSIGLSITW' and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost->execute(array('idetudiant'=>$resultat['studentid']));
+
+                    $anac1 = $repost->fetch();
+
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd)==""){
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE1',$bdd);
+                    }else{
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd);
+                    }
+
+
+
+
+                    $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac2 = $repost2->fetch();
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+
+
+
+                    $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+                }
+
+            }
+
+
+
+            if($idniv=="M2"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM9'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM10'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+
+            if($moyennean >=0 and $moyennean <8 and $genreetud['kind']=="F" )
+
+            {
+                $nombreadmissupzfan=$nombreadmissupzfan+ 1;
+            }
+
+
+
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        return     $nombreadmissupzfan;
+
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
+
+function nbadmissupzg($idanac,$idspec,$idsem,$idses,$bdd)
+{
+
+    $repns=$bdd->prepare(" SELECT count(DISTINCT halfyearly_delib.studentid) as nbetudiant  FROM `halfyearly_delib` INNER JOIN student on student.id=halfyearly_delib.studentid WHERE halfyearly_delib.semesterid=:idsem and halfyearly_delib.sessionid=:idses and halfyearly_delib.specialityid=:idspec and halfyearly_delib.acadyearid=:idanac  and halfyearly_delib.semaverage >=0 and halfyearly_delib.semaverage < 8  and student.kind like '%M%'  ");
+    $repns->execute(array('idanac'=> $idanac, 'idsem'=> $idsem,'idspec'=> $idspec,'idses'=> $idses));
+    $nbetudadg = $repns->fetch();
+
+
+
+    $nombreadmissupzg=$nbetudadg['nbetudiant'];
+
+
+
+
+    return $nombreadmissupzg;
+
+}
+
+
+
+
+
+
+
+
+function nbadmissupzgan($idanac,$idspec,$idniv,$bdd)
+{
+
+
+    $repos=$bdd->query("SET OPTION SQL_BIG_SELECTS=1");
+
+    $repos = $bdd->prepare(' SELECT  DISTINCT halfyearly_delib.studentid FROM `halfyearly_delib` INNER JOIN student on student.id=halfyearly_delib.studentid INNER JOIN student_speciality on student_speciality.studentid=student.id WHERE student_speciality.specialityid=:idspec  and student_speciality.acadyearid=:idanac and student_speciality.levelid=:idniv   order by student.firstname,student.lastname ' );
+
+    $repos->execute(array('idspec'=>$idspec,'idanac'=>$idanac,'idniv'=>$idniv));
+
+    $nombreadmissupzgan=0;
+
+
+
+    while($resultat = $repos->fetch()) {
+
+        if($idniv=="L1"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+
+
+            $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM1'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac1 = $repost->fetch();
+
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+            $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM2'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac2 = $repost2->fetch();
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+
+
+
+            $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+        if($idniv=="L2"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+
+
+            $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM3'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac1 = $repost->fetch();
+
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+            $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM4'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac2 = $repost2->fetch();
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+
+
+
+            $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+        if($idniv=="L3"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+
+
+            $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM5'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac1 = $repost->fetch();
+
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+            $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM6'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac2 = $repost2->fetch();
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+
+
+
+            $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+
+        if($idniv=="M1"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+            if($idspec=='RTEL'|| $idspec=="MDSI" || $idspec=='MBDS'){
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+
+
+            }else{
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid='TCSIGLSITW' and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+            }
+
+        }
+
+
+
+        if($idniv=="M2"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+
+
+            $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM9'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac1 = $repost->fetch();
+
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+            $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM10'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac2 = $repost2->fetch();
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+
+
+
+            $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+
+
+        if($moyennean >=0 and $moyennean <8 and $genreetud['kind']=="M" )
+
+        {
+            $nombreadmissupzgan= $nombreadmissupzgan+ 1;
+        }
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    return      $nombreadmissupzgan;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+function nbadmissupzganse2($idanac,$idspec,$idniv,$bdd)
+{
+
+
+
+    if(($idniv=='M1' and $idspec=='SIGL')|| ($idniv=='M1' and $idspec=='SITW')){
+
+
+        $repos=$bdd->query("SET OPTION SQL_BIG_SELECTS=1");
+
+        $repos = $bdd->prepare('  
+  SELECT DISTINCT halfyearly_delib.studentid FROM `halfyearly_delib` WHERE halfyearly_delib.specialityid="TCSIGLSITW" and halfyearly_delib.acadyearid=:idanac and halfyearly_delib.sessionid="SE1" and halfyearly_delib.decision="REFUSE" and halfyearly_delib.semesterid="SEM7" and halfyearly_delib.studentid in (select studentid from student_speciality where levelid=:idniv and acadyearid=:idanac and specialityid=:idspec)
+   ' );
+
+        $repos->execute(array('idspec'=>$idspec,'idanac'=>$idanac,'idniv'=>$idniv));
+
+
+
+        $nombreadmissupzgan=0;
+
+
+
+        while($resultat = $repos->fetch()) {
+
+
+
+            if($idniv=="L1"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM1'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM2'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+            if($idniv=="L2"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM3'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM4'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+            if($idniv=="L3"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM5'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM6'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+
+            if($idniv=="M1"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+                if($idspec=='RTEL'|| $idspec=="MDSI" || $idspec=='MBDS'){
+
+
+                    $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac1 = $repost->fetch();
+
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+                    $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac2 = $repost2->fetch();
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+
+
+
+                    $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+
+
+                }else{
+
+
+
+
+                    $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid='TCSIGLSITW' and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost->execute(array('idetudiant'=>$resultat['studentid']));
+
+                    $anac1 = $repost->fetch();
+
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd)==""){
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE1',$bdd);
+                    }else{
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd);
+                    }
+
+
+
+
+                    $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac2 = $repost2->fetch();
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+
+
+
+                    $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+                }
+
+            }
+
+
+
+            if($idniv=="M2"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM9'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM10'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+            if($moyennean >=0 and $moyennean <8 and $genreetud['kind']=="M" )
+
+            {
+                $nombreadmissupzgan= $nombreadmissupzgan+ 1;
+            }
+
+
+
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        return      $nombreadmissupzgan;
+
+
+
+
+
+
+
+    }else {
+
+
+        $repos = $bdd->query("SET OPTION SQL_BIG_SELECTS=1");
+
+        $repos = $bdd->prepare(' 
+  SELECT DISTINCT halfyearly_delib.studentid   FROM `halfyearly_delib` WHERE halfyearly_delib.specialityid=:idspec and halfyearly_delib.acadyearid=:idanac and halfyearly_delib.sessionid="SE1" and halfyearly_delib.decision="REFUSE"  and halfyearly_delib.studentid in (select studentid from student_speciality where levelid=:idniv and acadyearid=:idanac and specialityid=:idspec)
+  
+  ');
+
+        $repos->execute(array('idspec' => $idspec, 'idanac' => $idanac, 'idniv' => $idniv));
+
+        $nombreadmissupzgan = 0;
+
+
+        while ($resultat = $repos->fetch()) {
+
+
+
+            if($idniv=="L1"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM1'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM2'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+            if($idniv=="L2"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM3'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM4'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+            if($idniv=="L3"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM5'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM6'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+
+            if($idniv=="M1"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+                if($idspec=='RTEL'|| $idspec=="MDSI" || $idspec=='MBDS'){
+
+
+                    $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac1 = $repost->fetch();
+
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+                    $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac2 = $repost2->fetch();
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+
+
+
+                    $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+
+
+                }else{
+
+
+
+
+                    $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid='TCSIGLSITW' and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost->execute(array('idetudiant'=>$resultat['studentid']));
+
+                    $anac1 = $repost->fetch();
+
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd)==""){
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE1',$bdd);
+                    }else{
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd);
+                    }
+
+
+
+
+                    $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac2 = $repost2->fetch();
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+
+
+
+                    $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+                }
+
+            }
+
+
+
+            if($idniv=="M2"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM9'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM10'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+            if ($moyennean >= 0 and $moyennean < 8 and $genreetud['kind'] == "M") {
+                $nombreadmissupzgan = $nombreadmissupzgan + 1;
+            }
+
+
+        }
+
+
+        return $nombreadmissupzgan;
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+function nbadmissupz($idanac,$idspec,$idsem,$idses,$bdd)
+{
+
+    $repns=$bdd->prepare(" SELECT count(DISTINCT halfyearly_delib.studentid) as nbetudiant  FROM `halfyearly_delib` INNER JOIN student on student.id=halfyearly_delib.studentid WHERE halfyearly_delib.semesterid=:idsem and halfyearly_delib.sessionid=:idses and halfyearly_delib.specialityid=:idspec and halfyearly_delib.acadyearid=:idanac  and halfyearly_delib.semaverage >=0 and halfyearly_delib.semaverage < 8   ");
+    $repns->execute(array('idanac'=> $idanac, 'idsem'=> $idsem,'idspec'=> $idspec,'idses'=> $idses));
+    $nbetudad = $repns->fetch();
+
+
+
+    $nombreadmissupz=$nbetudad['nbetudiant'];
+
+
+
+
+    return $nombreadmissupz;
+
+}
+
+
+
+
+
+
+
+function nbadmissupzan($idanac,$idspec,$idniv,$bdd)
+{
+
+
+    $repos=$bdd->query("SET OPTION SQL_BIG_SELECTS=1");
+
+    $repos = $bdd->prepare(' SELECT  DISTINCT halfyearly_delib.studentid FROM `halfyearly_delib` INNER JOIN student on student.id=halfyearly_delib.studentid INNER JOIN student_speciality on student_speciality.studentid=student.id WHERE student_speciality.specialityid=:idspec  and student_speciality.acadyearid=:idanac and student_speciality.levelid=:idniv   order by student.firstname,student.lastname ' );
+
+    $repos->execute(array('idspec'=>$idspec,'idanac'=>$idanac,'idniv'=>$idniv));
+
+    $nombreadmissupzan=0;
+
+
+
+    while($resultat = $repos->fetch()) {
+
+        if($idniv=="L1"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+
+
+            $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM1'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac1 = $repost->fetch();
+
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+            $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM2'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac2 = $repost2->fetch();
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+
+
+
+            $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+        if($idniv=="L2"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+
+
+            $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM3'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac1 = $repost->fetch();
+
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+            $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM4'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac2 = $repost2->fetch();
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+
+
+
+            $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+        if($idniv=="L3"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+
+
+            $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM5'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac1 = $repost->fetch();
+
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+            $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM6'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac2 = $repost2->fetch();
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+
+
+
+            $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+
+        if($idniv=="M1"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+            if($idspec=='RTEL'|| $idspec=="MDSI" || $idspec=='MBDS'){
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+
+
+            }else{
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid='TCSIGLSITW' and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+            }
+
+        }
+
+
+
+        if($idniv=="M2"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+
+
+            $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM9'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac1 = $repost->fetch();
+
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+            $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM10'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac2 = $repost2->fetch();
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+
+
+
+            $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+
+
+        if($moyennean >=0 and $moyennean <8 )
+
+        {
+            $nombreadmissupzan=$nombreadmissupzan+ 1;
+        }
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    return $nombreadmissupzan;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+function nbadmissupzanse2($idanac,$idspec,$idniv,$bdd)
+{
+
+
+    if(($idniv=='M1' and $idspec=='SIGL')|| ($idniv=='M1' and $idspec=='SITW')){
+
+
+        $repos=$bdd->query("SET OPTION SQL_BIG_SELECTS=1");
+
+        $repos = $bdd->prepare('  
+  SELECT DISTINCT halfyearly_delib.studentid FROM `halfyearly_delib` WHERE halfyearly_delib.specialityid="TCSIGLSITW" and halfyearly_delib.acadyearid=:idanac and halfyearly_delib.sessionid="SE1" and halfyearly_delib.decision="REFUSE" and halfyearly_delib.semesterid="SEM7" and halfyearly_delib.studentid in (select studentid from student_speciality where levelid=:idniv and acadyearid=:idanac and specialityid=:idspec)
+  ' );
+
+        $repos->execute(array('idspec'=>$idspec,'idanac'=>$idanac,'idniv'=>$idniv));
+
+
+
+
+
+        $nombreadmissupzan=0;
+
+
+
+        while($resultat = $repos->fetch()) {
+
+
+
+            if($idniv=="L1"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM1'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM2'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+            if($idniv=="L2"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM3'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM4'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+            if($idniv=="L3"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM5'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM6'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+
+            if($idniv=="M1"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+                if($idspec=='RTEL'|| $idspec=="MDSI" || $idspec=='MBDS'){
+
+
+                    $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac1 = $repost->fetch();
+
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+                    $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac2 = $repost2->fetch();
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+
+
+
+                    $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+
+
+                }else{
+
+
+
+
+                    $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid='TCSIGLSITW' and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost->execute(array('idetudiant'=>$resultat['studentid']));
+
+                    $anac1 = $repost->fetch();
+
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd)==""){
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE1',$bdd);
+                    }else{
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd);
+                    }
+
+
+
+
+                    $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac2 = $repost2->fetch();
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+
+
+
+                    $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+                }
+
+            }
+
+
+
+            if($idniv=="M2"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM9'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM10'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+            if($moyennean >=0 and $moyennean <8 )
+
+            {
+                $nombreadmissupzan=$nombreadmissupzan+ 1;
+            }
+
+
+
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        return $nombreadmissupzan;
+
+
+
+
+
+
+    }else{
+
+
+
+
+
+
+
+
+
+        $repos=$bdd->query("SET OPTION SQL_BIG_SELECTS=1");
+
+        $repos = $bdd->prepare(' 
+
+
+  SELECT DISTINCT  halfyearly_delib.studentid   FROM `halfyearly_delib` WHERE halfyearly_delib.specialityid=:idspec and halfyearly_delib.acadyearid=:idanac and halfyearly_delib.sessionid="SE1" and halfyearly_delib.decision="REFUSE"  and halfyearly_delib.studentid in (select studentid from student_speciality where levelid=:idniv and acadyearid=:idanac and specialityid=:idspec)
+  
+  ' );
+
+        $repos->execute(array('idspec'=>$idspec,'idanac'=>$idanac,'idniv'=>$idniv));
+
+        $nombreadmissupzan=0;
+
+
+
+        while($resultat = $repos->fetch()) {
+
+
+
+            if($idniv=="L1"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM1'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM2'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+            if($idniv=="L2"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM3'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM4'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+            if($idniv=="L3"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM5'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM6'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+
+            if($idniv=="M1"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+                if($idspec=='RTEL'|| $idspec=="MDSI" || $idspec=='MBDS'){
+
+
+                    $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac1 = $repost->fetch();
+
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+                    $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac2 = $repost2->fetch();
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+
+
+
+                    $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+
+
+                }else{
+
+
+
+
+                    $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid='TCSIGLSITW' and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost->execute(array('idetudiant'=>$resultat['studentid']));
+
+                    $anac1 = $repost->fetch();
+
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd)==""){
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE1',$bdd);
+                    }else{
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd);
+                    }
+
+
+
+
+                    $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac2 = $repost2->fetch();
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+
+
+
+                    $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+                }
+
+            }
+
+
+
+            if($idniv=="M2"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM9'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM10'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+            if($moyennean >=0 and $moyennean <8 )
+
+            {
+                $nombreadmissupzan=$nombreadmissupzan+ 1;
+            }
+
+
+
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        return $nombreadmissupzan;}
+
+}
+
+
+
+
+
+function nbadmisinfdf($idanac,$idspec,$idsem,$idses,$bdd)
+{
+
+    $repns=$bdd->prepare(" SELECT count(DISTINCT halfyearly_delib.studentid) as nbetudiant  FROM `halfyearly_delib` INNER JOIN student on student.id=halfyearly_delib.studentid WHERE halfyearly_delib.semesterid=:idsem and halfyearly_delib.sessionid=:idses and halfyearly_delib.specialityid=:idspec and halfyearly_delib.acadyearid=:idanac  and halfyearly_delib.semaverage >=8 and halfyearly_delib.semaverage < 10  and student.kind like '%F%' ");
+    $repns->execute(array('idanac'=> $idanac, 'idsem'=> $idsem,'idspec'=> $idspec,'idses'=> $idses));
+    $nbetudadf = $repns->fetch();
+
+
+
+    $nombreadmisinfdf=$nbetudadf['nbetudiant'];
+
+
+
+
+    return $nombreadmisinfdf;
+
+}
+
+
+
+
+
+function nbadmisinfdfan($idanac,$idspec,$idniv,$bdd)
+{
+
+
+    $repos=$bdd->query("SET OPTION SQL_BIG_SELECTS=1");
+
+    $repos = $bdd->prepare(' SELECT  DISTINCT halfyearly_delib.studentid FROM `halfyearly_delib` INNER JOIN student on student.id=halfyearly_delib.studentid INNER JOIN student_speciality on student_speciality.studentid=student.id WHERE student_speciality.specialityid=:idspec  and student_speciality.acadyearid=:idanac and student_speciality.levelid=:idniv   order by student.firstname,student.lastname ' );
+
+    $repos->execute(array('idspec'=>$idspec,'idanac'=>$idanac,'idniv'=>$idniv));
+
+    $nombreadmisinfdfan=0;
+
+
+
+    while($resultat = $repos->fetch()) {
+
+        if($idniv=="L1"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+
+
+            $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM1'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac1 = $repost->fetch();
+
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+            $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM2'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac2 = $repost2->fetch();
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+
+
+
+            $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+        if($idniv=="L2"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+
+
+            $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM3'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac1 = $repost->fetch();
+
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+            $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM4'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac2 = $repost2->fetch();
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+
+
+
+            $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+        if($idniv=="L3"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+
+
+            $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM5'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac1 = $repost->fetch();
+
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+            $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM6'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac2 = $repost2->fetch();
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+
+
+
+            $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+
+        if($idniv=="M1"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+            if($idspec=='RTEL'|| $idspec=="MDSI" || $idspec=='MBDS'){
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+
+
+            }else{
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid='TCSIGLSITW' and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+            }
+
+        }
+
+
+
+        if($idniv=="M2"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+
+
+            $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM9'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac1 = $repost->fetch();
+
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+            $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM10'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac2 = $repost2->fetch();
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+
+
+
+            $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+
+
+        if($moyennean >=8 and $moyennean <10 and  $genreetud['kind']=="F")
+
+        {
+            $nombreadmisinfdfan=  $nombreadmisinfdfan+ 1;
+        }
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    return       $nombreadmisinfdfan;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+function nbadmisinfdfanse2($idanac,$idspec,$idniv,$bdd)
+{
+
+    if(($idniv=='M1' and $idspec=='SIGL')|| ($idniv=='M1' and $idspec=='SITW')){
+
+
+        $repos=$bdd->query("SET OPTION SQL_BIG_SELECTS=1");
+
+        $repos = $bdd->prepare('  
+  SELECT DISTINCT   halfyearly_delib.studentid FROM `halfyearly_delib` WHERE halfyearly_delib.specialityid="TCSIGLSITW" and halfyearly_delib.acadyearid=:idanac and halfyearly_delib.sessionid="SE1" and halfyearly_delib.decision="REFUSE" and halfyearly_delib.semesterid="SEM7" and halfyearly_delib.studentid in (select studentid from student_speciality where levelid=:idniv and acadyearid=:idanac and specialityid=:idspec)
+   ' );
+
+        $repos->execute(array('idspec'=>$idspec,'idanac'=>$idanac,'idniv'=>$idniv));
+
+
+
+        $nombreadmisinfdfan=0;
+
+
+
+        while($resultat = $repos->fetch()) {
+
+
+            if($idniv=="L1"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM1'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM2'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+            if($idniv=="L2"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM3'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM4'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+            if($idniv=="L3"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM5'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM6'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+
+            if($idniv=="M1"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+                if($idspec=='RTEL'|| $idspec=="MDSI" || $idspec=='MBDS'){
+
+
+                    $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac1 = $repost->fetch();
+
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+                    $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac2 = $repost2->fetch();
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+
+
+
+                    $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+
+
+                }else{
+
+
+
+
+                    $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid='TCSIGLSITW' and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost->execute(array('idetudiant'=>$resultat['studentid']));
+
+                    $anac1 = $repost->fetch();
+
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd)==""){
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE1',$bdd);
+                    }else{
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd);
+                    }
+
+
+
+
+                    $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac2 = $repost2->fetch();
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+
+
+
+                    $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+                }
+
+            }
+
+
+
+            if($idniv=="M2"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM9'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM10'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+            if($moyennean >=8 and $moyennean <10 and  $genreetud['kind']=="F")
+
+            {
+                $nombreadmisinfdfan=  $nombreadmisinfdfan+ 1;
+            }
+
+
+
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        return       $nombreadmisinfdfan;
+
+
+
+
+
+
+
+
+
+    }else {
+        $repos = $bdd->query("SET OPTION SQL_BIG_SELECTS=1");
+
+        $repos = $bdd->prepare(' 
+  SELECT DISTINCT halfyearly_delib.studentid   FROM `halfyearly_delib` WHERE halfyearly_delib.specialityid=:idspec and halfyearly_delib.acadyearid=:idanac and halfyearly_delib.sessionid="SE1" and halfyearly_delib.decision="REFUSE"  and halfyearly_delib.studentid in (select studentid from student_speciality where levelid=:idniv and acadyearid=:idanac and specialityid=:idspec)
+  
+   ');
+
+        $repos->execute(array('idspec' => $idspec, 'idanac' => $idanac, 'idniv' => $idniv));
+
+        $nombreadmisinfdfan = 0;
+
+
+        while ($resultat = $repos->fetch()) {
+
+
+
+            if($idniv=="L1"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM1'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM2'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+            if($idniv=="L2"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM3'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM4'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+            if($idniv=="L3"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM5'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM6'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+
+            if($idniv=="M1"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+                if($idspec=='RTEL'|| $idspec=="MDSI" || $idspec=='MBDS'){
+
+
+                    $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac1 = $repost->fetch();
+
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+                    $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac2 = $repost2->fetch();
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+
+
+
+                    $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+
+
+                }else{
+
+
+
+
+                    $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid='TCSIGLSITW' and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost->execute(array('idetudiant'=>$resultat['studentid']));
+
+                    $anac1 = $repost->fetch();
+
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd)==""){
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE1',$bdd);
+                    }else{
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd);
+                    }
+
+
+
+
+                    $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac2 = $repost2->fetch();
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+
+
+
+                    $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+                }
+
+            }
+
+
+
+            if($idniv=="M2"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM9'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM10'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+            if ($moyennean >= 8 and $moyennean < 10 and $genreetud['kind'] == "F") {
+                $nombreadmisinfdfan = $nombreadmisinfdfan + 1;
+            }
+
+
+        }
+
+
+        return $nombreadmisinfdfan;
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
+function nbadmisinfdg($idanac,$idspec,$idsem,$idses,$bdd)
+{
+
+    $repns=$bdd->prepare(" SELECT count(DISTINCT halfyearly_delib.studentid) as nbetudiant  FROM `halfyearly_delib` INNER JOIN student on student.id=halfyearly_delib.studentid WHERE halfyearly_delib.semesterid=:idsem and halfyearly_delib.sessionid=:idses and halfyearly_delib.specialityid=:idspec and halfyearly_delib.acadyearid=:idanac  and halfyearly_delib.semaverage >=8 and halfyearly_delib.semaverage < 10  and student.kind like '%M%'");
+    $repns->execute(array('idanac'=> $idanac, 'idsem'=> $idsem,'idspec'=> $idspec,'idses'=> $idses));
+    $nbetudadg = $repns->fetch();
+
+
+
+    $nombreadmisinfdg=$nbetudadg['nbetudiant'];
+
+
+
+
+    return $nombreadmisinfdg;
+
+}
+
+
+
+
+
+
+function nbadmisinfdgan($idanac,$idspec,$idniv,$bdd)
+{
+
+
+    $repos=$bdd->query("SET OPTION SQL_BIG_SELECTS=1");
+
+    $repos = $bdd->prepare(' SELECT  DISTINCT halfyearly_delib.studentid FROM `halfyearly_delib` INNER JOIN student on student.id=halfyearly_delib.studentid INNER JOIN student_speciality on student_speciality.studentid=student.id WHERE student_speciality.specialityid=:idspec  and student_speciality.acadyearid=:idanac and student_speciality.levelid=:idniv   order by student.firstname,student.lastname ' );
+
+    $repos->execute(array('idspec'=>$idspec,'idanac'=>$idanac,'idniv'=>$idniv));
+
+    $nombreadmisinfdgan=0;
+
+
+
+    while($resultat = $repos->fetch()) {
+
+        if($idniv=="L1"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+
+
+            $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM1'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac1 = $repost->fetch();
+
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+            $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM2'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac2 = $repost2->fetch();
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+
+
+
+            $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+        if($idniv=="L2"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+
+
+            $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM3'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac1 = $repost->fetch();
+
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+            $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM4'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac2 = $repost2->fetch();
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+
+
+
+            $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+        if($idniv=="L3"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+
+
+            $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM5'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac1 = $repost->fetch();
+
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+            $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM6'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac2 = $repost2->fetch();
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+
+
+
+            $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+
+        if($idniv=="M1"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+            if($idspec=='RTEL'|| $idspec=="MDSI" || $idspec=='MBDS'){
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+
+
+            }else{
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid='TCSIGLSITW' and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+            }
+
+        }
+
+
+
+        if($idniv=="M2"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+
+
+            $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM9'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac1 = $repost->fetch();
+
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+            $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM10'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac2 = $repost2->fetch();
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+
+
+
+            $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+
+
+
+        if($moyennean >=8 and $moyennean <10 and  $genreetud['kind']=="M")
+
+        {
+            $nombreadmisinfdgan=   $nombreadmisinfdgan+ 1;
+        }
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    return        $nombreadmisinfdgan;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+function nbadmisinfdganse2($idanac,$idspec,$idniv,$bdd)
+{
+
+    if(($idniv=='M1' and $idspec=='SIGL')|| ($idniv=='M1' and $idspec=='SITW')){
+
+
+        $repos=$bdd->query("SET OPTION SQL_BIG_SELECTS=1");
+
+        $repos = $bdd->prepare('  
+  SELECT DISTINCT halfyearly_delib.studentid FROM `halfyearly_delib` WHERE halfyearly_delib.specialityid="TCSIGLSITW" and halfyearly_delib.acadyearid=:idanac and halfyearly_delib.sessionid="SE1" and halfyearly_delib.decision="REFUSE" and halfyearly_delib.semesterid="SEM7" and halfyearly_delib.studentid in (select studentid from student_speciality where levelid=:idniv and acadyearid=:idanac and specialityid=:idspec)
+   ' );
+
+        $repos->execute(array('idspec'=>$idspec,'idanac'=>$idanac,'idniv'=>$idniv));
+
+
+        $nombreadmisinfdgan=0;
+
+
+
+        while($resultat = $repos->fetch()) {
+
+
+
+            if($idniv=="L1"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM1'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM2'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+            if($idniv=="L2"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM3'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM4'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+            if($idniv=="L3"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM5'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM6'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+
+            if($idniv=="M1"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+                if($idspec=='RTEL'|| $idspec=="MDSI" || $idspec=='MBDS'){
+
+
+                    $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac1 = $repost->fetch();
+
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+                    $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac2 = $repost2->fetch();
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+
+
+
+                    $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+
+
+                }else{
+
+
+
+
+                    $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid='TCSIGLSITW' and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost->execute(array('idetudiant'=>$resultat['studentid']));
+
+                    $anac1 = $repost->fetch();
+
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd)==""){
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE1',$bdd);
+                    }else{
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd);
+                    }
+
+
+
+
+                    $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac2 = $repost2->fetch();
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+
+
+
+                    $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+                }
+
+            }
+
+
+
+            if($idniv=="M2"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM9'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM10'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+            if($moyennean >=8 and $moyennean <10 and  $genreetud['kind']=="M")
+
+            {
+                $nombreadmisinfdgan=   $nombreadmisinfdgan+ 1;
+            }
+
+
+
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        return        $nombreadmisinfdgan;
+
+
+
+
+
+
+
+
+
+
+    }else {
+
+        $repos = $bdd->query("SET OPTION SQL_BIG_SELECTS=1");
+
+        $repos = $bdd->prepare('
+  SELECT DISTINCT halfyearly_delib.studentid   FROM `halfyearly_delib` WHERE halfyearly_delib.specialityid=:idspec and halfyearly_delib.acadyearid=:idanac and halfyearly_delib.sessionid="SE1" and halfyearly_delib.decision="REFUSE"  and halfyearly_delib.studentid in (select studentid from student_speciality where levelid=:idniv and acadyearid=:idanac and specialityid=:idspec)
+  
+   ');
+
+        $repos->execute(array('idspec' => $idspec, 'idanac' => $idanac, 'idniv' => $idniv));
+
+        $nombreadmisinfdgan = 0;
+
+
+        while ($resultat = $repos->fetch()) {
+
+
+
+            if($idniv=="L1"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM1'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM2'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+            if($idniv=="L2"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM3'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM4'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+            if($idniv=="L3"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM5'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM6'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+
+            if($idniv=="M1"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+                if($idspec=='RTEL'|| $idspec=="MDSI" || $idspec=='MBDS'){
+
+
+                    $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac1 = $repost->fetch();
+
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+                    $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac2 = $repost2->fetch();
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+
+
+
+                    $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+
+
+                }else{
+
+
+
+
+                    $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid='TCSIGLSITW' and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost->execute(array('idetudiant'=>$resultat['studentid']));
+
+                    $anac1 = $repost->fetch();
+
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd)==""){
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE1',$bdd);
+                    }else{
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd);
+                    }
+
+
+
+
+                    $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac2 = $repost2->fetch();
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+
+
+
+                    $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+                }
+
+            }
+
+
+
+            if($idniv=="M2"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM9'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM10'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+            if ($moyennean >= 8 and $moyennean < 10 and $genreetud['kind'] == "M") {
+                $nombreadmisinfdgan = $nombreadmisinfdgan + 1;
+            }
+
+
+        }
+
+
+        return $nombreadmisinfdgan;
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+}
+
+
+
+function nbadmisinfd($idanac,$idspec,$idsem,$idses,$bdd)
+{
+
+    $repns=$bdd->prepare(" SELECT count(DISTINCT halfyearly_delib.studentid) as nbetudiant  FROM `halfyearly_delib` INNER JOIN student on student.id=halfyearly_delib.studentid WHERE halfyearly_delib.semesterid=:idsem and halfyearly_delib.sessionid=:idses and halfyearly_delib.specialityid=:idspec and halfyearly_delib.acadyearid=:idanac  and halfyearly_delib.semaverage >=8 and halfyearly_delib.semaverage < 10 ");
+    $repns->execute(array('idanac'=> $idanac, 'idsem'=> $idsem,'idspec'=> $idspec,'idses'=> $idses));
+    $nbetudad = $repns->fetch();
+
+
+
+    $nombreadmisinfd=$nbetudad['nbetudiant'];
+
+
+
+
+    return $nombreadmisinfd;
+
+}
+
+
+
+
+
+
+function nbadmisinfdan($idanac,$idspec,$idniv,$bdd)
+{
+
+
+    $repos=$bdd->query("SET OPTION SQL_BIG_SELECTS=1");
+
+    $repos = $bdd->prepare(' SELECT  DISTINCT halfyearly_delib.studentid FROM `halfyearly_delib` INNER JOIN student on student.id=halfyearly_delib.studentid INNER JOIN student_speciality on student_speciality.studentid=student.id WHERE student_speciality.specialityid=:idspec  and student_speciality.acadyearid=:idanac and student_speciality.levelid=:idniv   order by student.firstname,student.lastname ' );
+
+    $repos->execute(array('idspec'=>$idspec,'idanac'=>$idanac,'idniv'=>$idniv));
+
+    $nombreadmisinfdan=0;
+
+
+
+    while($resultat = $repos->fetch()) {
+
+
+        if($idniv=="L1"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+
+
+            $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM1'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac1 = $repost->fetch();
+
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+            $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM2'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac2 = $repost2->fetch();
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+
+
+
+            $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+        if($idniv=="L2"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+
+
+            $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM3'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac1 = $repost->fetch();
+
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+            $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM4'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac2 = $repost2->fetch();
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+
+
+
+            $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+        if($idniv=="L3"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+
+
+            $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM5'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac1 = $repost->fetch();
+
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+            $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM6'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac2 = $repost2->fetch();
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+
+
+
+            $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+
+        if($idniv=="M1"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+            if($idspec=='RTEL'|| $idspec=="MDSI" || $idspec=='MBDS'){
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+
+
+            }else{
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid='TCSIGLSITW' and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+            }
+
+        }
+
+
+
+        if($idniv=="M2"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+
+
+            $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM9'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac1 = $repost->fetch();
+
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+            $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM10'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac2 = $repost2->fetch();
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+
+
+
+            $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+
+        if($moyennean >=8 and $moyennean <10 )
+
+        {
+            $nombreadmisinfdan=  $nombreadmisinfdan+ 1;
+        }
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    return       $nombreadmisinfdan;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
+function nbadmisinfdanse2($idanac,$idspec,$idniv,$bdd)
+{
+
+
+    if(($idniv=='M1' and $idspec=='SIGL')|| ($idniv=='M1' and $idspec=='SITW')){
+
+
+        $repos=$bdd->query("SET OPTION SQL_BIG_SELECTS=1");
+
+        $repos = $bdd->prepare('  
+  SELECT DISTINCT halfyearly_delib.studentid FROM `halfyearly_delib` WHERE halfyearly_delib.specialityid="TCSIGLSITW" and halfyearly_delib.acadyearid=:idanac and halfyearly_delib.sessionid="SE1" and halfyearly_delib.decision="REFUSE" and halfyearly_delib.semesterid="SEM7" and halfyearly_delib.studentid in (select studentid from student_speciality where levelid=:idniv and acadyearid=:idanac and specialityid=:idspec)
+   ' );
+
+        $repos->execute(array('idspec'=>$idspec,'idanac'=>$idanac,'idniv'=>$idniv));
+
+
+        $nombreadmisinfdan=0;
+
+
+
+        while($resultat = $repos->fetch()) {
+
+
+
+            if($idniv=="L1"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM1'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM2'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+            if($idniv=="L2"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM3'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM4'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+            if($idniv=="L3"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM5'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM6'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+
+            if($idniv=="M1"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+                if($idspec=='RTEL'|| $idspec=="MDSI" || $idspec=='MBDS'){
+
+
+                    $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac1 = $repost->fetch();
+
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+                    $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac2 = $repost2->fetch();
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+
+
+
+                    $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+
+
+                }else{
+
+
+
+
+                    $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid='TCSIGLSITW' and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost->execute(array('idetudiant'=>$resultat['studentid']));
+
+                    $anac1 = $repost->fetch();
+
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd)==""){
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE1',$bdd);
+                    }else{
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd);
+                    }
+
+
+
+
+                    $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac2 = $repost2->fetch();
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+
+
+
+                    $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+                }
+
+            }
+
+
+
+            if($idniv=="M2"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM9'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM10'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+            if($moyennean >=8 and $moyennean <10 )
+
+            {
+                $nombreadmisinfdan=  $nombreadmisinfdan+ 1;
+            }
+
+
+
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        return       $nombreadmisinfdan;
+
+
+
+
+
+
+
+
+
+
+    }else {
+
+
+        $repos = $bdd->query("SET OPTION SQL_BIG_SELECTS=1");
+
+        $repos = $bdd->prepare(' 
+  SELECT DISTINCT halfyearly_delib.studentid   FROM `halfyearly_delib` WHERE halfyearly_delib.specialityid=:idspec and halfyearly_delib.acadyearid=:idanac and halfyearly_delib.sessionid="SE1" and halfyearly_delib.decision="REFUSE"  and halfyearly_delib.studentid in (select studentid from student_speciality where levelid=:idniv and acadyearid=:idanac and specialityid=:idspec)
+  
+  ');
+
+        $repos->execute(array('idspec' => $idspec, 'idanac' => $idanac, 'idniv' => $idniv));
+
+        $nombreadmisinfdan = 0;
+
+
+        while ($resultat = $repos->fetch()) {
+
+
+
+            if($idniv=="L1"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM1'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM2'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+            if($idniv=="L2"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM3'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM4'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+            if($idniv=="L3"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM5'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM6'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+
+            if($idniv=="M1"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+                if($idspec=='RTEL'|| $idspec=="MDSI" || $idspec=='MBDS'){
+
+
+                    $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac1 = $repost->fetch();
+
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+                    $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac2 = $repost2->fetch();
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+
+
+
+                    $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+
+
+                }else{
+
+
+
+
+                    $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid='TCSIGLSITW' and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost->execute(array('idetudiant'=>$resultat['studentid']));
+
+                    $anac1 = $repost->fetch();
+
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd)==""){
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE1',$bdd);
+                    }else{
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd);
+                    }
+
+
+
+
+                    $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac2 = $repost2->fetch();
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+
+
+
+                    $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+                }
+
+            }
+
+
+
+            if($idniv=="M2"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM9'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM10'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+            if ($moyennean >= 8 and $moyennean < 10) {
+                $nombreadmisinfdan = $nombreadmisinfdan + 1;
+            }
+
+
+        }
+
+
+        return $nombreadmisinfdan;
+
+
+    }
+
+
+
+
+
+}
+
+
+
+
+function nbadmissupdixf($idanac,$idspec,$idsem,$idses,$bdd)
+{
+
+    $repns=$bdd->prepare(" SELECT count(DISTINCT halfyearly_delib.studentid) as nbetudiant  FROM `halfyearly_delib` INNER JOIN student on student.id=halfyearly_delib.studentid WHERE halfyearly_delib.semesterid=:idsem and halfyearly_delib.sessionid=:idses and halfyearly_delib.specialityid=:idspec and halfyearly_delib.acadyearid=:idanac  and halfyearly_delib.semaverage >=10  and student.kind like '%F%' ");
+    $repns->execute(array('idanac'=> $idanac, 'idsem'=> $idsem,'idspec'=> $idspec,'idses'=> $idses));
+    $nbetudadf = $repns->fetch();
+
+
+
+    $nombreadmisf=$nbetudadf['nbetudiant'];
+
+
+
+
+    return $nombreadmisf;
+
+}
+
+
+
+
+function nbadmissupdixg($idanac,$idspec,$idsem,$idses,$bdd)
+{
+
+    $repns=$bdd->prepare(" SELECT count(DISTINCT halfyearly_delib.studentid) as nbetudiant  FROM `halfyearly_delib` INNER JOIN student on student.id=halfyearly_delib.studentid WHERE halfyearly_delib.semesterid=:idsem and halfyearly_delib.sessionid=:idses and halfyearly_delib.specialityid=:idspec and halfyearly_delib.acadyearid=:idanac  and halfyearly_delib.semaverage >=10  and student.kind like '%M%' ");
+    $repns->execute(array('idanac'=> $idanac, 'idsem'=> $idsem,'idspec'=> $idspec,'idses'=> $idses));
+    $nbetudadg = $repns->fetch();
+
+
+
+    $nombreadmisg=$nbetudadg['nbetudiant'];
+
+
+
+
+    return $nombreadmisg;
+
+}
+
+
+
+
+
+
+function nbadmissupdixgan($idanac,$idspec,$idniv,$bdd)
+{
+
+
+    $repos=$bdd->query("SET OPTION SQL_BIG_SELECTS=1");
+
+    $repos = $bdd->prepare(' SELECT  DISTINCT halfyearly_delib.studentid FROM `halfyearly_delib` INNER JOIN student on student.id=halfyearly_delib.studentid INNER JOIN student_speciality on student_speciality.studentid=student.id WHERE student_speciality.specialityid=:idspec  and student_speciality.acadyearid=:idanac and student_speciality.levelid=:idniv   order by student.firstname,student.lastname ' );
+
+    $repos->execute(array('idspec'=>$idspec,'idanac'=>$idanac,'idniv'=>$idniv));
+
+    $nombreadmisgan=0;
+
+
+
+    while($resultat = $repos->fetch()) {
+
+
+        if($idniv=="L1"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+
+
+            $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM1'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac1 = $repost->fetch();
+
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+            $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM2'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac2 = $repost2->fetch();
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+
+
+
+            $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+        if($idniv=="L2"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+
+
+            $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM3'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac1 = $repost->fetch();
+
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+            $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM4'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac2 = $repost2->fetch();
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+
+
+
+            $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+        if($idniv=="L3"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+
+
+            $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM5'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac1 = $repost->fetch();
+
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+            $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM6'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac2 = $repost2->fetch();
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+
+
+
+            $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+
+        if($idniv=="M1"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+            if($idspec=='RTEL'|| $idspec=="MDSI" || $idspec=='MBDS'){
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+
+
+            }else{
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid='TCSIGLSITW' and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+            }
+
+        }
+
+
+
+        if($idniv=="M2"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+
+
+            $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM9'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac1 = $repost->fetch();
+
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+            $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM10'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac2 = $repost2->fetch();
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+
+
+
+            $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+        if($moyennean >=10 and  $genreetud['kind']=="M")
+
+        {
+            $nombreadmisgan=  $nombreadmisgan+ 1;
+        }
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    return         $nombreadmisgan;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
+function nbadmissupdixganse2($idanac,$idspec,$idniv,$bdd)
+{
+
+    if(($idniv=='M1' and $idspec=='SIGL')|| ($idniv=='M1' and $idspec=='SITW')){
+
+
+        $repos=$bdd->query("SET OPTION SQL_BIG_SELECTS=1");
+
+        $repos = $bdd->prepare('  
+  SELECT DISTINCT halfyearly_delib.studentid FROM `halfyearly_delib` WHERE halfyearly_delib.specialityid="TCSIGLSITW" and halfyearly_delib.acadyearid=:idanac and halfyearly_delib.sessionid="SE1" and halfyearly_delib.decision="REFUSE" and halfyearly_delib.semesterid="SEM7" and halfyearly_delib.studentid in (select studentid from student_speciality where levelid=:idniv and acadyearid=:idanac and specialityid=:idspec)
+   ' );
+
+        $repos->execute(array('idspec'=>$idspec,'idanac'=>$idanac,'idniv'=>$idniv));
+
+
+        $nombreadmisgan=0;
+
+
+
+        while($resultat = $repos->fetch()) {
+
+
+            if($idniv=="L1"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM1'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM2'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+            if($idniv=="L2"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM3'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM4'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+            if($idniv=="L3"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM5'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM6'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+
+            if($idniv=="M1"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+                if($idspec=='RTEL'|| $idspec=="MDSI" || $idspec=='MBDS'){
+
+
+                    $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac1 = $repost->fetch();
+
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+                    $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac2 = $repost2->fetch();
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+
+
+
+                    $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+
+
+                }else{
+
+
+
+
+                    $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid='TCSIGLSITW' and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost->execute(array('idetudiant'=>$resultat['studentid']));
+
+                    $anac1 = $repost->fetch();
+
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd)==""){
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE1',$bdd);
+                    }else{
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd);
+                    }
+
+
+
+
+                    $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac2 = $repost2->fetch();
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+
+
+
+                    $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+                }
+
+            }
+
+
+
+            if($idniv=="M2"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM9'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM10'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+            if($moyennean >=10 and  $genreetud['kind']=="M")
+
+            {
+                $nombreadmisgan=  $nombreadmisgan+ 1;
+            }
+
+
+
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        return         $nombreadmisgan;
+
+
+
+
+
+
+
+
+
+
+    }else {
+
+        $repos = $bdd->query("SET OPTION SQL_BIG_SELECTS=1");
+
+        $repos = $bdd->prepare(' 
+  SELECT DISTINCT halfyearly_delib.studentid   FROM `halfyearly_delib` WHERE halfyearly_delib.specialityid=:idspec and halfyearly_delib.acadyearid=:idanac and halfyearly_delib.sessionid="SE1" and halfyearly_delib.decision="REFUSE"  and halfyearly_delib.studentid in (select studentid from student_speciality where levelid=:idniv and acadyearid=:idanac and specialityid=:idspec)
+  
+   ');
+
+        $repos->execute(array('idspec' => $idspec, 'idanac' => $idanac, 'idniv' => $idniv));
+
+        $nombreadmisgan = 0;
+
+
+        while ($resultat = $repos->fetch()) {
+
+
+
+            if($idniv=="L1"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM1'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM2'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+            if($idniv=="L2"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM3'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM4'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+            if($idniv=="L3"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM5'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM6'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+
+            if($idniv=="M1"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+                if($idspec=='RTEL'|| $idspec=="MDSI" || $idspec=='MBDS'){
+
+
+                    $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac1 = $repost->fetch();
+
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+                    $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac2 = $repost2->fetch();
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+
+
+
+                    $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+
+
+                }else{
+
+
+
+
+                    $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid='TCSIGLSITW' and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost->execute(array('idetudiant'=>$resultat['studentid']));
+
+                    $anac1 = $repost->fetch();
+
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd)==""){
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE1',$bdd);
+                    }else{
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd);
+                    }
+
+
+
+
+                    $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac2 = $repost2->fetch();
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+
+
+
+                    $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+                }
+
+            }
+
+
+
+            if($idniv=="M2"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM9'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM10'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+            if ($moyennean >= 10 and $genreetud['kind'] == "M") {
+                $nombreadmisgan = $nombreadmisgan + 1;
+            }
+
+
+        }
+
+
+        return $nombreadmisgan;
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
+function nbadmissupdix($idanac,$idspec,$idsem,$idses,$bdd)
+{
+
+    $repns=$bdd->prepare(" SELECT count(DISTINCT halfyearly_delib.studentid) as nbetudiant  FROM `halfyearly_delib` INNER JOIN student on student.id=halfyearly_delib.studentid WHERE halfyearly_delib.semesterid=:idsem and halfyearly_delib.sessionid=:idses and halfyearly_delib.specialityid=:idspec and halfyearly_delib.acadyearid=:idanac  and halfyearly_delib.semaverage >=10");
+    $repns->execute(array('idanac'=> $idanac, 'idsem'=> $idsem,'idspec'=> $idspec,'idses'=> $idses));
+    $nbetudad = $repns->fetch();
+
+
+
+    $nombreadmis=$nbetudad['nbetudiant'];
+
+
+
+
+    return $nombreadmis;
+
+}
+
+
+
+
+
+
+function nbadmissupdixan($idanac,$idspec,$idniv,$bdd)
+{
+
+
+    $repos=$bdd->query("SET OPTION SQL_BIG_SELECTS=1");
+
+    $repos = $bdd->prepare(' SELECT  DISTINCT halfyearly_delib.studentid FROM `halfyearly_delib` INNER JOIN student on student.id=halfyearly_delib.studentid INNER JOIN student_speciality on student_speciality.studentid=student.id WHERE student_speciality.specialityid=:idspec  and student_speciality.acadyearid=:idanac and student_speciality.levelid=:idniv   order by student.firstname,student.lastname ' );
+
+    $repos->execute(array('idspec'=>$idspec,'idanac'=>$idanac,'idniv'=>$idniv));
+
+    $nombreadmisan=0;
+
+
+
+    while($resultat = $repos->fetch()) {
+
+
+        if($idniv=="L1"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+
+
+            $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM1'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac1 = $repost->fetch();
+
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+            $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM2'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac2 = $repost2->fetch();
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+
+
+
+            $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+        if($idniv=="L2"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+
+
+            $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM3'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac1 = $repost->fetch();
+
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+            $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM4'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac2 = $repost2->fetch();
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+
+
+
+            $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+        if($idniv=="L3"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+
+
+            $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM5'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac1 = $repost->fetch();
+
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+            $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM6'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac2 = $repost2->fetch();
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+
+
+
+            $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+
+        if($idniv=="M1"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+            if($idspec=='RTEL'|| $idspec=="MDSI" || $idspec=='MBDS'){
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+
+
+            }else{
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid='TCSIGLSITW' and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+            }
+
+        }
+
+
+
+        if($idniv=="M2"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+
+
+            $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM9'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac1 = $repost->fetch();
+
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+            $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM10'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac2 = $repost2->fetch();
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+
+
+
+            $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+        if($moyennean >=10 )
+
+        {
+            $nombreadmisan=  $nombreadmisan+ 1;
+        }
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    return        $nombreadmisan;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+function nbadmissupdixanse2($idanac,$idspec,$idniv,$bdd)
+{
+
+    if(($idniv=='M1' and $idspec=='SIGL')|| ($idniv=='M1' and $idspec=='SITW')){
+
+
+        $repos=$bdd->query("SET OPTION SQL_BIG_SELECTS=1");
+
+        $repos = $bdd->prepare('  
+  SELECT DISTINCT halfyearly_delib.studentid FROM `halfyearly_delib` WHERE halfyearly_delib.specialityid="TCSIGLSITW" and halfyearly_delib.acadyearid=:idanac and halfyearly_delib.sessionid="SE1" and halfyearly_delib.decision="REFUSE" and halfyearly_delib.semesterid="SEM7" and halfyearly_delib.studentid in (select studentid from student_speciality where levelid=:idniv and acadyearid=:idanac and specialityid=:idspec)
+   ' );
+
+        $repos->execute(array('idspec'=>$idspec,'idanac'=>$idanac,'idniv'=>$idniv));
+
+
+
+
+        $nombreadmisan=0;
+
+
+
+        while($resultat = $repos->fetch()) {
+
+
+
+            if($idniv=="L1"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM1'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM2'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+            if($idniv=="L2"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM3'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM4'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+            if($idniv=="L3"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM5'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM6'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+
+            if($idniv=="M1"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+                if($idspec=='RTEL'|| $idspec=="MDSI" || $idspec=='MBDS'){
+
+
+                    $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac1 = $repost->fetch();
+
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+                    $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac2 = $repost2->fetch();
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+
+
+
+                    $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+
+
+                }else{
+
+
+
+
+                    $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid='TCSIGLSITW' and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost->execute(array('idetudiant'=>$resultat['studentid']));
+
+                    $anac1 = $repost->fetch();
+
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd)==""){
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE1',$bdd);
+                    }else{
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd);
+                    }
+
+
+
+
+                    $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac2 = $repost2->fetch();
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+
+
+
+                    $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+                }
+
+            }
+
+
+
+            if($idniv=="M2"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM9'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM10'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+            if($moyennean >=10 )
+
+            {
+                $nombreadmisan=  $nombreadmisan+ 1;
+            }
+
+
+
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        return        $nombreadmisan;
+
+
+
+
+
+
+
+
+
+    }else {
+
+
+        $repos = $bdd->query("SET OPTION SQL_BIG_SELECTS=1");
+
+        $repos = $bdd->prepare(' 
+  SELECT DISTINCT halfyearly_delib.studentid   FROM `halfyearly_delib` WHERE halfyearly_delib.specialityid=:idspec and halfyearly_delib.acadyearid=:idanac and halfyearly_delib.sessionid="SE1" and halfyearly_delib.decision="REFUSE"  and halfyearly_delib.studentid in (select studentid from student_speciality where levelid=:idniv and acadyearid=:idanac and specialityid=:idspec)
+  
+   ');
+
+        $repos->execute(array('idspec' => $idspec, 'idanac' => $idanac, 'idniv' => $idniv));
+
+        $nombreadmisan = 0;
+
+
+        while ($resultat = $repos->fetch()) {
+
+
+
+            if($idniv=="L1"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM1'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM2'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+            if($idniv=="L2"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM3'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM4'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+            if($idniv=="L3"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM5'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM6'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+
+            if($idniv=="M1"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+                if($idspec=='RTEL'|| $idspec=="MDSI" || $idspec=='MBDS'){
+
+
+                    $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac1 = $repost->fetch();
+
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+                    $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac2 = $repost2->fetch();
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+
+
+
+                    $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+
+
+                }else{
+
+
+
+
+                    $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid='TCSIGLSITW' and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost->execute(array('idetudiant'=>$resultat['studentid']));
+
+                    $anac1 = $repost->fetch();
+
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd)==""){
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE1',$bdd);
+                    }else{
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd);
+                    }
+
+
+
+
+                    $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac2 = $repost2->fetch();
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+
+
+
+                    $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+                }
+
+            }
+
+
+
+            if($idniv=="M2"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM9'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM10'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+            if ($moyennean >= 10) {
+                $nombreadmisan = $nombreadmisan + 1;
+            }
+
+
+        }
+
+
+        return $nombreadmisan;
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
+
+function nbadmisdecisf($idanac,$idspec,$idsem,$idses,$bdd)
+{
+
+    $repns=$bdd->prepare("  SELECT count(DISTINCT halfyearly_delib.studentid) as nbetudiant  FROM `halfyearly_delib` INNER JOIN student on student.id=halfyearly_delib.studentid WHERE halfyearly_delib.semesterid=:idsem and halfyearly_delib.sessionid=:idses and halfyearly_delib.specialityid=:idspec and halfyearly_delib.acadyearid=:idanac  and halfyearly_delib.decision='ADMIS'  and student.kind like '%F%' ");
+    $repns->execute(array('idanac'=> $idanac, 'idsem'=> $idsem,'idspec'=> $idspec,'idses'=> $idses));
+    $nbetudaddcf = $repns->fetch();
+
+
+
+    $nombreadmisdecisf=$nbetudaddcf['nbetudiant'];
+
+
+
+
+    return $nombreadmisdecisf;
+
+}
+
+
+
+function nbadmisdecisfan($idanac,$idspec,$idniv,$bdd)
+{
+
+
+    $repos=$bdd->query("SET OPTION SQL_BIG_SELECTS=1");
+
+    $repos = $bdd->prepare(' SELECT  DISTINCT halfyearly_delib.studentid FROM `halfyearly_delib` INNER JOIN student on student.id=halfyearly_delib.studentid INNER JOIN student_speciality on student_speciality.studentid=student.id WHERE student_speciality.specialityid=:idspec  and student_speciality.acadyearid=:idanac and student_speciality.levelid=:idniv   order by student.firstname,student.lastname ' );
+
+    $repos->execute(array('idspec'=>$idspec,'idanac'=>$idanac,'idniv'=>$idniv));
+
+    $nombreadmisdecisfan=0;
+
+
+
+    while($resultat = $repos->fetch()) {
+
+
+        if($idniv=="L1"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+
+
+            $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM1'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac1 = $repost->fetch();
+
+
+            if(decisionsemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+            $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM2'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac2 = $repost2->fetch();
+
+            if(decisionsemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+
+
+
+        }
+
+
+
+        if($idniv=="L2"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+
+
+            $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM3'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac1 = $repost->fetch();
+
+
+            if(decisionsemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+            $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM4'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac2 = $repost2->fetch();
+
+            if(decisionsemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+
+
+
+        }
+
+
+
+        if($idniv=="L3"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+
+
+            $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM5'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac1 = $repost->fetch();
+
+
+            if(decisionsemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+            $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM6'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac2 = $repost2->fetch();
+
+            if(decisionsemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+
+
+
+        }
+
+
+
+
+        if($idniv=="M1"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+            if($idspec=='RTEL'|| $idspec=="MDSI" || $idspec=='MBDS'){
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+
+
+
+
+
+            }else{
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid='TCSIGLSITW' and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd)==""){
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE1',$bdd);
+                }else{
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+
+
+
+            }
+
+        }
+
+
+
+        if($idniv=="M2"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+
+
+            $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM9'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac1 = $repost->fetch();
+
+
+            if(decisionsemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+            $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM10'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac2 = $repost2->fetch();
+
+            if(decisionsemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+
+
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        if($decisionsem1=='ADMIS' and  $decisionsem2=='ADMIS' and $genreetud['kind']=="F")
+
+        {
+            $nombreadmisdecisfan=   $nombreadmisdecisfan+ 1;
+        }
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    return          $nombreadmisdecisfan;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
+function nbadmisdecisfanse2($idanac,$idspec,$idniv,$bdd)
+{
+
+
+    if(($idniv=='M1' and $idspec=='SIGL')|| ($idniv=='M1' and $idspec=='SITW')){
+
+
+        $repos=$bdd->query("SET OPTION SQL_BIG_SELECTS=1");
+
+        $repos = $bdd->prepare(' 
+  SELECT DISTINCT halfyearly_delib.studentid FROM `halfyearly_delib` WHERE halfyearly_delib.specialityid="TCSIGLSITW" and halfyearly_delib.acadyearid=:idanac and halfyearly_delib.sessionid="SE1" and halfyearly_delib.decision="REFUSE" and halfyearly_delib.semesterid="SEM7" and halfyearly_delib.studentid in (select studentid from student_speciality where levelid=:idniv and acadyearid=:idanac and specialityid=:idspec)
+  ' );
+
+        $repos->execute(array('idspec'=>$idspec,'idanac'=>$idanac,'idniv'=>$idniv));
+
+        $nombreadmisdecisfan=0;
+
+
+
+        while($resultat = $repos->fetch()) {
+
+            if($idniv=="L1"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM1'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM2'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+            }
+
+
+
+            if($idniv=="L2"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM3'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM4'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+            }
+
+
+
+            if($idniv=="L3"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM5'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM6'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+            }
+
+
+
+
+            if($idniv=="M1"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+                if($idspec=='RTEL'|| $idspec=="MDSI" || $idspec=='MBDS'){
+
+
+                    $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac1 = $repost->fetch();
+
+
+                    if(decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+                    $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac2 = $repost2->fetch();
+
+                    if(decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+
+
+
+
+
+
+
+
+                }else{
+
+
+
+
+                    $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid='TCSIGLSITW' and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost->execute(array('idetudiant'=>$resultat['studentid']));
+
+                    $anac1 = $repost->fetch();
+
+
+                    if(decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd)==""){
+                        $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE1',$bdd);
+                    }else{
+                        $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd);
+                    }
+
+
+
+
+                    $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac2 = $repost2->fetch();
+
+                    if(decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+
+
+
+
+
+
+                }
+
+            }
+
+
+
+            if($idniv=="M2"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM9'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM10'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+            }
+
+
+
+
+
+            if($decisionsem1=='ADMIS' and  $decisionsem2=='ADMIS' and $genreetud['kind']=="F")
+
+            {
+                $nombreadmisdecisfan=   $nombreadmisdecisfan+ 1;
+            }
+
+
+
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        return          $nombreadmisdecisfan;
+
+
+
+
+
+
+
+
+
+
+
+    }else {
+
+
+        $repos = $bdd->query("SET OPTION SQL_BIG_SELECTS=1");
+
+        $repos = $bdd->prepare(' 
+  SELECT DISTINCT halfyearly_delib.studentid   FROM `halfyearly_delib` WHERE halfyearly_delib.specialityid=:idspec and halfyearly_delib.acadyearid=:idanac and halfyearly_delib.sessionid="SE1" and halfyearly_delib.decision="REFUSE"  and halfyearly_delib.studentid in (select studentid from student_speciality where levelid=:idniv and acadyearid=:idanac and specialityid=:idspec)
+  
+  ');
+
+        $repos->execute(array('idspec' => $idspec, 'idanac' => $idanac, 'idniv' => $idniv));
+
+        $nombreadmisdecisfan = 0;
+
+
+        while ($resultat = $repos->fetch()) {
+
+            if($idniv=="L1"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM1'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM2'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+            }
+
+
+
+            if($idniv=="L2"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM3'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM4'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+            }
+
+
+
+            if($idniv=="L3"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM5'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM6'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+            }
+
+
+
+
+            if($idniv=="M1"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+                if($idspec=='RTEL'|| $idspec=="MDSI" || $idspec=='MBDS'){
+
+
+                    $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac1 = $repost->fetch();
+
+
+                    if(decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+                    $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac2 = $repost2->fetch();
+
+                    if(decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+
+
+
+
+
+
+
+
+                }else{
+
+
+
+
+                    $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid='TCSIGLSITW' and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost->execute(array('idetudiant'=>$resultat['studentid']));
+
+                    $anac1 = $repost->fetch();
+
+
+                    if(decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd)==""){
+                        $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE1',$bdd);
+                    }else{
+                        $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd);
+                    }
+
+
+
+
+                    $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac2 = $repost2->fetch();
+
+                    if(decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+
+
+
+
+
+
+                }
+
+            }
+
+
+
+            if($idniv=="M2"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM9'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM10'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+            }
+
+
+            if ($decisionsem1 == 'ADMIS' and $decisionsem2 == 'ADMIS' and $genreetud['kind'] == "F") {
+                $nombreadmisdecisfan = $nombreadmisdecisfan + 1;
+            }
+
+
+        }
+
+
+        return $nombreadmisdecisfan;
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
+
+
+function nbadmisdecisg($idanac,$idspec,$idsem,$idses,$bdd)
+{
+
+    $repns=$bdd->prepare(" SELECT count(DISTINCT halfyearly_delib.studentid) as nbetudiant  FROM `halfyearly_delib` INNER JOIN student on student.id=halfyearly_delib.studentid WHERE halfyearly_delib.semesterid=:idsem and halfyearly_delib.sessionid=:idses and halfyearly_delib.specialityid=:idspec and halfyearly_delib.acadyearid=:idanac  and halfyearly_delib.decision='ADMIS'  and student.kind like '%M%' ");
+    $repns->execute(array('idanac'=> $idanac, 'idsem'=> $idsem,'idspec'=> $idspec,'idses'=> $idses));
+    $nbetudaddcg = $repns->fetch();
+
+
+
+    $nombreadmisdecisg=$nbetudaddcg['nbetudiant'];
+
+
+
+
+    return $nombreadmisdecisg;
+
+}
+
+
+
+
+function nbadmisdecisgan($idanac,$idspec,$idniv,$bdd)
+{
+
+
+    $repos=$bdd->query("SET OPTION SQL_BIG_SELECTS=1");
+
+    $repos = $bdd->prepare(' SELECT  DISTINCT halfyearly_delib.studentid FROM `halfyearly_delib` INNER JOIN student on student.id=halfyearly_delib.studentid INNER JOIN student_speciality on student_speciality.studentid=student.id WHERE student_speciality.specialityid=:idspec  and student_speciality.acadyearid=:idanac and student_speciality.levelid=:idniv   order by student.firstname,student.lastname ' );
+
+    $repos->execute(array('idspec'=>$idspec,'idanac'=>$idanac,'idniv'=>$idniv));
+
+    $nombreadmisdecisgan=0;
+
+
+
+    while($resultat = $repos->fetch()) {
+
+
+        if($idniv=="L1"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+
+
+            $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM1'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac1 = $repost->fetch();
+
+
+            if(decisionsemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+            $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM2'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac2 = $repost2->fetch();
+
+            if(decisionsemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+
+
+
+        }
+
+
+
+        if($idniv=="L2"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+
+
+            $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM3'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac1 = $repost->fetch();
+
+
+            if(decisionsemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+            $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM4'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac2 = $repost2->fetch();
+
+            if(decisionsemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+
+
+
+        }
+
+
+
+        if($idniv=="L3"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+
+
+            $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM5'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac1 = $repost->fetch();
+
+
+            if(decisionsemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+            $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM6'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac2 = $repost2->fetch();
+
+            if(decisionsemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+
+
+
+        }
+
+
+
+
+        if($idniv=="M1"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+            if($idspec=='RTEL'|| $idspec=="MDSI" || $idspec=='MBDS'){
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+
+
+
+
+
+            }else{
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid='TCSIGLSITW' and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd)==""){
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE1',$bdd);
+                }else{
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+
+
+
+            }
+
+        }
+
+
+
+        if($idniv=="M2"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+
+
+            $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM9'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac1 = $repost->fetch();
+
+
+            if(decisionsemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+            $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM10'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac2 = $repost2->fetch();
+
+            if(decisionsemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+
+
+
+        }
+
+
+
+
+        if($decisionsem1=='ADMIS' and  $decisionsem2=='ADMIS' and $genreetud['kind']=="M")
+
+        {
+            $nombreadmisdecisgan=    $nombreadmisdecisgan+ 1;
+        }
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    return           $nombreadmisdecisgan;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+function nbadmisdecisganse2($idanac,$idspec,$idniv,$bdd)
+{
+
+    if(($idniv=='M1' and $idspec=='SIGL')|| ($idniv=='M1' and $idspec=='SITW')){
+
+
+        $repos=$bdd->query("SET OPTION SQL_BIG_SELECTS=1");
+
+        $repos = $bdd->prepare('   SELECT DISTINCT halfyearly_delib.studentid FROM `halfyearly_delib` WHERE halfyearly_delib.specialityid="TCSIGLSITW" and halfyearly_delib.acadyearid=:idanac and halfyearly_delib.sessionid="SE1" and halfyearly_delib.decision="REFUSE" and halfyearly_delib.semesterid="SEM7" and halfyearly_delib.studentid in (select studentid from student_speciality where levelid=:idniv and acadyearid=:idanac and specialityid=:idspec)
+   ' );
+
+        $repos->execute(array('idspec'=>$idspec,'idanac'=>$idanac,'idniv'=>$idniv));
+
+
+        $nombreadmisdecisgan=0;
+
+
+
+        while($resultat = $repos->fetch()) {
+
+
+            if($idniv=="L1"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM1'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM2'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+            }
+
+
+
+            if($idniv=="L2"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM3'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM4'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+            }
+
+
+
+            if($idniv=="L3"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM5'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM6'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+            }
+
+
+
+
+            if($idniv=="M1"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+                if($idspec=='RTEL'|| $idspec=="MDSI" || $idspec=='MBDS'){
+
+
+                    $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac1 = $repost->fetch();
+
+
+                    if(decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+                    $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac2 = $repost2->fetch();
+
+                    if(decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+
+
+
+
+
+
+
+
+                }else{
+
+
+
+
+                    $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid='TCSIGLSITW' and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost->execute(array('idetudiant'=>$resultat['studentid']));
+
+                    $anac1 = $repost->fetch();
+
+
+                    if(decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd)==""){
+                        $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE1',$bdd);
+                    }else{
+                        $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd);
+                    }
+
+
+
+
+                    $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac2 = $repost2->fetch();
+
+                    if(decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+
+
+
+
+
+
+                }
+
+            }
+
+
+
+            if($idniv=="M2"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM9'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM10'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+            }
+
+
+
+            if($decisionsem1=='ADMIS' and  $decisionsem2=='ADMIS' and $genreetud['kind']=="M")
+
+            {
+                $nombreadmisdecisgan=    $nombreadmisdecisgan+ 1;
+            }
+
+
+
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        return           $nombreadmisdecisgan;
+
+
+
+
+
+
+
+
+
+
+
+
+    }else {
+        $repos = $bdd->query("SET OPTION SQL_BIG_SELECTS=1");
+
+        $repos = $bdd->prepare(' 
+  SELECT  DISTINCT halfyearly_delib.studentid   FROM `halfyearly_delib` WHERE halfyearly_delib.specialityid=:idspec and halfyearly_delib.acadyearid=:idanac and halfyearly_delib.sessionid="SE1" and halfyearly_delib.decision="REFUSE"  and halfyearly_delib.studentid in (select studentid from student_speciality where levelid=:idniv and acadyearid=:idanac and specialityid=:idspec)
+  
+   ');
+
+        $repos->execute(array('idspec' => $idspec, 'idanac' => $idanac, 'idniv' => $idniv));
+
+        $nombreadmisdecisgan = 0;
+
+
+        while ($resultat = $repos->fetch()) {
+
+
+            if($idniv=="L1"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM1'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM2'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+            }
+
+
+
+            if($idniv=="L2"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM3'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM4'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+            }
+
+
+
+            if($idniv=="L3"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM5'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM6'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+            }
+
+
+
+
+            if($idniv=="M1"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+                if($idspec=='RTEL'|| $idspec=="MDSI" || $idspec=='MBDS'){
+
+
+                    $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac1 = $repost->fetch();
+
+
+                    if(decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+                    $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac2 = $repost2->fetch();
+
+                    if(decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+
+
+
+
+
+
+
+
+                }else{
+
+
+
+
+                    $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid='TCSIGLSITW' and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost->execute(array('idetudiant'=>$resultat['studentid']));
+
+                    $anac1 = $repost->fetch();
+
+
+                    if(decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd)==""){
+                        $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE1',$bdd);
+                    }else{
+                        $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd);
+                    }
+
+
+
+
+                    $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac2 = $repost2->fetch();
+
+                    if(decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+
+
+
+
+
+
+                }
+
+            }
+
+
+
+            if($idniv=="M2"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM9'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM10'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+            }
+
+
+
+            if ($decisionsem1 == 'ADMIS' and $decisionsem2 == 'ADMIS' and $genreetud['kind'] == "M") {
+                $nombreadmisdecisgan = $nombreadmisdecisgan + 1;
+            }
+
+
+        }
+
+
+        return $nombreadmisdecisgan;
+
+
+    }
+
+
+
+
+
+
+
+
+}
+
+
+
+
+function nbadmisdecis($idanac,$idspec,$idsem,$idses,$bdd)
+{
+
+    $repns=$bdd->prepare(" SELECT count(DISTINCT halfyearly_delib.studentid) as nbetudiant  FROM `halfyearly_delib` INNER JOIN student on student.id=halfyearly_delib.studentid WHERE halfyearly_delib.semesterid=:idsem and halfyearly_delib.sessionid=:idses and halfyearly_delib.specialityid=:idspec and halfyearly_delib.acadyearid=:idanac  and halfyearly_delib.decision='ADMIS' ");
+    $repns->execute(array('idanac'=> $idanac, 'idsem'=> $idsem,'idspec'=> $idspec,'idses'=> $idses));
+    $nbetudaddc = $repns->fetch();
+
+
+
+    $nombreadmisdecis=$nbetudaddc['nbetudiant'];
+
+
+
+
+    return $nombreadmisdecis;
+
+}
+
+
+
+
+
+function nbadmisdecisan($idanac,$idspec,$idniv,$bdd)
+{
+
+
+    $repos=$bdd->query("SET OPTION SQL_BIG_SELECTS=1");
+
+    $repos = $bdd->prepare(' SELECT  DISTINCT halfyearly_delib.studentid FROM `halfyearly_delib` INNER JOIN student on student.id=halfyearly_delib.studentid INNER JOIN student_speciality on student_speciality.studentid=student.id WHERE student_speciality.specialityid=:idspec  and student_speciality.acadyearid=:idanac and student_speciality.levelid=:idniv   order by student.firstname,student.lastname ' );
+
+    $repos->execute(array('idspec'=>$idspec,'idanac'=>$idanac,'idniv'=>$idniv));
+
+    $nombreadmisdecisan=0;
+
+
+
+    while($resultat = $repos->fetch()) {
+
+
+
+
+        if($idniv=="L1"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+
+
+            $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM1'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac1 = $repost->fetch();
+
+
+            if(decisionsemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+            $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM2'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac2 = $repost2->fetch();
+
+            if(decisionsemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+
+
+
+        }
+
+
+
+        if($idniv=="L2"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+
+
+            $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM3'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac1 = $repost->fetch();
+
+
+            if(decisionsemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+            $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM4'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac2 = $repost2->fetch();
+
+            if(decisionsemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+
+
+
+        }
+
+
+
+        if($idniv=="L3"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+
+
+            $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM5'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac1 = $repost->fetch();
+
+
+            if(decisionsemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+            $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM6'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac2 = $repost2->fetch();
+
+            if(decisionsemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+
+
+
+        }
+
+
+
+
+        if($idniv=="M1"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+            if($idspec=='RTEL'|| $idspec=="MDSI" || $idspec=='MBDS'){
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+
+
+
+
+
+            }else{
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid='TCSIGLSITW' and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd)==""){
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE1',$bdd);
+                }else{
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+
+
+
+            }
+
+        }
+
+
+
+        if($idniv=="M2"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+
+
+            $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM9'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac1 = $repost->fetch();
+
+
+            if(decisionsemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+            $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM10'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac2 = $repost2->fetch();
+
+            if(decisionsemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+
+
+
+        }
+
+
+        if($decisionsem1=='ADMIS' and  $decisionsem2=='ADMIS')
+
+        {
+            $nombreadmisdecisan=  $nombreadmisdecisan+ 1;
+        }
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    return         $nombreadmisdecisan;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
+function nbadmisdecisanse2($idanac,$idspec,$idniv,$bdd)
+{
+
+    if(($idniv=='M1' and $idspec=='SIGL')|| ($idniv=='M1' and $idspec=='SITW')){
+
+
+        $repos=$bdd->query("SET OPTION SQL_BIG_SELECTS=1");
+
+        $repos = $bdd->prepare('   SELECT DISTINCT halfyearly_delib.studentid FROM `halfyearly_delib` WHERE halfyearly_delib.specialityid="TCSIGLSITW" and halfyearly_delib.acadyearid=:idanac and halfyearly_delib.sessionid="SE1" and halfyearly_delib.decision="REFUSE" and halfyearly_delib.semesterid="SEM7" and halfyearly_delib.studentid in (select studentid from student_speciality where levelid=:idniv and acadyearid=:idanac and specialityid=:idspec)
+   ' );
+
+        $repos->execute(array('idspec'=>$idspec,'idanac'=>$idanac,'idniv'=>$idniv));
+
+
+
+        $nombreadmisdecisan = 0;
+
+
+        while ($resultat = $repos->fetch()) {
+
+
+            if($idniv=="L1"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM1'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM2'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+            }
+
+
+
+            if($idniv=="L2"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM3'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM4'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+            }
+
+
+
+            if($idniv=="L3"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM5'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM6'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+            }
+
+
+
+
+            if($idniv=="M1"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+                if($idspec=='RTEL'|| $idspec=="MDSI" || $idspec=='MBDS'){
+
+
+                    $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac1 = $repost->fetch();
+
+
+                    if(decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+                    $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac2 = $repost2->fetch();
+
+                    if(decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+
+
+
+
+
+
+
+
+                }else{
+
+
+
+
+                    $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid='TCSIGLSITW' and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost->execute(array('idetudiant'=>$resultat['studentid']));
+
+                    $anac1 = $repost->fetch();
+
+
+                    if(decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd)==""){
+                        $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE1',$bdd);
+                    }else{
+                        $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd);
+                    }
+
+
+
+
+                    $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac2 = $repost2->fetch();
+
+                    if(decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+
+
+
+
+
+
+                }
+
+            }
+
+
+
+            if($idniv=="M2"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM9'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM10'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+            }
+
+            if ($decisionsem1 == 'ADMIS' and $decisionsem2 == 'ADMIS') {
+                $nombreadmisdecisan = $nombreadmisdecisan + 1;
+            }
+
+
+        }
+
+
+        return $nombreadmisdecisan;
+
+
+
+
+
+
+
+
+    }else {
+
+
+        $repos = $bdd->query("SET OPTION SQL_BIG_SELECTS=1");
+
+        $repos = $bdd->prepare(' 
+  SELECT DISTINCT halfyearly_delib.studentid   FROM `halfyearly_delib` WHERE halfyearly_delib.specialityid=:idspec and halfyearly_delib.acadyearid=:idanac and halfyearly_delib.sessionid="SE1" and halfyearly_delib.decision="REFUSE"  and halfyearly_delib.studentid in (select studentid from student_speciality where levelid=:idniv and acadyearid=:idanac and specialityid=:idspec)
+  
+   ');
+
+        $repos->execute(array('idspec' => $idspec, 'idanac' => $idanac, 'idniv' => $idniv));
+
+        $nombreadmisdecisan = 0;
+
+
+        while ($resultat = $repos->fetch()) {
+
+
+            if($idniv=="L1"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM1'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM2'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+            }
+
+
+
+            if($idniv=="L2"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM3'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM4'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+            }
+
+
+
+            if($idniv=="L3"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM5'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM6'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+            }
+
+
+
+
+            if($idniv=="M1"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+                if($idspec=='RTEL'|| $idspec=="MDSI" || $idspec=='MBDS'){
+
+
+                    $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac1 = $repost->fetch();
+
+
+                    if(decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+                    $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac2 = $repost2->fetch();
+
+                    if(decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+
+
+
+
+
+
+
+
+                }else{
+
+
+
+
+                    $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid='TCSIGLSITW' and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost->execute(array('idetudiant'=>$resultat['studentid']));
+
+                    $anac1 = $repost->fetch();
+
+
+                    if(decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd)==""){
+                        $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE1',$bdd);
+                    }else{
+                        $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd);
+                    }
+
+
+
+
+                    $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac2 = $repost2->fetch();
+
+                    if(decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+
+
+
+
+
+
+                }
+
+            }
+
+
+
+            if($idniv=="M2"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM9'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem1=decisionsemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM10'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(decisionsemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $decisionsem2=decisionsemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+            }
+
+            if ($decisionsem1 == 'ADMIS' and $decisionsem2 == 'ADMIS') {
+                $nombreadmisdecisan = $nombreadmisdecisan + 1;
+            }
+
+
+        }
+
+
+        return $nombreadmisdecisan;
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}
+
+
+function averageofspecsemestrielle($idspec, $idsem, $idses, $idanac,$bdd)
+{
+
+
+
+
+
+    $repns=$bdd->prepare("SELECT  DISTINCT studentid FROM `halfyearly_delib` WHERE   specialityid=:idspecialite  and acadyearid=:idanac  and semesterid=:idsemestre and sessionid=:idsession  ");
+    $repns->execute(array('idanac'=> $idanac, 'idsemestre'=> $idsem,'idspecialite'=> $idspec,'idsession'=> $idses));
+
+
+
+
+    $nbstudclass=0;
+    $averclass=0;
+
+
+    while( $idstud = $repns->fetch()){
+
+        $nbstudclass=$nbstudclass + 1;
+
+        $avercl=moyennesemestrielle($idstud['studentid'],$idsem,$idanac,$idspec,$idses,$bdd);
+        $averclass=$averclass + $avercl;
+
+
+
+
+
+
+
+
+
+
+
+    }
+    $numstdclass=$nbstudclass;
+    $averofclass=$averclass;
+
+    $averageofclass=number_format(($averofclass/$numstdclass),2);
+
+    return $averageofclass ;
+
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+function maxaveragesemestrielle( $idspec, $idsem, $idses, $idanac,$bdd)
+{
+
+    $repns=$bdd->prepare("SELECT  DISTINCT studentid FROM `halfyearly_delib` WHERE   specialityid=:idspecialite  and acadyearid=:idanac  and semesterid=:idsemestre and sessionid=:idsession  ");
+    $repns->execute(array('idanac'=> $idanac, 'idsemestre'=> $idsem,'idspecialite'=> $idspec,'idsession'=> $idses));
+
+
+
+
+
+
+    $avermax=0;
+
+    while( $idstud = $repns->fetch()){
+
+
+
+
+
+
+
+        if(moyennesemestrielle($idstud['studentid'],$idsem,$idanac,$idspec,$idses,$bdd)>=$avermax){
+            $avermax=moyennesemestrielle($idstud['studentid'],$idsem,$idanac,$idspec,$idses,$bdd);
+        }
+
+
+
+
+
+
+
+
+
+    }
+    $maxaverage=$avermax;
+
+
+    return $maxaverage;
+
+
+
+
+
+
+
+
+}
+
+
+
+function minaveragesemestrielle( $idspec, $idsem, $idses, $idanac,$bdd)
+{
+
+
+
+    $repns=$bdd->prepare("SELECT  DISTINCT studentid FROM `halfyearly_delib` WHERE   specialityid=:idspecialite  and acadyearid=:idanac  and semesterid=:idsemestre and sessionid=:idsession  ");
+    $repns->execute(array('idanac'=> $idanac, 'idsemestre'=> $idsem,'idspecialite'=> $idspec,'idsession'=> $idses));
+
+
+
+
+
+    $moyfai=21;
+    while( $idstud = $repns->fetch()){
+
+
+
+
+
+
+
+
+
+        if(moyennesemestrielle($idstud['studentid'],$idsem,$idanac,$idspec,$idses,$bdd) <= $moyfai){
+
+            $moyfai=moyennesemestrielle($idstud['studentid'],$idsem,$idanac,$idspec,$idses,$bdd);
+
+        }
+
+
+    }
+    $faiblemoyennesemestrielle=$moyfai ;
+
+    return $faiblemoyennesemestrielle ;
+
+
+
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+function nbadmissupdixfan($idanac,$idspec,$idniv,$bdd)
+{
+
+
+    $repos=$bdd->query("SET OPTION SQL_BIG_SELECTS=1");
+
+    $repos = $bdd->prepare(' SELECT  DISTINCT halfyearly_delib.studentid FROM `halfyearly_delib` INNER JOIN student on student.id=halfyearly_delib.studentid INNER JOIN student_speciality on student_speciality.studentid=student.id WHERE student_speciality.specialityid=:idspec  and student_speciality.acadyearid=:idanac and student_speciality.levelid=:idniv   order by student.firstname,student.lastname ' );
+
+    $repos->execute(array('idspec'=>$idspec,'idanac'=>$idanac,'idniv'=>$idniv));
+
+    $nombreadmisfan=0;
+
+
+
+    while($resultat = $repos->fetch()) {
+
+
+        if($idniv=="L1"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+
+
+            $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM1'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac1 = $repost->fetch();
+
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+            $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM2'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac2 = $repost2->fetch();
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+
+
+
+            $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+        if($idniv=="L2"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+
+
+            $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM3'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac1 = $repost->fetch();
+
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+            $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM4'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac2 = $repost2->fetch();
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+
+
+
+            $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+        if($idniv=="L3"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+
+
+            $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM5'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac1 = $repost->fetch();
+
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+            $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM6'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac2 = $repost2->fetch();
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+
+
+
+            $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+
+        if($idniv=="M1"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+            if($idspec=='RTEL'|| $idspec=="MDSI" || $idspec=='MBDS'){
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+
+
+            }else{
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid='TCSIGLSITW' and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+            }
+
+        }
+
+
+
+        if($idniv=="M2"){
+            $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+            $repns->execute(array('idetudiant'=> $resultat['studentid']));
+            $genreetud = $repns->fetch();
+
+
+
+
+
+            $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM9'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac1 = $repost->fetch();
+
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+            $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM10'  order by acadyearid DESC  LIMIT 1 " );
+
+            $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+            $anac2 = $repost2->fetch();
+
+            if(moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+            }else{
+                $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+            }
+
+
+
+
+
+
+
+            $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+
+        if($moyennean >=10 and  $genreetud['kind']=="F")
+
+        {
+            $nombreadmisfan=   $nombreadmisfan+ 1;
+        }
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    return         $nombreadmisfan;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}
+
+
+
+function nbadmissupdixfanse2($idanac,$idspec,$idniv,$bdd)
+{
+
+    if(($idniv=='M1' and $idspec=='SIGL')|| ($idniv=='M1' and $idspec=='SITW')){
+
+
+        $repos=$bdd->query("SET OPTION SQL_BIG_SELECTS=1");
+
+        $repos = $bdd->prepare('  
+  SELECT DISTINCT halfyearly_delib.studentid FROM `halfyearly_delib` WHERE halfyearly_delib.specialityid="TCSIGLSITW" and halfyearly_delib.acadyearid=:idanac and halfyearly_delib.sessionid="SE1" and halfyearly_delib.decision="REFUSE" and halfyearly_delib.semesterid="SEM7" and halfyearly_delib.studentid in (select studentid from student_speciality where levelid=:idniv and acadyearid=:idanac and specialityid=:idspec)
+   ' );
+
+        $repos->execute(array('idspec'=>$idspec,'idanac'=>$idanac,'idniv'=>$idniv));
+
+
+
+        $nombreadmisfan=0;
+
+
+
+        while($resultat = $repos->fetch()) {
+
+
+
+            if($idniv=="L1"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM1'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM2'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+            if($idniv=="L2"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM3'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM4'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+            if($idniv=="L3"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM5'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM6'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+
+            if($idniv=="M1"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+                if($idspec=='RTEL'|| $idspec=="MDSI" || $idspec=='MBDS'){
+
+
+                    $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac1 = $repost->fetch();
+
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+                    $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac2 = $repost2->fetch();
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+
+
+
+                    $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+
+
+                }else{
+
+
+
+
+                    $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid='TCSIGLSITW' and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost->execute(array('idetudiant'=>$resultat['studentid']));
+
+                    $anac1 = $repost->fetch();
+
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd)==""){
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE1',$bdd);
+                    }else{
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd);
+                    }
+
+
+
+
+                    $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac2 = $repost2->fetch();
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+
+
+
+                    $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+                }
+
+            }
+
+
+
+            if($idniv=="M2"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM9'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM10'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+            if($moyennean >=10 and  $genreetud['kind']=="F")
+
+            {
+                $nombreadmisfan=   $nombreadmisfan+ 1;
+            }
+
+
+
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        return         $nombreadmisfan;
+
+
+
+
+
+
+
+
+    }else {
+
+        $repos = $bdd->query("SET OPTION SQL_BIG_SELECTS=1");
+
+        $repos = $bdd->prepare('
+  SELECT DISTINCT halfyearly_delib.studentid   FROM `halfyearly_delib` WHERE halfyearly_delib.specialityid=:idspec and halfyearly_delib.acadyearid=:idanac and halfyearly_delib.sessionid="SE1" and halfyearly_delib.decision="REFUSE"  and halfyearly_delib.studentid in (select studentid from student_speciality where levelid=:idniv and acadyearid=:idanac and specialityid=:idspec)
+  
+  ');
+
+        $repos->execute(array('idspec' => $idspec, 'idanac' => $idanac, 'idniv' => $idniv));
+
+        $nombreadmisfan = 0;
+
+
+        while ($resultat = $repos->fetch()) {
+
+
+
+            if($idniv=="L1"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM1'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM1',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM2'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM2',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+            if($idniv=="L2"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM3'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM3',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM4'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM4',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+            if($idniv=="L3"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM5'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM5',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM6'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM6',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+
+
+
+            if($idniv=="M1"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+                if($idspec=='RTEL'|| $idspec=="MDSI" || $idspec=='MBDS'){
+
+
+                    $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac1 = $repost->fetch();
+
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+                    $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac2 = $repost2->fetch();
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+
+
+
+                    $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+
+
+                }else{
+
+
+
+
+                    $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid='TCSIGLSITW' and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost->execute(array('idetudiant'=>$resultat['studentid']));
+
+                    $anac1 = $repost->fetch();
+
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd)==""){
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE1',$bdd);
+                    }else{
+                        $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM7',$anac1['acadyearid'],'TCSIGLSITW','SE2',$bdd);
+                    }
+
+
+
+
+                    $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1 " );
+
+                    $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                    $anac2 = $repost2->fetch();
+
+                    if(moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                    }else{
+                        $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM8',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                    }
+
+
+
+
+
+
+
+                    $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);
+
+
+                }
+
+            }
+
+
+
+            if($idniv=="M2"){
+                $repns=$bdd->prepare(" SELECT kind FROM student WHERE id=:idetudiant");
+                $repns->execute(array('idetudiant'=> $resultat['studentid']));
+                $genreetud = $repns->fetch();
+
+
+
+
+
+                $repost = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM9'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac1 = $repost->fetch();
+
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem1=moyennnesemestrielle($resultat['studentid'],'SEM9',$anac1['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+                $repost2 = $bdd->prepare("SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM10'  order by acadyearid DESC  LIMIT 1 " );
+
+                $repost2->execute(array('idspecialite'=>$idspec,'idetudiant'=>$resultat['studentid']));
+
+                $anac2 = $repost2->fetch();
+
+                if(moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd)==""){
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE1',$bdd);
+                }else{
+                    $moyennesem2=moyennnesemestrielle($resultat['studentid'],'SEM10',$anac2['acadyearid'],$idspec,'SE2',$bdd);
+                }
+
+
+
+
+
+
+
+                $moyennean=number_format((($moyennesem1 +$moyennesem2)/2),2);}
+
+            if ($moyennean >= 10 and $genreetud['kind'] == "F") {
+                $nombreadmisfan = $nombreadmisfan + 1;
+            }
+
+
+        }
+
+
+        return $nombreadmisfan;
+
+
+    }
+
+
+
+
+
+
+
+
+
+}
 
 
 

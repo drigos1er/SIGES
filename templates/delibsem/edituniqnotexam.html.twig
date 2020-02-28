@@ -1,0 +1,58 @@
+{% extends"layouteditnotexamuniq.html.twig" %}
+{% block body %}
+
+    <!-- page content -->
+    <div class="container-fluid">
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header card-header-icon" data-background-color="blue">
+                        <i class="material-icons">edit</i>
+                    </div>
+                    <div class="card-content">
+                        <h4 class="card-title">Saisie de Notes d'Examens- Liste des ECU:<span style="font-style: italic; color: grey; font-size: 14px;">  UE:{{ app.session.get('uenamedituniq') }} &nbsp;&nbsp;ECU:{{ app.session.get('ecunamedituniq') }}     &nbsp;&nbsp; {{ app.session.get('typaveredituniq') }}</h4>
+                        <table id="saisienotexamuniq" class="display" cellspacing="0" width="100%">
+                            <thead>
+                            <tr>
+
+                                <th>Matricule</th>
+                                <th>Nom</th>
+                                <th>Prenom</th>
+                                <th>Date Nais.</th>
+                                <th>Lieu Nais.</th>
+                                <th>Genre</th>
+
+                                <th>Moyenne</th>
+
+                            </tr>
+                            </thead>
+                            <tfoot>
+                            <tr>
+
+                                <th>Matricule</th>
+                                <th>Nom</th>
+                                <th>Prenom</th>
+                                <th>Date Nais.</th>
+                                <th>Lieu Nais.</th>
+                                <th>Genre</th>
+
+                                <th>Moyenne</th>
+
+                            </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+
+    </div>
+    <!-- /page content -->
+
+
+
+{% endblock %}

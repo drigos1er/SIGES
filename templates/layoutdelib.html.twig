@@ -139,11 +139,11 @@
                             <b class="caret"></b>
                         </p>
                     </a>
-                    <div class="collapse {%if current_menu is defined  and  current_menu=='startdeliblicence'%}in{% endif %} {%if current_menu is defined  and  current_menu=='decisionjury'%}in{% endif %} {%if current_menu is defined  and  current_menu=='delibannuel'%}in{% endif %} {%if current_menu is defined  and  current_menu=='startorientation'%}in{% endif %}" id="formsExamples">
+                    <div class="collapse {%if current_menu is defined  and  current_menu=='startdelibmaster'%}in{% endif %} {%if current_menu is defined  and  current_menu=='startdeliblicence'%}in{% endif %} {%if current_menu is defined  and  current_menu=='decisionjury'%}in{% endif %} {%if current_menu is defined  and  current_menu=='delibannuel'%}in{% endif %} {%if current_menu is defined  and  current_menu=='startorientation'%}in{% endif %}" id="formsExamples">
                         <ul class="nav">
 
                             {%if( (app.session.get('leveliddelib')=='M1'or app.session.get('leveliddelib')=='M2'))%}
-                            <li class="{%if current_menu is defined  and  current_menu=='consultaveragedelib'%}active{% endif %}"><a href="{{ path('siges_startdelibmaster') }}"><i class="material-icons">play_arrow</i>Déliberation du Semestre</a>
+                            <li class="{%if current_menu is defined  and  current_menu=='startdelibmaster'%}active{% endif %}"><a href="{{ path('siges_startdelibmaster') }}"><i class="material-icons">play_arrow</i>Déliberation du Semestre</a>
                                 </li>{% endif %}
 
                             {%if( (app.session.get('leveliddelib')=='L1'or app.session.get('leveliddelib')=='L2' or app.session.get('leveliddelib')=='L3'))%}
@@ -155,7 +155,7 @@
 
 
 
-                            <li class="{%if current_menu is defined  and  current_menu=='decisionjury'%}active{% endif %}"><a href="{{ path('siges_decisionjury') }}"><i class="material-icons">play_arrow</i>Décision du jury</a>
+                            <li class="{%if current_menu is defined  and  current_menu=='decisionjury'%}active{% endif %}"><a href="{{ path('siges_decisionjury') }}"><i class="material-icons">beenhere</i>Décision du jury</a>
                             </li>
 
                             <li class="{%if current_menu is defined  and  current_menu=='delibannuel'%}active{% endif %}"><a href="{{ path('siges_delibannuel') }}" target="_blank"><i class="material-icons">play_arrow</i>Déliberation Annuelle</a>
@@ -180,10 +180,113 @@
                                 </li>{% endif %}
 
 
+                            {%if( (app.session.get('speciddelib') =='TCSIGLSITW')  and (app.session.get('semiddelib')=='SEM7') and (app.session.get('anacad')=='2019-2020') )%}
+                                <li class="sub_menu"><a href="/SIGES/files/pvdelibTCSIGLSITWSEM720182019.php?levelid={{ app.session.get('leveliddelib') }}&amp;idsem={{ app.session.get('semiddelib') }}&amp;specid={{ app.session.get('speciddelib') }}&amp;idses={{ app.session.get('idsesdelib')  }}&amp;idanac={{ app.session.get('anacad') }}&amp;typesem={{ app.session.get('semtypedelib') }}" target="_blank"><i class="material-icons">list</i>PV de Déliberation</a>
+                                </li>{% endif %}
+
+
+
+                            {%if( (app.session.get('speciddelib') =='MBDS')  and (app.session.get('semiddelib')=='SEM7') and (app.session.get('anacad')=='2019-2020') )%}
+                                <li class="sub_menu"><a href="/SIGES/files/pvdelibTCSIGLSITWSEM720182019.php?levelid={{ app.session.get('leveliddelib') }}&amp;idsem={{ app.session.get('semiddelib') }}&amp;specid={{ app.session.get('speciddelib') }}&amp;idses={{ app.session.get('idsesdelib')  }}&amp;idanac={{ app.session.get('anacad') }}&amp;typesem={{ app.session.get('semtypedelib') }}" target="_blank"><i class="material-icons">list</i>PV de Déliberation</a>
+                                </li>{% endif %}
+
+
+
+
+
+                            {%if( (app.session.get('speciddelib') =='MDSI')  and (app.session.get('semiddelib')=='SEM8') and (app.session.get('anacad')=='2018-2019') )%}
+                                <li class="sub_menu"><a href="/SIGES/files/pvdelibMDSISEM820182019.php?levelid={{ app.session.get('leveliddelib') }}&amp;idsem={{ app.session.get('semiddelib') }}&amp;specid={{ app.session.get('speciddelib') }}&amp;idses={{ app.session.get('idsesdelib')  }}&amp;idanac={{ app.session.get('anacad') }}&amp;typesem={{ app.session.get('semtypedelib') }}" target="_blank"><i class="material-icons">list</i>PV de Déliberation</a>
+                                </li>{% endif %}
+
+
+
+
+                            {%if( (app.session.get('speciddelib') =='MDSI')  and (app.session.get('semiddelib')=='SEM7') and (app.session.get('anacad')=='2018-2019') )%}
+                                <li class="sub_menu"><a href="/SIGES/files/pvdelibMDSISEM720182019.php?levelid={{ app.session.get('leveliddelib') }}&amp;idsem={{ app.session.get('semiddelib') }}&amp;specid={{ app.session.get('speciddelib') }}&amp;idses={{ app.session.get('idsesdelib')  }}&amp;idanac={{ app.session.get('anacad') }}&amp;typesem={{ app.session.get('semtypedelib') }}" target="_blank">Listes de Déliberation</a>
+                                </li>{% endif %}
+
+
+                            {%if( (app.session.get('speciddelib') =='MDSI')  and (app.session.get('semiddelib')=='SEM10') and (app.session.get('anacad')=='2018-2019') )%}
+                                <li class="sub_menu"><a href="/SIGES/files/pvdelibRTELSEM1020182019.php?levelid={{ app.session.get('leveliddelib') }}&amp;idsem={{ app.session.get('semiddelib') }}&amp;specid={{ app.session.get('speciddelib') }}&amp;idses={{ app.session.get('idsesdelib')  }}&amp;idanac={{ app.session.get('anacad') }}&amp;typesem={{ app.session.get('semtypedelib') }}" target="_blank">Listes de Déliberation</a>
+                                </li>{% endif %}
+
+
+
+                            {%if( (app.session.get('speciddelib') =='SIGL')  and (app.session.get('semiddelib')=='SEM10') and (app.session.get('anacad')=='2018-2019') )%}
+                                <li class="sub_menu"><a href="/SIGES/files/pvdelibRTELSEM1020182019.php?levelid={{ app.session.get('leveliddelib') }}&amp;idsem={{ app.session.get('semiddelib') }}&amp;specid={{ app.session.get('speciddelib') }}&amp;idses={{ app.session.get('idsesdelib')  }}&amp;idanac={{ app.session.get('anacad') }}&amp;typesem={{ app.session.get('semtypedelib') }}" target="_blank">Listes de Déliberation</a>
+                                </li>{% endif %}
+
+
+
+                            {%if( (app.session.get('speciddelib') =='SITW')  and (app.session.get('semiddelib')=='SEM10') and (app.session.get('anacad')=='2018-2019') )%}
+                                <li class="sub_menu"><a href="/SIGES/files/pvdelibRTELSEM1020182019.php?levelid={{ app.session.get('leveliddelib') }}&amp;idsem={{ app.session.get('semiddelib') }}&amp;specid={{ app.session.get('speciddelib') }}&amp;idses={{ app.session.get('idsesdelib')  }}&amp;idanac={{ app.session.get('anacad') }}&amp;typesem={{ app.session.get('semtypedelib') }}" target="_blank">Listes de Déliberation</a>
+                                </li>{% endif %}
+
+
+
+                            {%if( (app.session.get('speciddelib') =='RTEL')  and (app.session.get('semiddelib')=='SEM10') and (app.session.get('anacad')=='2018-2019') )%}
+                                <li class="sub_menu"><a href="/SIGES/files/pvdelibRTELSEM1020182019.php?levelid={{ app.session.get('leveliddelib') }}&amp;idsem={{ app.session.get('semiddelib') }}&amp;specid={{ app.session.get('speciddelib') }}&amp;idses={{ app.session.get('idsesdelib')  }}&amp;idanac={{ app.session.get('anacad') }}&amp;typesem={{ app.session.get('semtypedelib') }}" target="_blank">Listes de Déliberation</a>
+                                </li>{% endif %}
+
+
+                            {%if( (app.session.get('speciddelib') =='SRIT')  and (app.session.get('semiddelib')=='SEM5') and (app.session.get('anacad')=='2019-2020') )%}
+                                <li class="sub_menu"><a href="/SIGES/files/pvdelibSRITSEM520182019.php?levelid={{ app.session.get('leveliddelib') }}&amp;idsem={{ app.session.get('semiddelib') }}&amp;specid={{ app.session.get('speciddelib') }}&amp;idses={{ app.session.get('idsesdelib')  }}&amp;idanac={{ app.session.get('anacad') }}&amp;typesem={{ app.session.get('semtypedelib') }}" target="_blank">PV de Déliberation</a>
+                                </li>{% endif %}
+
+
+
+                            {%if( (app.session.get('speciddelib') =='RTEL')  and (app.session.get('semiddelib')=='SEM5') and (app.session.get('anacad')=='2019-2020') )%}
+                                <li class="sub_menu"><a href="/SIGES/files/pvdelibRTELSEM520182019.php?levelid={{ app.session.get('leveliddelib') }}&amp;idsem={{ app.session.get('semiddelib') }}&amp;specid={{ app.session.get('speciddelib') }}&amp;idses={{ app.session.get('idsesdelib')  }}&amp;idanac={{ app.session.get('anacad') }}&amp;typesem={{ app.session.get('semtypedelib') }}" target="_blank">PV de Déliberation</a>
+                                </li>{% endif %}
+
+
+
+                            {%if( (app.session.get('speciddelib') =='SIGL')  and (app.session.get('semiddelib')=='SEM5') and (app.session.get('anacad')=='2019-2020') )%}
+                                <li class="sub_menu"><a href="/SIGES/files/pvdelibSIGLSEM520182019.php?levelid={{ app.session.get('leveliddelib') }}&amp;idsem={{ app.session.get('semiddelib') }}&amp;specid={{ app.session.get('speciddelib') }}&amp;idses={{ app.session.get('idsesdelib')  }}&amp;idanac={{ app.session.get('anacad') }}&amp;typesem={{ app.session.get('semtypedelib') }}" target="_blank">PV de Déliberation</a>
+                                </li>{% endif %}
+
+
+
+
+
+                            <li class="sub_menu"><a href="/SIGES/files/delibresultat.php?levelid={{ app.session.get('leveliddelib') }}&amp;idsem={{ app.session.get('semiddelib') }}&amp;specid={{ app.session.get('speciddelib') }}&amp;idses={{ app.session.get('idsesdelib')  }}&amp;idanac={{ app.session.get('anacad') }}&amp;typesem={{ app.session.get('semtypedelib') }}" target="_blank"><i class="material-icons">list</i>Resultats</a>
+                            </li>
+
+                            <li class="sub_menu"><a href="/SIGES/files/delibresultatan.php?levelid={{ app.session.get('leveliddelib') }}&amp;idsem={{ app.session.get('semiddelib') }}&amp;specid={{ app.session.get('speciddelib') }}&amp;idses={{ app.session.get('idsesdelib')  }}&amp;idanac={{ app.session.get('anacad') }}&amp;typesem={{ app.session.get('semtypedelib') }}" target="_blank"><i class="material-icons">list</i>Resultats Annuel</a>
+                            </li>
+
+
+                            <li class="sub_menu"><a href="/SIGES/files/delibresultatanSE2.php?levelid={{ app.session.get('leveliddelib') }}&amp;idsem={{ app.session.get('semiddelib') }}&amp;specid={{ app.session.get('speciddelib') }}&amp;idses={{ app.session.get('idsesdelib')  }}&amp;idanac={{ app.session.get('anacad') }}&amp;typesem={{ app.session.get('semtypedelib') }}" target="_blank"><i class="material-icons">list</i>Resultats Annuel SE2</a>
+                            </li>
+
                         </ul>
                     </div>
                 </li>
 
+                <li>
+                    <a data-toggle="collapse" href="#mapsExamples">
+                        <i class="material-icons">timeline</i>
+                        <p>Statistiques
+                            <b class="caret"></b>
+                        </p>
+                    </a>
+                    <div class="collapse" id="mapsExamples">
+                        <ul class="nav">
+                            <li class="sub_menu"><a href="/SIGES/files/stattranche.php?levelid={{ app.session.get('leveliddelib') }}&amp;idsem={{ app.session.get('semiddelib') }}&amp;specid={{ app.session.get('speciddelib') }}&amp;idses={{ app.session.get('idsesdelib')  }}&amp;idanac={{ app.session.get('anacad') }}&amp;typesem={{ app.session.get('semtypedelib') }}" target="_blank"><i class="material-icons">table_chart</i>Tranche de Moyennes</a>
+                            </li>
+
+                            <li class="sub_menu"><a href="/SIGES/files/stattrancheanSE1.php?levelid={{ app.session.get('leveliddelib') }}&amp;idsem={{ app.session.get('semiddelib') }}&amp;specid={{ app.session.get('speciddelib') }}&amp;idses={{ app.session.get('idsesdelib')  }}&amp;idanac={{ app.session.get('anacad') }}&amp;typesem={{ app.session.get('semtypedelib') }}" target="_blank"><i class="material-icons">table_chart</i>Tranche de Moyennes Annuelles SE1</a>
+                            </li>
+
+                            <li class="sub_menu"><a href="/SIGES/files/stattrancheanSE2.php?levelid={{ app.session.get('leveliddelib') }}&amp;idsem={{ app.session.get('semiddelib') }}&amp;specid={{ app.session.get('speciddelib') }}&amp;idses={{ app.session.get('idsesdelib')  }}&amp;idanac={{ app.session.get('anacad') }}&amp;typesem={{ app.session.get('semtypedelib') }}" target="_blank"><i class="material-icons">table_chart</i>Tranche de Moyenne Moyennes Annuelles SE2</a>
+                            </li>
+
+                            <li class="sub_menu"><a href="/SIGES/files/stattrancheanglobal.php?levelid={{ app.session.get('leveliddelib') }}&amp;idsem={{ app.session.get('semiddelib') }}&amp;specid={{ app.session.get('speciddelib') }}&amp;idses={{ app.session.get('idsesdelib')  }}&amp;idanac={{ app.session.get('anacad') }}&amp;typesem={{ app.session.get('semtypedelib') }}" target="_blank"><i class="material-icons">table_chart</i>Tranche Moyennes Annuelles globale</a>
+                            </li>
+
+                        </ul>
+                    </div>
+                </li>
 
 
                 <li>

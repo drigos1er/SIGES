@@ -7,7 +7,7 @@ include("myfunctions.php");
 
     <table width="auto" border="0" cellspacing="0">
         <tr>
-            <td><img src="esatic.png"  alt="logoesatic" style="margin-left: 50px;" /> </td> <td><span style="font-size:14px; margin-left:600px;">REPUBLIQUE DE CÔTE D'IVOIRE</span></td>
+            <td><img src="esatic.jpg"  alt="logoesatic" style="margin-left: 50px;" /> </td> <td><span style="font-size:14px; margin-left:600px;">REPUBLIQUE DE CÔTE D'IVOIRE</span></td>
         </tr> <tr><td style="font-size:14px; margin-left:50px; ">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.....................</td> <td><span style="font-size:14px; margin-left:670px;">.....................</span></td> </tr>
         <tr> <td><span style="font-size:14px; margin-left:12px; ">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>DIRECTION DE LA PEDAGOGIE</strong></span></td><td><span style="font-size:14px; margin-left:630px;"><strong>Union-Discipline-Travail</strong> </span></td></tr>
     </table>
@@ -1556,7 +1556,7 @@ include("myfunctions.php");
 
 
 
-            <td style="text-align: center; border: solid 1px black; "  rowspan="4"> <strong>MASTER II <sup>(1)</sup></strong></td>
+            <td style="text-align: center; border: solid 1px black; "  rowspan="4"> <strong>MASTER II <sup></sup></strong></td>
             <td style="text-align: center; border: solid 1px black; ">  SIGL </td>
 
             <td style="text-align: center; border: solid 1px black; ">  <?php $nbetudiantfSIGLM2=nbstudentfofclassspec($idanac,'SIGL','M2',$bdd); echo $nbetudiantfSIGLM2 ;?></td>
@@ -2024,8 +2024,6 @@ include("myfunctions.php");
 
 
 <br>
-
-(1): Les r&eacute;sultats des masters 2 sont provisoires en attendant les derni&egrave;res soutenances pr&eacute;vues pour avant le 31 d&eacute;cembre 2019.
 
 
 

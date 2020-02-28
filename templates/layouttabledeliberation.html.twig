@@ -460,4 +460,2503 @@
 
 
 </script>
+
+
+
+<script>
+
+    webix.i18n.locales["fr-FR"]={
+
+        combo:{
+            selectAll:"Sélectionner Tout",
+            unselectAll:"Désélectionner Tout"
+        }
+    };
+
+
+
+
+
+
+    webix.i18n.setLocale('fr-FR');
+
+    function startCompare(value, filter){
+        value = value.toString().toLowerCase();
+        filter = filter.toString().toLowerCase();
+        return value.indexOf(filter) === 0;
+    }
+    webix.locale.pager = {
+        first: "Début",
+        last: "Fin",
+        next: "Suivant",
+        prev: "Précédent"
+    };
+    webix.ui.datafilter.floatNumFilter = webix.extend({
+        init:function(config){
+            config.prepare = function(value, filter){
+                var equality = (value.indexOf("=") != -1)?1:0;
+                var intvalue = this.format(value);
+                if (intvalue === "") return "";
+
+                if (value.indexOf(">") != -1)
+                    config.compare = equality ? this._greater_or_equal : this._greater;
+                else if (value.indexOf("<") != -1){
+                    config.compare = equality ? this._lesser_or_equal : this._lesser;
+                }
+                else {
+                    config.compare = this._equal;
+                    equality = 0;
+                }
+                return intvalue;
+            };
+        },
+        _greater:function(a,b){ return a*1>b; },
+        _lesser:function(a,b){ return a!=="" && a*1<b; },
+        _equal:function(a,b){ return a*1==b; },
+        _greater_or_equal:function(a, b){ return a*1 >= b; },
+        _lesser_or_equal:function(a, b){ return a*1 <= b; }
+    }, webix.ui.datafilter.numberFilter);
+
+
+    webix.ui({
+        container:"tablemoyenneannuelle",
+        padding: 20,
+        css:"my_style",
+        rows: [
+            {
+                id: "table",
+                view:"datatable",
+                columns:[
+                    { id:"index", header:"", width:50 },
+                    { id:"idetudiant", header:["Matricule",{content:"textFilter"}], sort:"text", width:150},
+                    { id:"nom", header:["Nom",{content:"textFilter"}],sort:"text", width:150},
+                    { id:"prenom", header:["Prenom",{content:"textFilter"}],sort:"text", width:150},
+                    { id:"genre", header:["Genre",{content:"multiSelectFilter"}],sort:"int", width:150},
+                    { id:"moyennesem", header:["Moy. Sem. 1",{content:"floatNumFilter"}], sort:"int", width:150},
+                    { id:"creditva", header:["Total Crédits Sem 1",{content:"multiSelectFilter"}],sort:"int", width:150},
+                    { id:"jury", header:["decision Sem 1",{content:"multiSelectFilter"}], sort:"text", width:150},
+                    { id:"moyennesem2", header:["Moy. Sem. 2",{content:"floatNumFilter"}], sort:"int", width:150},
+                    { id:"creditva2", header:["Total Crédits Sem2",{content:"multiSelectFilter"}], sort:"int", width:150},
+                    { id:"jury2", header:["decision Sem 2",{content:"multiSelectFilter"}], sort:"text", width:150},
+                    { id:"moyenneseman", header:["Moyenne Annuelle",{content:"floatNumFilter"}], sort:"int", width:150},
+                    { id:"creditvaan", header:["Total Crédits An.",{content:"multiSelectFilter"}], sort:"int", width:150},
+                    { id:"juryan", header:["decision Annuelle",{content:"multiSelectFilter"}], sort:"text", width:150}
+
+                ],
+                ready:function(){
+                    this.getFilter("Moyenne du Semestre").value = ">=9";
+                    this.filterByAll();
+                },
+
+                on:{
+                    onBeforeLoad:function(){
+                        webix.extend(this, webix.OverlayBox);
+
+                        this.showOverlay("Patientez svp...");
+                    },
+                    onAfterLoad:function(){
+                        if (!this.count())
+                            this.showOverlay("Aucune donnée à Afficher");
+                        this.hideOverlay();
+                    },
+                    "data->onStoreUpdated":function(){
+                        this.data.each(function(obj, i){
+                            obj.index = i+1;
+                        })
+                    }
+                },
+
+                hover:"myhover",
+                navigation:true,
+                spans:true,
+                select:"cell",
+
+                autowidth:true,
+                autoheight:true,
+                headermenu:true,
+
+
+
+                pager:{
+                    template:"{common.first()} {common.prev()} {common.pages()} {common.next()} {common.last()}{common.limit()}",
+                    container:"paging_here",
+                    size:110,
+                    group:5
+
+                },
+                url:"{{ path('siges_tabledelibannuel') }}"
+            },
+            {
+                view: "form",
+                css: "toolbar",
+                paddingY: 5,
+                paddingX: 110,
+                cols:[
+                    {
+                        view: "label", label: "Exporter"
+                    },
+                    {
+                        view: "button", label: "EXCEL", width: 95, click:function(){
+                            webix.toExcel($$("table"));
+                        }
+                    },
+                    { view:"button", value:"PDF", autowidth:true, click:function(){
+                            webix.toPDF($$("table")), {
+                                orientation:"landscape"
+                            };
+                        }
+                    }
+
+                ]
+
+            }
+        ]
+    });
+
+    //adding progress bar functionality to it
+    webix.extend($$("idetudiant"), webix.ProgressBar);
+
+    //using the functionality
+    $$("idetudiant").showProgress({
+        type:"bottom",
+        delay:3000
+
+    });
+
+</script>
+
+<script>
+
+    webix.i18n.locales["fr-FR"]={
+
+        combo:{
+            selectAll:"Sélectionner Tout",
+            unselectAll:"Désélectionner Tout"
+        }
+    };
+
+
+
+
+
+
+    webix.i18n.setLocale('fr-FR');
+
+    function startCompare(value, filter){
+        value = value.toString().toLowerCase();
+        filter = filter.toString().toLowerCase();
+        return value.indexOf(filter) === 0;
+    }
+    webix.locale.pager = {
+        first: "Début",
+        last: "Fin",
+        next: "Suivant",
+        prev: "Précédent"
+    };
+    webix.ui.datafilter.floatNumFilter = webix.extend({
+        init:function(config){
+            config.prepare = function(value, filter){
+                var equality = (value.indexOf("=") != -1)?1:0;
+                var intvalue = this.format(value);
+                if (intvalue === "") return "";
+
+                if (value.indexOf(">") != -1)
+                    config.compare = equality ? this._greater_or_equal : this._greater;
+                else if (value.indexOf("<") != -1){
+                    config.compare = equality ? this._lesser_or_equal : this._lesser;
+                }
+                else {
+                    config.compare = this._equal;
+                    equality = 0;
+                }
+                return intvalue;
+            };
+        },
+        _greater:function(a,b){ return a*1>b; },
+        _lesser:function(a,b){ return a!=="" && a*1<b; },
+        _equal:function(a,b){ return a*1==b; },
+        _greater_or_equal:function(a, b){ return a*1 >= b; },
+        _lesser_or_equal:function(a, b){ return a*1 <= b; }
+    }, webix.ui.datafilter.numberFilter);
+
+
+    webix.ui({
+        container:"tableresultannuelle",
+        padding: 20,
+        css:"my_style",
+        rows: [
+            {
+                id: "table",
+                view:"datatable",
+                columns:[
+                    { id:"index", header:"", width:50 },
+                    { id:"idetudiant", header:["Matricule",{content:"textFilter"}], sort:"text", width:150},
+                    { id:"nom", header:["Nom",{content:"textFilter"}],sort:"text", width:150},
+                    { id:"prenom", header:["Prenom",{content:"textFilter"}],sort:"text", width:150},
+                    { id:"genre", header:["Genre",{content:"multiSelectFilter"}],sort:"int", width:150},
+                    { id:"moyennesem", header:["Moy. Sem. 1",{content:"floatNumFilter"}], sort:"int", width:150},
+                    { id:"creditva", header:["Total Crédits Sem 1",{content:"multiSelectFilter"}],sort:"int", width:150},
+                    { id:"jury", header:["decision Sem 1",{content:"multiSelectFilter"}], sort:"text", width:150},
+                    { id:"moyennesem2", header:["Moy. Sem. 2",{content:"floatNumFilter"}], sort:"int", width:150},
+                    { id:"creditva2", header:["Total Crédits Sem2",{content:"multiSelectFilter"}], sort:"int", width:150},
+                    { id:"jury2", header:["decision Sem 2",{content:"multiSelectFilter"}], sort:"text", width:150},
+                    { id:"moyenneseman", header:["Moyenne Annuelle",{content:"floatNumFilter"}], sort:"int", width:150},
+                    { id:"creditvaan", header:["Total Crédits An.",{content:"multiSelectFilter"}], sort:"int", width:150},
+                    { id:"juryan", header:["decision Annuelle",{content:"multiSelectFilter"}], sort:"text", width:150}
+
+                ],
+                ready:function(){
+                    this.getFilter("Moyenne du Semestre").value = ">=9";
+                    this.filterByAll();
+                },
+
+                on:{
+                    onBeforeLoad:function(){
+                        webix.extend(this, webix.OverlayBox);
+
+                        this.showOverlay("Patientez svp...");
+                    },
+                    onAfterLoad:function(){
+                        if (!this.count())
+                            this.showOverlay("Aucune donnée à Afficher");
+                        this.hideOverlay();
+                    },
+                    "data->onStoreUpdated":function(){
+                        this.data.each(function(obj, i){
+                            obj.index = i+1;
+                        })
+                    }
+                },
+
+                hover:"myhover",
+                navigation:true,
+                spans:true,
+                select:"cell",
+
+                autowidth:true,
+                autoheight:true,
+                headermenu:true,
+
+
+
+                pager:{
+                    template:"{common.first()} {common.prev()} {common.pages()} {common.next()} {common.last()}{common.limit()}",
+                    container:"paging_here",
+                    size:110,
+                    group:5
+
+                },
+                url:"{{ path('siges_tableresultannuel') }}"
+            },
+            {
+                view: "form",
+                css: "toolbar",
+                paddingY: 5,
+                paddingX: 110,
+                cols:[
+                    {
+                        view: "label", label: "Exporter"
+                    },
+                    {
+                        view: "button", label: "EXCEL", width: 95, click:function(){
+                            webix.toExcel($$("table"));
+                        }
+                    },
+                    { view:"button", value:"PDF", autowidth:true, click:function(){
+                            webix.toPDF($$("table")), {
+                                orientation:"landscape"
+                            };
+                        }
+                    }
+
+                ]
+
+            }
+        ]
+    });
+
+    //adding progress bar functionality to it
+    webix.extend($$("idetudiant"), webix.ProgressBar);
+
+    //using the functionality
+    $$("idetudiant").showProgress({
+        type:"bottom",
+        delay:3000
+
+    });
+
+</script>
+
+
+
+
+
+
+
+
+
+
+
+<script>
+
+    webix.i18n.locales["fr-FR"]={
+
+        combo:{
+            selectAll:"Sélectionner Tout",
+            unselectAll:"Désélectionner Tout"
+        }
+    };
+
+
+
+
+
+
+    webix.i18n.setLocale('fr-FR');
+
+    function startCompare(value, filter){
+        value = value.toString().toLowerCase();
+        filter = filter.toString().toLowerCase();
+        return value.indexOf(filter) === 0;
+    }
+    webix.locale.pager = {
+        first: "Début",
+        last: "Fin",
+        next: "Suivant",
+        prev: "Précédent"
+    };
+    webix.ui.datafilter.floatNumFilter = webix.extend({
+        init:function(config){
+            config.prepare = function(value, filter){
+                var equality = (value.indexOf("=") != -1)?1:0;
+                var intvalue = this.format(value);
+                if (intvalue === "") return "";
+
+                if (value.indexOf(">") != -1)
+                    config.compare = equality ? this._greater_or_equal : this._greater;
+                else if (value.indexOf("<") != -1){
+                    config.compare = equality ? this._lesser_or_equal : this._lesser;
+                }
+                else {
+                    config.compare = this._equal;
+                    equality = 0;
+                }
+                return intvalue;
+            };
+        },
+        _greater:function(a,b){ return a*1>b; },
+        _lesser:function(a,b){ return a!=="" && a*1<b; },
+        _equal:function(a,b){ return a*1==b; },
+        _greater_or_equal:function(a, b){ return a*1 >= b; },
+        _lesser_or_equal:function(a, b){ return a*1 <= b; }
+    }, webix.ui.datafilter.numberFilter);
+
+    webix.ui({
+        container:"tabledeliberationm1info",
+        padding: 20,
+        rows: [
+            {
+                id: "table",
+                view:"datatable",
+                columns:[
+                    { id:"index", header:"", width:50 },
+                    { id:"idetudiant", header:["Matricule",{content:"textFilter"}],template:"<a href='/SIGES/public/delibarea/deliberationsemestreuniqmaster?idetudiant=#idetudiant#'  target='_blank' style='color:black;'>#idetudiant#</a>", sort:"text", width:150},
+
+
+                    { id:"ue1",	header:["Anglais",{ content:"floatNumFilter" }],
+                        template:function(obj){
+                            if (obj.ue1 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=ANG2200&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:red;'>"+obj.ue1+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=ANG2200&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:black;'>"+obj.ue1+"</a></span>";
+                        }, css:"my_styleminor", tooltip: "UE Mineure [2]",sort:"int"},
+                    { id:"ue2",	header:[{text:"Technique d'expression (Français)",
+                            css:"multiline"}, { content:"floatNumFilter" }],template:function(obj){
+                            if (obj.ue2 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=COM2200&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:red;'>"+obj.ue2+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=COM2200&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:black;'>"+obj.ue2+"</a></span>";
+                        }, css:"my_styleminor", tooltip: "UE Mineure [3]",sort:"int"},
+                    { id:"ue3",	header:[{text:"Developpement personnel",height:120,
+                            css:"multiline"},{ content:"floatNumFilter" }] , template:function(obj){
+                            if (obj.ue3 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=COM2200&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:red;'>"+obj.ue3+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=COM2200&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:black;'>"+obj.ue3+"</a></span>";
+                        }, css:"my_styleminor", tooltip: "UE Mineure [3]",sort:"int"},
+                    { id:"ue4",	header:[{text:"Droits en methode de securite Web et logiciel",height:120,
+                            css:"multiline"}, { content:"floatNumFilter" }] , tooltip: "", template:function(obj){
+                            if (obj.ue4 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=DRT2101&&idetudiant="+obj.idetudiant+"'  target='_blank' style='color:red;'>"+obj.ue4+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=DRT2101&&idetudiant="+obj.idetudiant+"'  target='_blank' style='color:black;'>"+obj.ue4+"</a></span>";
+                        }, css:"my_styleminor", tooltip: "UE Mineure [2]",sort:"int"},
+
+
+
+                    { id:"ue5",	header:[{text:"Cryptographie", css:"multiline"}, { content:"floatNumFilter" }] ,template:function(obj){
+                            if (obj.ue5 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF2103&&idetudiant="+obj.idetudiant+"'  target='_blank'style='color:red;'>"+obj.ue5+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF2103&&idetudiant="+obj.idetudiant+"' target='_blank'  style='color:black;'>"+obj.ue5+"</a></span>";
+                        }, css:"my_styleminor", tooltip: "UE Mineure [2]",sort:"int"},
+
+
+
+                    { id:"moyennesemminor",header:[{text:"Moyenne UE Mineure", css:"multiline"}, { content:"floatNumFilter" }] , css:"my_styleaver", sort:"int"},
+
+
+
+
+
+                    { id:"ue6",	header:[{text:"UML et JAVA",
+                            css:"multiline"},{ content:"floatNumFilter" }] ,template:function(obj){
+                            if (obj.ue6 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF2100&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:red;'>"+obj.ue6+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF2100&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:black;'>"+obj.ue6+"</a></span>";
+                        },css:"my_stylemajor",tooltip: "UE Majeure [6]", sort:"int",hidden:true},
+
+
+
+
+
+                    { id:"ue7",	header:[{text:"Python", css:"multiline"}, { content:"floatNumFilter" }] ,template:function(obj){
+                            if (obj.ue7 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF2100&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:red;'>"+obj.ue7+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF2100&&idetudiant="+obj.idetudiant+"'  target='_blank' style='color:black;'>"+obj.ue7+"</a></span>";
+                        }, css:"my_stylemajor",tooltip: "UE Majeure [6]", sort:"int",hidden:true},
+                    { id:"ue8",	header:[{text:"Algorithmique et structures de données Avancées", css:"multiline"}, { content:"floatNumFilter" }], css:"my_stylemajor",tooltip: "UE Majeure [6]", sort:"int",hidden:true,template:function(obj){
+                            if (obj.ue8 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF2100&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:red;'>"+obj.ue8+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF2100&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:black;'>"+obj.ue8+"</a></span>";
+                        }},
+                    { id:"ue9",	header:[{text:"Programmation repartie et algorithmique distribuée", css:"multiline"}, { content:"floatNumFilter" }] ,template:function(obj){
+                            if (obj.ue9 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF2101&&idetudiant="+obj.idetudiant+"'  target='_blank'style='color:red;'>"+obj.ue9+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF2101&&idetudiant="+obj.idetudiant+"' target='_blank'  style='color:black;'>"+obj.ue9+"</a></span>";
+                        }, css:"my_stylemajor",tooltip: "UE Majeure [6]", sort:"int",hidden:true},
+
+
+                    { id:"ue10",	header:[{text:"Middleware", css:"multiline"}, { content:"floatNumFilter" }] ,template:function(obj){
+                            if (obj.ue10 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF2101&&idetudiant="+obj.idetudiant+"'  target='_blank'style='color:red;'>"+obj.ue10+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF2101&&idetudiant="+obj.idetudiant+"' target='_blank'  style='color:black;'>"+obj.ue10+"</a></span>";
+                        }, css:"my_stylemajor",tooltip: "UE Majeure [4]", sort:"int",hidden:true},
+
+
+
+
+                    { id:"ue11",	header:[{text:"Processus de Markov et files d'attente", css:"multiline"}, { content:"floatNumFilter" }] ,template:function(obj){
+                            if (obj.ue11 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=MTH2100&&idetudiant="+obj.idetudiant+"'  target='_blank'style='color:red;'>"+obj.ue11+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=MTH2100&&idetudiant="+obj.idetudiant+"' target='_blank'  style='color:black;'>"+obj.ue11+"</a></span>";
+                        }, css:"my_stylemajor",tooltip: "UE Majeure [5]", sort:"int",hidden:true},
+                    { id:"ue12",	header:[{text:"Approches quantitatives et statistiques, analyse", css:"multiline"}, { content:"floatNumFilter" }] ,template:function(obj){
+                            if (obj.ue12 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=MTH2100&&idetudiant="+obj.idetudiant+"'  target='_blank'style='color:red;'>"+obj.ue12+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=MTH2100&&idetudiant="+obj.idetudiant+"' target='_blank'  style='color:black;'>"+obj.ue12+"</a></span>";
+                        },css:"my_stylemajor",tooltip: "UE Majeure [5]", sort:"int",hidden:true},
+
+                    { id:"ue13",	header:[{text:"Complexité des problèmes et des Algorithmes", css:"multiline"}, { content:"floatNumFilter" }] ,template:function(obj){
+                            if (obj.ue13 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=ROP2100&&idetudiant="+obj.idetudiant+"'  target='_blank'style='color:red;'>"+obj.ue13+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=ROP2100&&idetudiant="+obj.idetudiant+"' target='_blank'  style='color:black;'>"+obj.ue13+"</a></span>";
+                        }, css:"my_stylemajor",tooltip: "UE Majeure [6]", sort:"int",hidden:true},
+
+                    { id:"ue14",	header:[{text:"Méthodes d'Optimisation", css:"multiline"}, { content:"floatNumFilter" }] ,template:function(obj){
+                            if (obj.ue14 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=ROP2100&&idetudiant="+obj.idetudiant+"'  target='_blank'style='color:red;'>"+obj.ue14+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=ROP2100&&idetudiant="+obj.idetudiant+"' target='_blank'  style='color:black;'>"+obj.ue14+"</a></span>";
+                        }, css:"my_stylemajor",tooltip: "UE Majeure [6]", sort:"int",hidden:true},
+
+                    { id:"ue15",	header:[{text:"Graphes", css:"multiline"}, { content:"floatNumFilter" }] ,template:function(obj){
+                            if (obj.ue15 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=ROP2100&&idetudiant="+obj.idetudiant+"'  target='_blank'style='color:red;'>"+obj.ue15+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=ROP2100&&idetudiant="+obj.idetudiant+"' target='_blank'  style='color:black;'>"+obj.ue15+"</a></span>";
+                        }, css:"my_stylemajor",tooltip: "UE Majeure [6]", sort:"int",hidden:true},
+
+
+                    { id:"moyennesemmajor",header:[{text:"Moyenne UE Majeure", css:"multiline"}, { content:"floatNumFilter" }] ,css:"my_styleaver", sort:"int",hidden:true},
+
+                    { id:"moyennesem",header:[{text:"Moyenne du Semestre", css:"multiline"},  { content:"numberFilter" }] , sort:"int" ,css:{ "color": "black" },hidden:true},
+
+
+
+                    { id:"tcredit",header:[{text:"Total Crédits Validés", css:"multiline"}, { content:"numberFilter" }] ,template:function(obj){
+                            if (obj.tcredit == 30)
+                                return "<span style='color:darkgreen; font-weight: bold; ' >"+obj.tcredit+"</span>";
+                            else
+                                return "<span style='color:black; font-weight: bold'>"+obj.tcredit+"</span>";
+                        }, sort:"int",hidden:true}
+                ],
+                ready:function(){
+                    this.getFilter("Moyenne du Semestre").value = ">=9";
+                    this.filterByAll();
+                },
+
+                on:{
+                    onBeforeLoad:function(){
+                        webix.extend(this, webix.OverlayBox);
+
+                        this.showOverlay("Patientez svp...");
+                    },
+                    onAfterLoad:function(){
+                        if (!this.count())
+                            this.showOverlay("Aucune donnée à Afficher");
+                        this.hideOverlay();
+                    },
+                    "data->onStoreUpdated":function(){
+                        this.data.each(function(obj, i){
+                            obj.index = i+1;
+                        })
+                    }
+                },
+
+                hover:"myhover",
+                navigation:true,
+                spans:true,
+                select:"cell",
+                autoheight:true,
+                autowidth:true,
+                headermenu:true,
+                tooltip:true,
+
+
+
+                pager:{
+                    template:"{common.first()} {common.prev()} {common.pages()} {common.next()} {common.last()}{common.limit()}",
+                    container:"paging_herem1info",
+                    size:100,
+                    group:5
+
+                },
+                url:"{{ path('siges_listtabledelibm1infosem7') }}"
+            },
+            {
+                view: "form",
+                css: "toolbar",
+                paddingY: 5,
+                paddingX: 10,
+                cols:[
+                    {
+                        view: "label", label: "Exporter"
+                    },
+                    {
+                        view: "button", label: "EXCEL", width: 95, click:function(){
+                            webix.toExcel($$("table"));
+                        }
+                    },
+                    { view:"button", value:"PDF", autowidth:true, click:function(){
+                            webix.toPDF($$("table")), {
+                                orientation:"landscape"
+                            };
+                        }
+                    }
+
+                ]
+
+            }
+        ]
+    });
+
+    //adding progress bar functionality to it
+    webix.extend($$("idetudiant"), webix.ProgressBar);
+
+    //using the functionality
+    $$("idetudiant").showProgress({
+        type:"bottom",
+        delay:3000
+
+    });
+
+</script>
+
+<script>
+
+
+    webix.ui.datafilter.floatNumFilter = webix.extend({
+        init:function(config){
+            config.prepare = function(value, filter){
+                var equality = (value.indexOf("=") != -1)?1:0;
+                var intvalue = this.format(value);
+                if (intvalue === "") return "";
+
+                if (value.indexOf(">") != -1)
+                    config.compare = equality ? this._greater_or_equal : this._greater;
+                else if (value.indexOf("<") != -1){
+                    config.compare = equality ? this._lesser_or_equal : this._lesser;
+                }
+                else {
+                    config.compare = this._equal;
+                    equality = 0;
+                }
+                return intvalue;
+            };
+        },
+        _greater:function(a,b){ return a*1>b; },
+        _lesser:function(a,b){ return a!=="" && a*1<b; },
+        _equal:function(a,b){ return a*1==b; },
+        _greater_or_equal:function(a, b){ return a*1 >= b; },
+        _lesser_or_equal:function(a, b){ return a*1 <= b; }
+    }, webix.ui.datafilter.numberFilter);
+
+    webix.ui({
+        container:"tabledeliberationm1mdsisem8",
+        view:"datatable",
+        columns:[
+            { id:"index", header:"", width:50 },
+            { id:"idetudiant", header:["Matricule",{content:"textFilter"}],template:"<a href='/SIGES/public/delibarea/deliberationsemestreuniqmaster?idetudiant=#idetudiant#'  target='_blank' style='color:black;'>#idetudiant#</a>", sort:"text", width:150},
+            { id:"moyennesem",header:[{text:"Moyenne du Semestre", css:"multiline"},  { content:"floatNumFilter" }] , sort:"int" ,css:{ "color": "black" }},
+            { id:"ue1",	header:["Anglais",{ content:"floatNumFilter" }],
+                template:function(obj){
+                    if (obj.ue1 < 7)
+                        return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=ANG2200&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:red;'>"+obj.ue1+"</a></span>";
+                    else
+                        return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=ANG2200&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:black;'>"+obj.ue1+"</a></span>";
+                }, tooltip: "",sort:"int" },
+            { id:"ue2",	header:[{text:"Technique d'expression (Français)",
+                    css:"multiline"}, { content:"floatNumFilter" }],template:function(obj){
+                    if (obj.ue2 < 7)
+                        return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=COM2200&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:red;'>"+obj.ue2+"</a></span>";
+                    else
+                        return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=COM2200&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:black;'>"+obj.ue2+"</a></span>";
+                }, sort:"int"},
+            { id:"ue3",	header:[{text:"Developpement personnel",height:120,
+                    css:"multiline"},{ content:"floatNumFilter" }] , template:function(obj){
+                    if (obj.ue3 < 7)
+                        return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=COM2200&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:red;'>"+obj.ue3+"</a></span>";
+                    else
+                        return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=COM2200&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:black;'>"+obj.ue3+"</a></span>";
+                }, tooltip: "", sort:"int"},
+            { id:"ue4",	header:[{text:"Webmarketing",height:120,
+                    css:"multiline"}, { content:"floatNumFilter" }] , tooltip: "", template:function(obj){
+                    if (obj.ue4 < 7)
+                        return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=BUS2200&&idetudiant="+obj.idetudiant+"'  target='_blank' style='color:red;'>"+obj.ue4+"</a></span>";
+                    else
+                        return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=BUS2200&&idetudiant="+obj.idetudiant+"'  target='_blank' style='color:black;'>"+obj.ue4+"</a></span>";
+                }, sort:"int"},
+            { id:"ue5",	header:[{text:"E-commerce",
+                    css:"multiline"},{ content:"floatNumFilter" }] ,template:function(obj){
+                    if (obj.ue5 < 7)
+                        return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=BUS2200&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:red;'>"+obj.ue5+"</a></span>";
+                    else
+                        return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=BUS2200&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:black;'>"+obj.ue5+"</a></span>";
+                },sort:"int"},
+
+
+
+
+
+            { id:"ue6",	header:[{text:"Services à valeur ajoutée", css:"multiline"}, { content:"floatNumFilter" }] ,template:function(obj){
+                    if (obj.ue6 < 7)
+                        return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=BUS2200&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:red;'>"+obj.ue6+"</a></span>";
+                    else
+                        return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=BUS2200&&idetudiant="+obj.idetudiant+"'  target='_blank' style='color:black;'>"+obj.ue6+"</a></span>";
+                }, sort:"int"},
+            { id:"ue7",	header:[{text:"Data analysis", css:"multiline"}, { content:"floatNumFilter" }], sort:"int",template:function(obj){
+                    if (obj.ue7 < 7)
+                        return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=DSS2200&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:red;'>"+obj.ue7+"</a></span>";
+                    else
+                        return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=DSS2200&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:black;'>"+obj.ue7+"</a></span>";
+                }},
+            { id:"ue8",	header:[{text:"Systèmes d’information décisionnelle et Big Data", css:"multiline"},{ content:"floatNumFilter" }] ,template:function(obj){
+                    if (obj.ue8 < 7)
+                        return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=DSS2200&&idetudiant="+obj.idetudiant+"'  target='_blank'style='color:red;'>"+obj.ue8+"</a></span>";
+                    else
+                        return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=DSS2200&&idetudiant="+obj.idetudiant+"' target='_blank'  style='color:black;'>"+obj.ue8+"</a></span>";
+                }, sort:"int"},
+
+
+            { id:"ue9",	header:[{text:"Veille et intelligence économique", css:"multiline"}, { content:"floatNumFilter" }] ,template:function(obj){
+                    if (obj.ue9 < 7)
+                        return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=ECO2201&&idetudiant="+obj.idetudiant+"'  target='_blank'style='color:red;'>"+obj.ue9+"</a></span>";
+                    else
+                        return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=ECO2201&&idetudiant="+obj.idetudiant+"' target='_blank'  style='color:black;'>"+obj.ue9+"</a></span>";
+                }, sort:"int"},
+
+
+            { id:"ue10",	header:[{text:"Management des projets et conduite du changement ", css:"muline"}, { content:"floatNumFilter" }] ,template:function(obj){
+                    if (obj.ue10 < 7)
+                        return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=GES2200&&idetudiant="+obj.idetudiant+"'  target='_blank'style='color:red;'>"+obj.ue10+"</a></span>";
+                    else
+                        return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=GES2200&&idetudiant="+obj.idetudiant+"' target='_blank'  style='color:black;'>"+obj.ue10+"</a></span>";
+                }, sort:"int"},
+
+
+            { id:"ue11",	header:[{text:"Management des processus", css:"multiline"}, { content:"floatNumFilter" }] ,template:function(obj){
+                    if (obj.ue11 < 7)
+                        return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=GES2200&&idetudiant="+obj.idetudiant+"'  target='_blank'style='color:red;'>"+obj.ue11+"</a></span>";
+                    else
+                        return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=GES2200&&idetudiant="+obj.idetudiant+"' target='_blank'  style='color:black;'>"+obj.ue11+"</a></span>";
+                }, sort:"int"},
+            { id:"ue12",	header:[{text:"Transformation Digitale et Supply Chain", css:"multiline"}, { content:"floatNumFilter" }] ,template:function(obj){
+                    if (obj.ue12 < 7)
+                        return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=TDS2200&&idetudiant="+obj.idetudiant+"'  target='_blank'style='color:red;'>"+obj.ue12+"</a></span>";
+                    else
+                        return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=TDS2200&&idetudiant="+obj.idetudiant+"' target='_blank'  style='color:black;'>"+obj.ue12+"</a></span>";
+                }, sort:"int"},
+
+
+            { id:"tcredit",header:[{text:"Total Crédits Validés", css:"multiline"}, { content:"numberFilter" }] , sort:"int"}
+        ],
+        height:300,
+        autowidth:true,
+
+        ready:function(){
+            this.getFilter("moyennesemn").value = ">9";
+            this.filterByAll();
+        },
+        on:{
+            onBeforeLoad:function(){
+                webix.extend(this, webix.OverlayBox);
+
+                this.showOverlay("Patientez svp...");
+            },
+            onAfterLoad:function(){
+                if (!this.count())
+                    this.showOverlay("Aucune donnée à Afficher");
+                this.hideOverlay();
+            },
+            "data->onStoreUpdated":function(){
+                this.data.each(function(obj, i){
+                    obj.index = i+1;
+                })
+            }
+        },
+
+        hover:"myhover",
+        navigation:true,
+        spans:true,
+        select:"cell",
+
+        autowidth:true,
+        autoheight:true,
+        headermenu:true,
+
+
+
+        pager:{
+            template:"{common.first()} {common.prev()} {common.pages()} {common.next()} {common.last()}{common.limit()}",
+            container:"paging_herem1mdsisem8",
+            size:110,
+            group:5
+
+        },
+        url: "{{ path('siges_listtabledelibmdsim1sem8') }}"
+
+    });
+
+
+
+
+
+
+</script>
+
+
+<script>
+
+    webix.i18n.locales["fr-FR"]={
+
+        combo:{
+            selectAll:"Sélectionner Tout",
+            unselectAll:"Désélectionner Tout"
+        }
+    };
+
+
+
+
+
+
+    webix.i18n.setLocale('fr-FR');
+
+    function startCompare(value, filter){
+        value = value.toString().toLowerCase();
+        filter = filter.toString().toLowerCase();
+        return value.indexOf(filter) === 0;
+    }
+    webix.locale.pager = {
+        first: "Début",
+        last: "Fin",
+        next: "Suivant",
+        prev: "Précédent"
+    };
+
+    webix.ui.datafilter.floatNumFilter = webix.extend({
+        init:function(config){
+            config.prepare = function(value, filter){
+                var equality = (value.indexOf("=") != -1)?1:0;
+                var intvalue = this.format(value);
+                if (intvalue === "") return "";
+
+                if (value.indexOf(">") != -1)
+                    config.compare = equality ? this._greater_or_equal : this._greater;
+                else if (value.indexOf("<") != -1){
+                    config.compare = equality ? this._lesser_or_equal : this._lesser;
+                }
+                else {
+                    config.compare = this._equal;
+                    equality = 0;
+                }
+                return intvalue;
+            };
+        },
+        _greater:function(a,b){ return a*1>b; },
+        _lesser:function(a,b){ return a!=="" && a*1<b; },
+        _equal:function(a,b){ return a*1==b; },
+        _greater_or_equal:function(a, b){ return a*1 >= b; },
+        _lesser_or_equal:function(a, b){ return a*1 <= b; }
+    }, webix.ui.datafilter.numberFilter);
+
+    webix.ui({
+        container:"tabledeliberationm1mdsi",
+        padding: 20,
+        rows: [
+            {
+                id: "table",
+                view:"datatable",
+                columns:[
+                    { id:"index", header:"", width:50 },
+                    { id:"idetudiant", header:["Matricule",{content:"textFilter"}],template:"<a href='/SIGES/public/delibarea/deliberationsemestreuniqmaster?idetudiant=#idetudiant#'  target='_blank' style='color:black;'>#idetudiant#</a>", sort:"text", width:150},
+                    { id:"moyennesem",header:[{text:"Moyenne du Semestre", css:"multiline"}, { content:"floatNumFilter" }] , sort:"int"},
+                    { id:"ue1",	header:["Anglais", { content:"floatNumFilter" }],
+                        template:function(obj){
+                            if (obj.ue1 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=ANG2100&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:red;'>"+obj.ue1+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=ANG2100&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:black;'>"+obj.ue1+"</a></span>";
+                        }, tooltip: "",sort:"int" },
+                    { id:"ue2",	header:[{text:"Technique d'expression (Français)",
+                            css:"multiline"},  { content:"floatNumFilter" }],template:function(obj){
+                            if (obj.ue2 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=COM2100&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:red;'>"+obj.ue2+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=COM2100&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:black;'>"+obj.ue2+"</a></span>";
+                        }, sort:"int"},
+                    { id:"ue3",	header:[{text:"Developpement personnel",height:120,
+                            css:"multiline"}, { content:"floatNumFilter" }] , template:function(obj){
+                            if (obj.ue3 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=COM2100&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:red;'>"+obj.ue3+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=COM2100&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:black;'>"+obj.ue3+"</a></span>";
+                        }, tooltip: "", sort:"int"},
+                    { id:"ue4",	header:[{text:"Droit du multimédia et des SI",height:120,
+                            css:"multiline"},  { content:"floatNumFilter" }] , tooltip: "", template:function(obj){
+                            if (obj.ue4 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=DRT2102&&idetudiant="+obj.idetudiant+"'  target='_blank' style='color:red;'>"+obj.ue4+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=DRT2102&&idetudiant="+obj.idetudiant+"'  target='_blank' style='color:black;'>"+obj.ue4+"</a></span>";
+                        }, sort:"int"},
+                    { id:"ue5",	header:[{text:"Architecture d’entreprise",
+                            css:"multiline"}, { content:"floatNumFilter" }] ,template:function(obj){
+                            if (obj.ue5 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=ARC2100&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:red;'>"+obj.ue5+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=ARC2100&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:black;'>"+obj.ue5+"</a></span>";
+                        },sort:"int"},
+
+
+
+
+
+                    { id:"ue6",	header:[{text:"Digital Technology and Business Value", css:"multiline"},  { content:"floatNumFilter" }] ,template:function(obj){
+                            if (obj.ue6 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=SSI2100&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:red;'>"+obj.ue6+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=SSI2100&&idetudiant="+obj.idetudiant+"'  target='_blank' style='color:black;'>"+obj.ue6+"</a></span>";
+                        }, sort:"int"},
+                    { id:"ue7",	header:[{text:"Réseaux", css:"multiline"},  { content:"floatNumFilter" }], sort:"int",template:function(obj){
+                            if (obj.ue7 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=TEC2100&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:red;'>"+obj.ue7+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=TEC2100&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:black;'>"+obj.ue7+"</a></span>";
+                        }},
+                    { id:"ue8",	header:[{text:"Technologies Web", css:"multiline"},  { content:"floatNumFilter" }] ,template:function(obj){
+                            if (obj.ue8 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=TEC2100&&idetudiant="+obj.idetudiant+"'  target='_blank'style='color:red;'>"+obj.ue8+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=TEC2100&&idetudiant="+obj.idetudiant+"' target='_blank'  style='color:black;'>"+obj.ue8+"</a></span>";
+                        }, sort:"int"},
+
+
+                    { id:"ue9",	header:[{text:"Modelisation des SI", css:"multiline"},  { content:"floatNumFilter" }] ,template:function(obj){
+                            if (obj.ue9 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=MSI2100&&idetudiant="+obj.idetudiant+"'  target='_blank'style='color:red;'>"+obj.ue9+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=MSI2100&&idetudiant="+obj.idetudiant+"' target='_blank'  style='color:black;'>"+obj.ue9+"</a></span>";
+                        }, sort:"int"},
+
+
+                    { id:"ue10",	header:[{text:"Management stratégique et transition digitale", css:"multiline"},  { content:"floatNumFilter" }] ,template:function(obj){
+                            if (obj.ue10 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=MAN2100&&idetudiant="+obj.idetudiant+"'  target='_blank'style='color:red;'>"+obj.ue10+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=MAN2100&&idetudiant="+obj.idetudiant+"' target='_blank'  style='color:black;'>"+obj.ue10+"</a></span>";
+                        }, sort:"int"},
+
+
+                    { id:"ue11",	header:[{text:"Management des SI", css:"multiline"},  { content:"floatNumFilter" }] ,template:function(obj){
+                            if (obj.ue11 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=MAN2100&&idetudiant="+obj.idetudiant+"'  target='_blank'style='color:red;'>"+obj.ue11+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=MAN2100&&idetudiant="+obj.idetudiant+"' target='_blank'  style='color:black;'>"+obj.ue11+"</a></span>";
+                        }, sort:"int"},
+
+                    { id:"tcredit",header:[{text:"Total Crédits Validés", css:"multiline"}, { content:"numberFilter" }] , sort:"int"}
+                ],
+                ready:function(){
+                    this.getFilter("Moyenne du Semestre").value = ">=9";
+                    this.filterByAll();
+                },
+
+                on:{
+                    onBeforeLoad:function(){
+                        webix.extend(this, webix.OverlayBox);
+
+                        this.showOverlay("Patientez svp...");
+                    },
+                    onAfterLoad:function(){
+                        if (!this.count())
+                            this.showOverlay("Aucune donnée à Afficher");
+                        this.hideOverlay();
+                    },
+                    "data->onStoreUpdated":function(){
+                        this.data.each(function(obj, i){
+                            obj.index = i+1;
+                        })
+                    }
+                },
+
+                hover:"myhover",
+                navigation:true,
+                spans:true,
+                select:"cell",
+                height:500,
+                autowidth:true,
+                headermenu:true,
+
+
+
+                pager:{
+                    template:"{common.first()} {common.prev()} {common.pages()} {common.next()} {common.last()}{common.limit()}",
+                    container:"paging_herem1mdsi",
+                    size:100,
+                    group:5
+
+                },
+                url:"{{ path('siges_listtabledelibm1mdsisem7') }}"
+            },
+            {
+                view: "form",
+                css: "toolbar",
+                paddingY: 5,
+                paddingX: 10,
+                cols:[
+                    {
+                        view: "label", label: "Exporter"
+                    },
+                    {
+                        view: "button", label: "EXCEL", width: 95, click:function(){
+                            webix.toExcel($$("table"));
+                        }
+                    },
+                    { view:"button", value:"PDF", autowidth:true, click:function(){
+                            webix.toPDF($$("table")), {
+                                orientation:"landscape"
+                            };
+                        }
+                    }
+
+                ]
+
+            }
+        ]
+    });
+
+    //adding progress bar functionality to it
+    webix.extend($$("idetudiant"), webix.ProgressBar);
+
+    //using the functionality
+    $$("idetudiant").showProgress({
+        type:"bottom",
+        delay:3000
+
+    });
+
+</script>
+
+
+
+<script>
+
+    webix.i18n.locales["fr-FR"]={
+
+        combo:{
+            selectAll:"Sélectionner Tout",
+            unselectAll:"Désélectionner Tout"
+        }
+    };
+
+
+
+
+
+    webix.i18n.setLocale('fr-FR');
+
+    function startCompare(value, filter){
+        value = value.toString().toLowerCase();
+        filter = filter.toString().toLowerCase();
+        return value.indexOf(filter) === 0;
+    }
+    webix.locale.pager = {
+        first: "Début",
+        last: "Fin",
+        next: "Suivant",
+        prev: "Précédent"
+    };
+
+    webix.ui.datafilter.floatNumFilter = webix.extend({
+        init:function(config){
+            config.prepare = function(value, filter){
+                var equality = (value.indexOf("=") != -1)?1:0;
+                var intvalue = this.format(value);
+                if (intvalue === "") return "";
+
+                if (value.indexOf(">") != -1)
+                    config.compare = equality ? this._greater_or_equal : this._greater;
+                else if (value.indexOf("<") != -1){
+                    config.compare = equality ? this._lesser_or_equal : this._lesser;
+                }
+                else {
+                    config.compare = this._equal;
+                    equality = 0;
+                }
+                return intvalue;
+            };
+        },
+        _greater:function(a,b){ return a*1>b; },
+        _lesser:function(a,b){ return a!=="" && a*1<b; },
+        _equal:function(a,b){ return a*1==b; },
+        _greater_or_equal:function(a, b){ return a*1 >= b; },
+        _lesser_or_equal:function(a, b){ return a*1 <= b; }
+    }, webix.ui.datafilter.numberFilter);
+
+    webix.ui({
+        container:"tabledeliberationsritl3",
+        padding: 20,
+        rows: [
+            {
+                id: "table",
+                view:"datatable",
+                columns:[
+                    { id:"index", header:"", width:50 },
+                    { id:"idetudiant", header:["Matricule",{content:"textFilter"}],template:"<a href='/SIGES/public/delibarea/deliberationsemestreuniq?idetudiant=#idetudiant#'  style='color:black;'>#idetudiant#</a>", sort:"text", width:150},
+
+                    { id:"ue1",	header:[{text:"Transmissions analogique et numerique", css:"multiline"}, { content:"floatNumFilter" }],
+                        template:function(obj){
+                            if (obj.ue1 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=PHY3401&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:red;'>"+obj.ue1+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=PHY3401&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:black;'>"+obj.ue1+"</a></span>";
+                        },css:"my_styleminor", tooltip: "UE Mineure [3]",sort:"int" },
+
+
+                    { id:"moyennesemminor",header:[{text:"Moyenne UE Mineure", css:"multiline"}, { content:"floatNumFilter" }] , css:"my_styleaver", sort:"int"},
+
+
+
+                    { id:"ue2",	header:[{text:"Communication et développement personnel", css:"multiline"}, { content:"floatNumFilter" }],template:function(obj){
+                            if (obj.ue2 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=COM3400&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:red;'>"+obj.ue2+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=COM3400&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:black;'>"+obj.ue2+"</a></span>";
+                        }, css:"my_stylemajor",tooltip: "UE Majeure [4]", sort:"int",width:115,hidden:true},
+                    { id:"ue3",	header:[{text:"Entrepreunariat et Droit", css:"multiline"}, { content:"floatNumFilter" }] , template:function(obj){
+                            if (obj.ue3 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=DRT3400&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:red;'>"+obj.ue3+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=DRT3400&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:black;'>"+obj.ue3+"</a></span>";
+                        },css:"my_stylemajor",tooltip: "UE Majeure [4]", sort:"int",width:115,hidden:true},
+
+
+                    { id:"ue4",	header:[{text:"Stuctures de données et programmation", css:"multiline"}, { content:"floatNumFilter" }]  , template:function(obj){
+                            if (obj.ue4 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF3400&&idetudiant="+obj.idetudiant+"'  target='_blank' style='color:red;'>"+obj.ue4+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF3400&&idetudiant="+obj.idetudiant+"'  target='_blank' style='color:black;'>"+obj.ue4+"</a></span>";
+                        }, css:"my_stylemajor",tooltip: "UE Majeure [4]", sort:"int",width:115,hidden:true},
+                    { id:"ue5",	header:[{text:"Réseaux informatique et administration",height:120,
+                            css:"multiline"},{ content:"floatNumFilter" }] ,template:function(obj){
+                            if (obj.ue5 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF3401&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:red;'>"+obj.ue5+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF3401&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:black;'>"+obj.ue5+"</a></span>";
+                        },css:"my_stylemajor",tooltip: "UE Majeure [6]", sort:"int",width:115,hidden:true},
+                    { id:"ue6",	header:[{text:"Recherche opérationnelle", css:"multiline"}, { content:"floatNumFilter" }] ,template:function(obj){
+                            if (obj.ue6 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=MTH3400&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:red;'>"+obj.ue6+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=MTH3400&&idetudiant="+obj.idetudiant+"'  target='_blank' style='color:black;'>"+obj.ue6+"</a></span>";
+                        },css:"my_stylemajor",tooltip: "UE Majeure [4]",  sort:"int",hidden:true},
+                    { id:"ue7",	header:[{text:"Signaux et systèmes", css:"multiline"}, { content:"floatNumFilter" }],css:"my_stylemajor",tooltip: "UE Majeure [4]",hidden:true, sort:"int",template:function(obj){
+                            if (obj.ue7 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=PHY3400&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:red;'>"+obj.ue7+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=PHY3400&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:black;'>"+obj.ue7+"</a></span>";
+                        }},
+
+
+                    { id:"moyennesemmajor",header:[{text:"Moyenne UE Majeure", css:"multiline"}, { content:"floatNumFilter" }] ,css:"my_styleaver", sort:"int",hidden:true},
+
+                    { id:"moyennesem",header:[{text:"Moyenne du Semestre", css:"multiline"}, { content:"floatNumFilter" }] ,sort:"int",hidden:true},
+
+
+                    { id:"tcredit",header:[{text:"Total Crédits Validés", css:"multiline"}, { content:"numberFilter" }] ,template:function(obj){
+                            if (obj.tcredit == 30)
+                                return "<span style='color:darkgreen; font-weight: bold; ' >"+obj.tcredit+"</span>";
+                            else
+                                return "<span style='color:black; font-weight: bold'>"+obj.tcredit+"</span>";
+                        }, sort:"int",hidden:true}
+                ],
+                ready:function(){
+                    this.getFilter("Moyenne du Semestre").value = ">=9";
+                    this.filterByAll();
+                },
+
+                on:{
+                    onBeforeLoad:function(){
+                        webix.extend(this, webix.OverlayBox);
+
+                        this.showOverlay("Patientez svp...");
+                    },
+                    onAfterLoad:function(){
+                        if (!this.count())
+                            this.showOverlay("Aucune donnée à Afficher");
+                        this.hideOverlay();
+                    },
+                    "data->onStoreUpdated":function(){
+                        this.data.each(function(obj, i){
+                            obj.index = i+1;
+                        })
+                    }
+                },
+
+                hover:"myhover",
+                navigation:true,
+                spans:true,
+                select:"cell",
+                autoheight:true,
+                autowidth:true,
+                headermenu:true,
+                tooltip:true,
+
+
+
+                pager:{
+                    template:"{common.first()} {common.prev()} {common.pages()} {common.next()} {common.last()}{common.limit()}",
+                    container:"paging_heresritl3",
+                    size:100,
+                    group:5
+
+                },
+                url:"{{ path('siges_listtabledelibsritl3sem5') }}"
+            },
+            {
+                view: "form",
+                css: "toolbar",
+                paddingY: 5,
+                paddingX: 10,
+                cols:[
+                    {
+                        view: "label", label: "Exporter"
+                    },
+                    {
+                        view: "button", label: "EXCEL", width: 95, click:function(){
+                            webix.toExcel($$("table"));
+                        }
+                    },
+                    { view:"button", value:"PDF", autowidth:true, click:function(){
+                            webix.toPDF($$("table")), {
+                                orientation:"landscape"
+                            };
+                        }
+                    }
+
+                ]
+
+            }
+        ]
+    });
+
+    //adding progress bar functionality to it
+    webix.extend($$("idetudiant"), webix.ProgressBar);
+
+    //using the functionality
+    $$("idetudiant").showProgress({
+        type:"bottom",
+        delay:3000
+
+    });
+
+</script>
+
+<script>
+
+    webix.i18n.locales["fr-FR"]={
+
+        combo:{
+            selectAll:"Sélectionner Tout",
+            unselectAll:"Désélectionner Tout"
+        }
+    };
+
+
+
+
+
+    webix.i18n.setLocale('fr-FR');
+
+    function startCompare(value, filter){
+        value = value.toString().toLowerCase();
+        filter = filter.toString().toLowerCase();
+        return value.indexOf(filter) === 0;
+    }
+    webix.locale.pager = {
+        first: "Début",
+        last: "Fin",
+        next: "Suivant",
+        prev: "Précédent"
+    };
+
+    webix.ui.datafilter.floatNumFilter = webix.extend({
+        init:function(config){
+            config.prepare = function(value, filter){
+                var equality = (value.indexOf("=") != -1)?1:0;
+                var intvalue = this.format(value);
+                if (intvalue === "") return "";
+
+                if (value.indexOf(">") != -1)
+                    config.compare = equality ? this._greater_or_equal : this._greater;
+                else if (value.indexOf("<") != -1){
+                    config.compare = equality ? this._lesser_or_equal : this._lesser;
+                }
+                else {
+                    config.compare = this._equal;
+                    equality = 0;
+                }
+                return intvalue;
+            };
+        },
+        _greater:function(a,b){ return a*1>b; },
+        _lesser:function(a,b){ return a!=="" && a*1<b; },
+        _equal:function(a,b){ return a*1==b; },
+        _greater_or_equal:function(a, b){ return a*1 >= b; },
+        _lesser_or_equal:function(a, b){ return a*1 <= b; }
+    }, webix.ui.datafilter.numberFilter);
+
+    webix.ui({
+        container:"tabledeliberationrtell3",
+        padding: 20,
+        rows: [
+            {
+                id: "table",
+                view:"datatable",
+                columns:[
+                    { id:"index", header:"", width:50 },
+                    { id:"idetudiant", header:["Matricule",{content:"textFilter"}],template:"<a href='/SIGES/public/delibarea/deliberationsemestreuniq?idetudiant=#idetudiant#'  style='color:black;'>#idetudiant#</a>", sort:"text", width:150},
+
+                    { id:"ue1",	header:[{text:"Java orienté réseaux", css:"multiline"}, { content:"floatNumFilter" }],
+                        template:function(obj){
+                            if (obj.ue1 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF3405&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:red;'>"+obj.ue1+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF3405&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:black;'>"+obj.ue1+"</a></span>";
+                        },css:"my_styleminor", tooltip: "UE Mineure [2]",sort:"int" },
+
+
+
+                    { id:"ue2",	header:[{text:"Amplification HF", css:"multiline"}, { content:"floatNumFilter" }],template:function(obj){
+                            if (obj.ue2 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=PHY3404&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:red;'>"+obj.ue2+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=PHY3404&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:black;'>"+obj.ue2+"</a></span>";
+                        }, css:"my_styleminor", tooltip: "UE Mineure [3]",sort:"int"},
+                    { id:"ue3",	header:[{text:"Administration et sécurité des réseaux", css:"multiline"}, { content:"floatNumFilter" }] , template:function(obj){
+                            if (obj.ue3 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=RES3402&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:red;'>"+obj.ue3+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=RES3402&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:black;'>"+obj.ue3+"</a></span>";
+                        },css:"my_styleminor", tooltip: "UE Mineure [3]",sort:"int"},
+
+
+
+                    { id:"moyennesemminor",header:[{text:"Moyenne UE Mineure", css:"multiline"}, { content:"floatNumFilter" }] , css:"my_styleaver", sort:"int"},
+
+
+
+
+
+
+                    { id:"ue4",	header:[{text:"Communication et developpement personnel", css:"multiline"}, { content:"floatNumFilter" }]  , template:function(obj){
+                            if (obj.ue4 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=COM400&&idetudiant="+obj.idetudiant+"'  target='_blank' style='color:red;'>"+obj.ue4+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=COM3400&&idetudiant="+obj.idetudiant+"'  target='_blank' style='color:black;'>"+obj.ue4+"</a></span>";
+                        }, css:"my_stylemajor",tooltip: "UE Majeure [4]", sort:"int",width:115,hidden:true},
+                    { id:"ue5",	header:[{text:"Entrepreunariat et Droit",height:120,
+                            css:"multiline"},{ content:"floatNumFilter" }] ,template:function(obj){
+                            if (obj.ue5 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=DRT3400&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:red;'>"+obj.ue5+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=DRT3400&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:black;'>"+obj.ue5+"</a></span>";
+                        },css:"my_stylemajor",tooltip: "UE Majeure [4]", sort:"int",width:115,hidden:true},
+                    { id:"ue6",	header:[{text:"Electronique et systèmes embarqués", css:"multiline"}, { content:"floatNumFilter" }] ,template:function(obj){
+                            if (obj.ue6 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=PHY3402&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:red;'>"+obj.ue6+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=PHY3402&&idetudiant="+obj.idetudiant+"'  target='_blank' style='color:black;'>"+obj.ue6+"</a></span>";
+                        },css:"my_stylemajor",tooltip: "UE Majeure [5]",  sort:"int",hidden:true},
+                    { id:"ue7",	header:[{text:"Réseaux hauts débits", css:"multiline"}, { content:"floatNumFilter" }],css:"my_stylemajor",tooltip: "UE Majeure [5]",hidden:true, sort:"int",template:function(obj){
+                            if (obj.ue7 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=RES3400&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:red;'>"+obj.ue7+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=RES3400&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:black;'>"+obj.ue7+"</a></span>";
+                        }},
+
+                    { id:"ue8",	header:[{text:"Transmission optique et IP", css:"multiline"}, { content:"floatNumFilter" }],css:"my_stylemajor",tooltip: "UE Majeure [4]",hidden:true, sort:"int",template:function(obj){
+                            if (obj.ue8 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=RES3401&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:red;'>"+obj.ue8+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=RES3401&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:black;'>"+obj.ue8+"</a></span>";
+                        }},
+
+
+                    { id:"moyennesemmajor",header:[{text:"Moyenne UE Majeure", css:"multiline"}, { content:"floatNumFilter" }] ,css:"my_styleaver", sort:"int",hidden:true},
+
+                    { id:"moyennesem",header:[{text:"Moyenne du Semestre", css:"multiline"}, { content:"floatNumFilter" }] ,sort:"int",hidden:true},
+
+
+                    { id:"tcredit",header:[{text:"Total Crédits Validés", css:"multiline"}, { content:"numberFilter" }] ,template:function(obj){
+                            if (obj.tcredit == 30)
+                                return "<span style='color:darkgreen; font-weight: bold; ' >"+obj.tcredit+"</span>";
+                            else
+                                return "<span style='color:black; font-weight: bold'>"+obj.tcredit+"</span>";
+                        }, sort:"int",hidden:true}
+                ],
+                ready:function(){
+                    this.getFilter("Moyenne du Semestre").value = ">=9";
+                    this.filterByAll();
+                },
+
+                on:{
+                    onBeforeLoad:function(){
+                        webix.extend(this, webix.OverlayBox);
+
+                        this.showOverlay("Patientez svp...");
+                    },
+                    onAfterLoad:function(){
+                        if (!this.count())
+                            this.showOverlay("Aucune donnée à Afficher");
+                        this.hideOverlay();
+                    },
+                    "data->onStoreUpdated":function(){
+                        this.data.each(function(obj, i){
+                            obj.index = i+1;
+                        })
+                    }
+                },
+
+                hover:"myhover",
+                navigation:true,
+                spans:true,
+                select:"cell",
+                autoheight:true,
+                autowidth:true,
+                headermenu:true,
+                tooltip:true,
+
+
+
+                pager:{
+                    template:"{common.first()} {common.prev()} {common.pages()} {common.next()} {common.last()}{common.limit()}",
+                    container:"paging_herertell3",
+                    size:100,
+                    group:5
+
+                },
+                url:"{{ path('siges_listtabledelibrtell3sem5') }}"
+            },
+            {
+                view: "form",
+                css: "toolbar",
+                paddingY: 5,
+                paddingX: 10,
+                cols:[
+                    {
+                        view: "label", label: "Exporter"
+                    },
+                    {
+                        view: "button", label: "EXCEL", width: 95, click:function(){
+                            webix.toExcel($$("table"));
+                        }
+                    },
+                    { view:"button", value:"PDF", autowidth:true, click:function(){
+                            webix.toPDF($$("table")), {
+                                orientation:"landscape"
+                            };
+                        }
+                    }
+
+                ]
+
+            }
+        ]
+    });
+
+    //adding progress bar functionality to it
+    webix.extend($$("idetudiant"), webix.ProgressBar);
+
+    //using the functionality
+    $$("idetudiant").showProgress({
+        type:"bottom",
+        delay:3000
+
+    });
+
+</script>
+
+
+<script>
+
+    webix.i18n.locales["fr-FR"]={
+
+        combo:{
+            selectAll:"Sélectionner Tout",
+            unselectAll:"Désélectionner Tout"
+        }
+    };
+
+
+
+
+
+    webix.i18n.setLocale('fr-FR');
+
+    function startCompare(value, filter){
+        value = value.toString().toLowerCase();
+        filter = filter.toString().toLowerCase();
+        return value.indexOf(filter) === 0;
+    }
+    webix.locale.pager = {
+        first: "Début",
+        last: "Fin",
+        next: "Suivant",
+        prev: "Précédent"
+    };
+
+    webix.ui.datafilter.floatNumFilter = webix.extend({
+        init:function(config){
+            config.prepare = function(value, filter){
+                var equality = (value.indexOf("=") != -1)?1:0;
+                var intvalue = this.format(value);
+                if (intvalue === "") return "";
+
+                if (value.indexOf(">") != -1)
+                    config.compare = equality ? this._greater_or_equal : this._greater;
+                else if (value.indexOf("<") != -1){
+                    config.compare = equality ? this._lesser_or_equal : this._lesser;
+                }
+                else {
+                    config.compare = this._equal;
+                    equality = 0;
+                }
+                return intvalue;
+            };
+        },
+        _greater:function(a,b){ return a*1>b; },
+        _lesser:function(a,b){ return a!=="" && a*1<b; },
+        _equal:function(a,b){ return a*1==b; },
+        _greater_or_equal:function(a, b){ return a*1 >= b; },
+        _lesser_or_equal:function(a, b){ return a*1 <= b; }
+    }, webix.ui.datafilter.numberFilter);
+
+    webix.ui({
+        container:"tabledeliberationsigll3",
+        padding: 20,
+        rows: [
+            {
+                id: "table",
+                view:"datatable",
+                columns:[
+                    { id:"index", header:"", width:50 },
+                    { id:"idetudiant", header:["Matricule",{content:"textFilter"}],template:"<a href='/SIGES/public/delibarea/deliberationsemestreuniq?idetudiant=#idetudiant#'  style='color:black;'>#idetudiant#</a>", sort:"text", width:150},
+
+                    { id:"ue1",	header:[{text:"Réseaux et systèmes avancés", css:"multiline"}, { content:"floatNumFilter" }],
+                        template:function(obj){
+                            if (obj.ue1 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF34055&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:red;'>"+obj.ue1+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF34055&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:black;'>"+obj.ue1+"</a></span>";
+                        },css:"my_styleminor", tooltip: "UE Mineure [3]",sort:"int" },
+
+
+
+                    { id:"ue2",	header:[{text:"Developpement mobile", css:"multiline"}, { content:"floatNumFilter" }],template:function(obj){
+                            if (obj.ue2 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF3410&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:red;'>"+obj.ue2+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF3410&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:black;'>"+obj.ue2+"</a></span>";
+                        }, css:"my_styleminor", tooltip: "UE Mineure [3]",sort:"int"},
+                    { id:"ue3",	header:[{text:"Maintenance informatique", css:"multiline"}, { content:"floatNumFilter" }] , template:function(obj){
+                            if (obj.ue3 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF3451&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:red;'>"+obj.ue3+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF3451&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:black;'>"+obj.ue3+"</a></span>";
+                        },css:"my_styleminor", tooltip: "UE Mineure [3]",sort:"int"},
+
+
+
+                    { id:"moyennesemminor",header:[{text:"Moyenne UE Mineure", css:"multiline"}, { content:"floatNumFilter" }] , css:"my_styleaver", sort:"int"},
+
+
+
+
+
+
+                    { id:"ue4",	header:[{text:"Communication et developpement personnel", css:"multiline"}, { content:"floatNumFilter" }]  , template:function(obj){
+                            if (obj.ue4 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=COM400&&idetudiant="+obj.idetudiant+"'  target='_blank' style='color:red;'>"+obj.ue4+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=COM3400&&idetudiant="+obj.idetudiant+"'  target='_blank' style='color:black;'>"+obj.ue4+"</a></span>";
+                        }, css:"my_stylemajor",tooltip: "UE Majeure [4]", sort:"int",width:115,hidden:true},
+                    { id:"ue5",	header:[{text:"Entrepreunariat et Droit",height:120,
+                            css:"multiline"},{ content:"floatNumFilter" }] ,template:function(obj){
+                            if (obj.ue5 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=DRT3400&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:red;'>"+obj.ue5+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=DRT3400&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:black;'>"+obj.ue5+"</a></span>";
+                        },css:"my_stylemajor",tooltip: "UE Majeure [4]", sort:"int",width:115,hidden:true},
+                    { id:"ue6",	header:[{text:"Systèmes et sécurité", css:"multiline"}, { content:"floatNumFilter" }] ,template:function(obj){
+                            if (obj.ue6 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF3406&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:red;'>"+obj.ue6+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF3406&&idetudiant="+obj.idetudiant+"'  target='_blank' style='color:black;'>"+obj.ue6+"</a></span>";
+                        },css:"my_stylemajor",tooltip: "UE Majeure [4]",  sort:"int",hidden:true},
+                    { id:"ue7",	header:[{text:"Atelier de génie logiciel", css:"multiline"}, { content:"floatNumFilter" }],css:"my_stylemajor",tooltip: "UE Majeure [5]",hidden:true, sort:"int",template:function(obj){
+                            if (obj.ue7 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF3407&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:red;'>"+obj.ue7+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF3407&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:black;'>"+obj.ue7+"</a></span>";
+                        }},
+
+                    { id:"ue8",	header:[{text:"Developpement dotnet", css:"multiline"}, { content:"floatNumFilter" }],css:"my_stylemajor",tooltip: "UE Majeure [4]",hidden:true, sort:"int",template:function(obj){
+                            if (obj.ue8 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF3408&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:red;'>"+obj.ue8+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF3408&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:black;'>"+obj.ue8+"</a></span>";
+                        }},
+
+
+                    { id:"moyennesemmajor",header:[{text:"Moyenne UE Majeure", css:"multiline"}, { content:"floatNumFilter" }] ,css:"my_styleaver", sort:"int",hidden:true},
+
+                    { id:"moyennesem",header:[{text:"Moyenne du Semestre", css:"multiline"}, { content:"floatNumFilter" }] ,sort:"int",hidden:true},
+
+
+                    { id:"tcredit",header:[{text:"Total Crédits Validés", css:"multiline"}, { content:"numberFilter" }] ,template:function(obj){
+                            if (obj.tcredit == 30)
+                                return "<span style='color:darkgreen; font-weight: bold; ' >"+obj.tcredit+"</span>";
+                            else
+                                return "<span style='color:black; font-weight: bold'>"+obj.tcredit+"</span>";
+                        }, sort:"int",hidden:true}
+                ],
+                ready:function(){
+                    this.getFilter("Moyenne du Semestre").value = ">=9";
+                    this.filterByAll();
+                },
+
+                on:{
+                    onBeforeLoad:function(){
+                        webix.extend(this, webix.OverlayBox);
+
+                        this.showOverlay("Patientez svp...");
+                    },
+                    onAfterLoad:function(){
+                        if (!this.count())
+                            this.showOverlay("Aucune donnée à Afficher");
+                        this.hideOverlay();
+                    },
+                    "data->onStoreUpdated":function(){
+                        this.data.each(function(obj, i){
+                            obj.index = i+1;
+                        })
+                    }
+                },
+
+                hover:"myhover",
+                navigation:true,
+                spans:true,
+                select:"cell",
+                autoheight:true,
+                autowidth:true,
+                headermenu:true,
+                tooltip:true,
+
+
+
+                pager:{
+                    template:"{common.first()} {common.prev()} {common.pages()} {common.next()} {common.last()}{common.limit()}",
+                    container:"paging_heresigll3",
+                    size:100,
+                    group:5
+
+                },
+                url:"{{ path('siges_listtabledelibsigll3sem5') }}"
+            },
+            {
+                view: "form",
+                css: "toolbar",
+                paddingY: 5,
+                paddingX: 10,
+                cols:[
+                    {
+                        view: "label", label: "Exporter"
+                    },
+                    {
+                        view: "button", label: "EXCEL", width: 95, click:function(){
+                            webix.toExcel($$("table"));
+                        }
+                    },
+                    { view:"button", value:"PDF", autowidth:true, click:function(){
+                            webix.toPDF($$("table")), {
+                                orientation:"landscape"
+                            };
+                        }
+                    }
+
+                ]
+
+            }
+        ]
+    });
+
+    //adding progress bar functionality to it
+    webix.extend($$("idetudiant"), webix.ProgressBar);
+
+    //using the functionality
+    $$("idetudiant").showProgress({
+        type:"bottom",
+        delay:3000
+
+    });
+
+</script>
+
+
+
+<script>
+
+    webix.i18n.locales["fr-FR"]={
+
+        combo:{
+            selectAll:"Sélectionner Tout",
+            unselectAll:"Désélectionner Tout"
+        }
+    };
+
+
+
+
+
+    webix.i18n.setLocale('fr-FR');
+
+    function startCompare(value, filter){
+        value = value.toString().toLowerCase();
+        filter = filter.toString().toLowerCase();
+        return value.indexOf(filter) === 0;
+    }
+    webix.locale.pager = {
+        first: "Début",
+        last: "Fin",
+        next: "Suivant",
+        prev: "Précédent"
+    };
+
+    webix.ui.datafilter.floatNumFilter = webix.extend({
+        init:function(config){
+            config.prepare = function(value, filter){
+                var equality = (value.indexOf("=") != -1)?1:0;
+                var intvalue = this.format(value);
+                if (intvalue === "") return "";
+
+                if (value.indexOf(">") != -1)
+                    config.compare = equality ? this._greater_or_equal : this._greater;
+                else if (value.indexOf("<") != -1){
+                    config.compare = equality ? this._lesser_or_equal : this._lesser;
+                }
+                else {
+                    config.compare = this._equal;
+                    equality = 0;
+                }
+                return intvalue;
+            };
+        },
+        _greater:function(a,b){ return a*1>b; },
+        _lesser:function(a,b){ return a!=="" && a*1<b; },
+        _equal:function(a,b){ return a*1==b; },
+        _greater_or_equal:function(a, b){ return a*1 >= b; },
+        _lesser_or_equal:function(a, b){ return a*1 <= b; }
+    }, webix.ui.datafilter.numberFilter);
+
+    webix.ui({
+        container:"tabledeliberationtwinl3",
+        padding: 20,
+        rows: [
+            {
+                id: "table",
+                view:"datatable",
+                columns:[
+                    { id:"index", header:"", width:50 },
+                    { id:"idetudiant", header:["Matricule",{content:"textFilter"}],template:"<a href='/SIGES/public/delibarea/deliberationsemestreuniq?idetudiant=#idetudiant#'  style='color:black;'>#idetudiant#</a>", sort:"text", width:150},
+
+                    { id:"ue1",	header:[{text:"Anglais", css:"multiline"}, { content:"floatNumFilter" }],
+                        template:function(obj){
+                            if (obj.ue1 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=ANG3460&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:red;'>"+obj.ue1+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=ANG3460&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:black;'>"+obj.ue1+"</a></span>";
+                        },css:"my_styleminor", tooltip: "UE Mineure [2]",sort:"int" },
+
+
+
+                    { id:"ue2",	header:[{text:"Communication et Développement personnel", css:"multiline"}, { content:"floatNumFilter" }],template:function(obj){
+                            if (obj.ue2 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=COM3460&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:red;'>"+obj.ue2+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=COM3460&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:black;'>"+obj.ue2+"</a></span>";
+                        }, css:"my_styleminor", tooltip: "UE Mineure [3]",sort:"int"},
+                    { id:"ue3",	header:[{text:"Gestion des projets", css:"multiline"}, { content:"floatNumFilter" }] , template:function(obj){
+                            if (obj.ue3 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=GES3460&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:red;'>"+obj.ue3+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=GES3460&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:black;'>"+obj.ue3+"</a></span>";
+                        },css:"my_styleminor", tooltip: "UE Mineure [3]",sort:"int"},
+
+
+
+
+                    { id:"ue4",	header:[{text:"Montage vidéo", css:"multiline"}, { content:"floatNumFilter" }]  , template:function(obj){
+                            if (obj.ue4 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF3463&&idetudiant="+obj.idetudiant+"'  target='_blank' style='color:red;'>"+obj.ue4+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF3463&&idetudiant="+obj.idetudiant+"'  target='_blank' style='color:black;'>"+obj.ue4+"</a></span>";
+                        }, css:"my_styleminor", tooltip: "UE Mineure [3]",sort:"int"},
+                    { id:"ue5",	header:[{text:"E-commerce",height:120,
+                            css:"multiline"},{ content:"floatNumFilter" }] ,template:function(obj){
+                            if (obj.ue5 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF3464&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:red;'>"+obj.ue5+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF3464&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:black;'>"+obj.ue5+"</a></span>";
+                        },css:"my_styleminor", tooltip: "UE Mineure [2]",sort:"int"},
+
+
+
+
+
+                    { id:"moyennesemminor",header:[{text:"Moyenne UE Mineure", css:"multiline"}, { content:"floatNumFilter" }] , css:"my_styleaver", sort:"int"},
+
+
+
+
+
+
+
+                    { id:"ue6",	header:[{text:"Design Web", css:"multiline"}, { content:"floatNumFilter" }] ,template:function(obj){
+                            if (obj.ue6 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF3460&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:red;'>"+obj.ue6+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF3460&&idetudiant="+obj.idetudiant+"'  target='_blank' style='color:black;'>"+obj.ue6+"</a></span>";
+                        },css:"my_stylemajor",tooltip: "UE Majeure [6]",  sort:"int",hidden:true},
+                    { id:"ue7",	header:[{text:"Stratégie Web", css:"multiline"}, { content:"floatNumFilter" }],css:"my_stylemajor",tooltip: "UE Majeure [6]",hidden:true, sort:"int",template:function(obj){
+                            if (obj.ue7 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF3461&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:red;'>"+obj.ue7+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF3461&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:black;'>"+obj.ue7+"</a></span>";
+                        }},
+
+                    { id:"ue8",	header:[{text:"Modélisation et animation 3D", css:"multiline"}, { content:"floatNumFilter" }],css:"my_stylemajor",tooltip: "UE Majeure [4]",hidden:true, sort:"int",template:function(obj){
+                            if (obj.ue8 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF3462&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:red;'>"+obj.ue8+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF3462&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:black;'>"+obj.ue8+"</a></span>";
+                        }},
+
+
+                    { id:"moyennesemmajor",header:[{text:"Moyenne UE Majeure", css:"multiline"}, { content:"floatNumFilter" }] ,css:"my_styleaver", sort:"int",hidden:true},
+
+                    { id:"moyennesem",header:[{text:"Moyenne du Semestre", css:"multiline"}, { content:"floatNumFilter" }] ,sort:"int",hidden:true},
+
+
+                    { id:"tcredit",header:[{text:"Total Crédits Validés", css:"multiline"}, { content:"numberFilter" }] ,template:function(obj){
+                            if (obj.tcredit == 30)
+                                return "<span style='color:darkgreen; font-weight: bold; ' >"+obj.tcredit+"</span>";
+                            else
+                                return "<span style='color:black; font-weight: bold'>"+obj.tcredit+"</span>";
+                        }, sort:"int",hidden:true}
+                ],
+                ready:function(){
+                    this.getFilter("Moyenne du Semestre").value = ">=9";
+                    this.filterByAll();
+                },
+
+                on:{
+                    onBeforeLoad:function(){
+                        webix.extend(this, webix.OverlayBox);
+
+                        this.showOverlay("Patientez svp...");
+                    },
+                    onAfterLoad:function(){
+                        if (!this.count())
+                            this.showOverlay("Aucune donnée à Afficher");
+                        this.hideOverlay();
+                    },
+                    "data->onStoreUpdated":function(){
+                        this.data.each(function(obj, i){
+                            obj.index = i+1;
+                        })
+                    }
+                },
+
+                hover:"myhover",
+                navigation:true,
+                spans:true,
+                select:"cell",
+                autoheight:true,
+                autowidth:true,
+                headermenu:true,
+                tooltip:true,
+
+
+
+                pager:{
+                    template:"{common.first()} {common.prev()} {common.pages()} {common.next()} {common.last()}{common.limit()}",
+                    container:"paging_heretwinl3",
+                    size:100,
+                    group:5
+
+                },
+                url:"{{ path('siges_listtabledelibtwinl3sem5') }}"
+            },
+            {
+                view: "form",
+                css: "toolbar",
+                paddingY: 5,
+                paddingX: 10,
+                cols:[
+                    {
+                        view: "label", label: "Exporter"
+                    },
+                    {
+                        view: "button", label: "EXCEL", width: 95, click:function(){
+                            webix.toExcel($$("table"));
+                        }
+                    },
+                    { view:"button", value:"PDF", autowidth:true, click:function(){
+                            webix.toPDF($$("table")), {
+                                orientation:"landscape"
+                            };
+                        }
+                    }
+
+                ]
+
+            }
+        ]
+    });
+
+    //adding progress bar functionality to it
+    webix.extend($$("idetudiant"), webix.ProgressBar);
+
+    //using the functionality
+    $$("idetudiant").showProgress({
+        type:"bottom",
+        delay:3000
+
+    });
+
+</script>
+
+
+
+<script>
+
+    webix.i18n.locales["fr-FR"]={
+
+        combo:{
+            selectAll:"Sélectionner Tout",
+            unselectAll:"Désélectionner Tout"
+        }
+    };
+
+
+
+
+
+
+    webix.i18n.setLocale('fr-FR');
+
+    function startCompare(value, filter){
+        value = value.toString().toLowerCase();
+        filter = filter.toString().toLowerCase();
+        return value.indexOf(filter) === 0;
+    }
+    webix.locale.pager = {
+        first: "Début",
+        last: "Fin",
+        next: "Suivant",
+        prev: "Précédent"
+    };
+    webix.ui.datafilter.floatNumFilter = webix.extend({
+        init:function(config){
+            config.prepare = function(value, filter){
+                var equality = (value.indexOf("=") != -1)?1:0;
+                var intvalue = this.format(value);
+                if (intvalue === "") return "";
+
+                if (value.indexOf(">") != -1)
+                    config.compare = equality ? this._greater_or_equal : this._greater;
+                else if (value.indexOf("<") != -1){
+                    config.compare = equality ? this._lesser_or_equal : this._lesser;
+                }
+                else {
+                    config.compare = this._equal;
+                    equality = 0;
+                }
+                return intvalue;
+            };
+        },
+        _greater:function(a,b){ return a*1>b; },
+        _lesser:function(a,b){ return a!=="" && a*1<b; },
+        _equal:function(a,b){ return a*1==b; },
+        _greater_or_equal:function(a, b){ return a*1 >= b; },
+        _lesser_or_equal:function(a, b){ return a*1 <= b; }
+    }, webix.ui.datafilter.numberFilter);
+
+    webix.ui({
+        container:"tabledeliberationm1rtel",
+        padding: 20,
+        rows: [
+            {
+                id: "table",
+                view:"datatable",
+                columns:[
+                    { id:"index", header:"", width:50 },
+                    { id:"idetudiant", header:["Matricule",{content:"textFilter"}],template:"<a href='/SIGES/public/delibarea/deliberationsemestreuniqmaster?idetudiant=#idetudiant#'  target='_blank' style='color:black;'>#idetudiant#</a>", sort:"text", width:150},
+
+
+                    { id:"ue1",	header:["Anglais",{ content:"floatNumFilter" }],
+                        template:function(obj){
+                            if (obj.ue1 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=ANG2300&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:red;'>"+obj.ue1+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=ANG2300&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:black;'>"+obj.ue1+"</a></span>";
+                        }, css:"my_styleminor", tooltip: "UE Mineure [2]",sort:"int"},
+                    { id:"ue2",	header:[{text:"Technique d'expression (Français)",
+                            css:"multiline"}, { content:"floatNumFilter" }],template:function(obj){
+                            if (obj.ue2 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=COM2300&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:red;'>"+obj.ue2+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=COM2300&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:black;'>"+obj.ue2+"</a></span>";
+                        }, css:"my_styleminor", tooltip: "UE Mineure [3]",sort:"int"},
+                    { id:"ue3",	header:[{text:"Developpement personnel",height:120,
+                            css:"multiline"},{ content:"floatNumFilter" }] , template:function(obj){
+                            if (obj.ue3 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=COM2300&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:red;'>"+obj.ue3+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=COM2300&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:black;'>"+obj.ue3+"</a></span>";
+                        }, css:"my_styleminor", tooltip: "UE Mineure [3]",sort:"int"},
+                    { id:"ue4",	header:[{text:"Droits des Télécoms",height:120,
+                            css:"multiline"}, { content:"floatNumFilter" }] , tooltip: "", template:function(obj){
+                            if (obj.ue4 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=DRT2100&&idetudiant="+obj.idetudiant+"'  target='_blank' style='color:red;'>"+obj.ue4+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=DRT2100&&idetudiant="+obj.idetudiant+"'  target='_blank' style='color:black;'>"+obj.ue4+"</a></span>";
+                        }, css:"my_styleminor", tooltip: "UE Mineure [2]",sort:"int"},
+
+
+
+                    { id:"ue5",	header:[{text:"Codage", css:"multiline"}, { content:"floatNumFilter" }] ,template:function(obj){
+                            if (obj.ue5 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF2102&&idetudiant="+obj.idetudiant+"'  target='_blank'style='color:red;'>"+obj.ue5+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF2102&&idetudiant="+obj.idetudiant+"' target='_blank'  style='color:black;'>"+obj.ue5+"</a></span>";
+                        }, css:"my_styleminor", tooltip: "UE Mineure [2]",sort:"int"},
+
+
+
+                    { id:"moyennesemminor",header:[{text:"Moyenne UE Mineure", css:"multiline"}, { content:"floatNumFilter" }] , css:"my_styleaver", sort:"int"},
+
+
+
+
+
+                    { id:"ue6",	header:[{text:"UML et JAVA",
+                            css:"multiline"},{ content:"floatNumFilter" }] ,template:function(obj){
+                            if (obj.ue6 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF2100&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:red;'>"+obj.ue6+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF2100&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:black;'>"+obj.ue6+"</a></span>";
+                        },css:"my_stylemajor",tooltip: "UE Majeure [6]", sort:"int",hidden:true},
+
+
+
+
+
+                    { id:"ue7",	header:[{text:"Python", css:"multiline"}, { content:"floatNumFilter" }] ,template:function(obj){
+                            if (obj.ue7 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF2100&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:red;'>"+obj.ue7+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF2100&&idetudiant="+obj.idetudiant+"'  target='_blank' style='color:black;'>"+obj.ue7+"</a></span>";
+                        }, css:"my_stylemajor",tooltip: "UE Majeure [6]", sort:"int",hidden:true},
+                    { id:"ue8",	header:[{text:"Algorithmique et structures de données Avancées", css:"multiline"}, { content:"floatNumFilter" }], css:"my_stylemajor",tooltip: "UE Majeure [6]", sort:"int",hidden:true,template:function(obj){
+                            if (obj.ue8 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF2100&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:red;'>"+obj.ue8+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF2100&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:black;'>"+obj.ue8+"</a></span>";
+                        }},
+                    { id:"ue9",	header:[{text:"Programmation repartie et algorithmique distribuée", css:"multiline"}, { content:"floatNumFilter" }] ,template:function(obj){
+                            if (obj.ue9 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF2101&&idetudiant="+obj.idetudiant+"'  target='_blank'style='color:red;'>"+obj.ue9+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF2101&&idetudiant="+obj.idetudiant+"' target='_blank'  style='color:black;'>"+obj.ue9+"</a></span>";
+                        }, css:"my_stylemajor",tooltip: "UE Majeure [6]", sort:"int",hidden:true},
+
+
+                    { id:"ue10",	header:[{text:"Middleware", css:"multiline"}, { content:"floatNumFilter" }] ,template:function(obj){
+                            if (obj.ue10 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF2101&&idetudiant="+obj.idetudiant+"'  target='_blank'style='color:red;'>"+obj.ue10+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF2101&&idetudiant="+obj.idetudiant+"' target='_blank'  style='color:black;'>"+obj.ue10+"</a></span>";
+                        }, css:"my_stylemajor",tooltip: "UE Majeure [4]", sort:"int",hidden:true},
+
+
+
+
+                    { id:"ue11",	header:[{text:"Processus de Markov et files d'attente", css:"multiline"}, { content:"floatNumFilter" }] ,template:function(obj){
+                            if (obj.ue11 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=MTH2100&&idetudiant="+obj.idetudiant+"'  target='_blank'style='color:red;'>"+obj.ue11+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=MTH2100&&idetudiant="+obj.idetudiant+"' target='_blank'  style='color:black;'>"+obj.ue11+"</a></span>";
+                        }, css:"my_stylemajor",tooltip: "UE Majeure [5]", sort:"int",hidden:true},
+                    { id:"ue12",	header:[{text:"Approches quantitatives et statistiques, analyse", css:"multiline"}, { content:"floatNumFilter" }] ,template:function(obj){
+                            if (obj.ue12 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=MTH2100&&idetudiant="+obj.idetudiant+"'  target='_blank'style='color:red;'>"+obj.ue12+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=MTH2100&&idetudiant="+obj.idetudiant+"' target='_blank'  style='color:black;'>"+obj.ue12+"</a></span>";
+                        },css:"my_stylemajor",tooltip: "UE Majeure [5]", sort:"int",hidden:true},
+
+                    { id:"ue13",	header:[{text:"Complexité des problèmes et des Algorithmes", css:"multiline"}, { content:"floatNumFilter" }] ,template:function(obj){
+                            if (obj.ue13 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=ROP2100&&idetudiant="+obj.idetudiant+"'  target='_blank'style='color:red;'>"+obj.ue13+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=ROP2100&&idetudiant="+obj.idetudiant+"' target='_blank'  style='color:black;'>"+obj.ue13+"</a></span>";
+                        }, css:"my_stylemajor",tooltip: "UE Majeure [6]", sort:"int",hidden:true},
+
+                    { id:"ue14",	header:[{text:"Méthodes d'Optimisation", css:"multiline"}, { content:"floatNumFilter" }] ,template:function(obj){
+                            if (obj.ue14 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=ROP2100&&idetudiant="+obj.idetudiant+"'  target='_blank'style='color:red;'>"+obj.ue14+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=ROP2100&&idetudiant="+obj.idetudiant+"' target='_blank'  style='color:black;'>"+obj.ue14+"</a></span>";
+                        }, css:"my_stylemajor",tooltip: "UE Majeure [6]", sort:"int",hidden:true},
+
+                    { id:"ue15",	header:[{text:"Graphes", css:"multiline"}, { content:"floatNumFilter" }] ,template:function(obj){
+                            if (obj.ue15 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=ROP2100&&idetudiant="+obj.idetudiant+"'  target='_blank'style='color:red;'>"+obj.ue15+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=ROP2100&&idetudiant="+obj.idetudiant+"' target='_blank'  style='color:black;'>"+obj.ue15+"</a></span>";
+                        }, css:"my_stylemajor",tooltip: "UE Majeure [6]", sort:"int",hidden:true},
+
+
+                    { id:"moyennesemmajor",header:[{text:"Moyenne UE Majeure", css:"multiline"}, { content:"floatNumFilter" }] ,css:"my_styleaver", sort:"int",hidden:true},
+
+                    { id:"moyennesem",header:[{text:"Moyenne du Semestre", css:"multiline"},  { content:"numberFilter" }] , sort:"int" ,css:{ "color": "black" },hidden:true},
+
+
+
+                    { id:"tcredit",header:[{text:"Total Crédits Validés", css:"multiline"}, { content:"numberFilter" }] ,template:function(obj){
+                            if (obj.tcredit == 30)
+                                return "<span style='color:darkgreen; font-weight: bold; ' >"+obj.tcredit+"</span>";
+                            else
+                                return "<span style='color:black; font-weight: bold'>"+obj.tcredit+"</span>";
+                        }, sort:"int",hidden:true}
+                ],
+                ready:function(){
+                    this.getFilter("Moyenne du Semestre").value = ">=9";
+                    this.filterByAll();
+                },
+
+                on:{
+                    onBeforeLoad:function(){
+                        webix.extend(this, webix.OverlayBox);
+
+                        this.showOverlay("Patientez svp...");
+                    },
+                    onAfterLoad:function(){
+                        if (!this.count())
+                            this.showOverlay("Aucune donnée à Afficher");
+                        this.hideOverlay();
+                    },
+                    "data->onStoreUpdated":function(){
+                        this.data.each(function(obj, i){
+                            obj.index = i+1;
+                        })
+                    }
+                },
+
+                hover:"myhover",
+                navigation:true,
+                spans:true,
+                select:"cell",
+                autoheight:true,
+                autowidth:true,
+                headermenu:true,
+                tooltip:true,
+
+
+
+                pager:{
+                    template:"{common.first()} {common.prev()} {common.pages()} {common.next()} {common.last()}{common.limit()}",
+                    container:"paging_herem1rtel",
+                    size:100,
+                    group:5
+
+                },
+                url:"{{ path('siges_listtabledelibm1rtelsem7') }}"
+            },
+            {
+                view: "form",
+                css: "toolbar",
+                paddingY: 5,
+                paddingX: 10,
+                cols:[
+                    {
+                        view: "label", label: "Exporter"
+                    },
+                    {
+                        view: "button", label: "EXCEL", width: 95, click:function(){
+                            webix.toExcel($$("table"));
+                        }
+                    },
+                    { view:"button", value:"PDF", autowidth:true, click:function(){
+                            webix.toPDF($$("table")), {
+                                orientation:"landscape"
+                            };
+                        }
+                    }
+
+                ]
+
+            }
+        ]
+    });
+
+    //adding progress bar functionality to it
+    webix.extend($$("idetudiant"), webix.ProgressBar);
+
+    //using the functionality
+    $$("idetudiant").showProgress({
+        type:"bottom",
+        delay:3000
+
+    });
+
+</script>
+
+<script>
+
+    webix.i18n.locales["fr-FR"]={
+
+        combo:{
+            selectAll:"Sélectionner Tout",
+            unselectAll:"Désélectionner Tout"
+        }
+    };
+
+
+
+
+
+
+    webix.i18n.setLocale('fr-FR');
+
+    function startCompare(value, filter){
+        value = value.toString().toLowerCase();
+        filter = filter.toString().toLowerCase();
+        return value.indexOf(filter) === 0;
+    }
+    webix.locale.pager = {
+        first: "Début",
+        last: "Fin",
+        next: "Suivant",
+        prev: "Précédent"
+    };
+    webix.ui.datafilter.floatNumFilter = webix.extend({
+        init:function(config){
+            config.prepare = function(value, filter){
+                var equality = (value.indexOf("=") != -1)?1:0;
+                var intvalue = this.format(value);
+                if (intvalue === "") return "";
+
+                if (value.indexOf(">") != -1)
+                    config.compare = equality ? this._greater_or_equal : this._greater;
+                else if (value.indexOf("<") != -1){
+                    config.compare = equality ? this._lesser_or_equal : this._lesser;
+                }
+                else {
+                    config.compare = this._equal;
+                    equality = 0;
+                }
+                return intvalue;
+            };
+        },
+        _greater:function(a,b){ return a*1>b; },
+        _lesser:function(a,b){ return a!=="" && a*1<b; },
+        _equal:function(a,b){ return a*1==b; },
+        _greater_or_equal:function(a, b){ return a*1 >= b; },
+        _lesser_or_equal:function(a, b){ return a*1 <= b; }
+    }, webix.ui.datafilter.numberFilter);
+
+    webix.ui({
+        container:"tabledeliberationm2sitw",
+        padding: 20,
+        rows: [
+            {
+                id: "table",
+                view:"datatable",
+                columns:[
+                    { id:"index", header:"", width:50 },
+                    { id:"idetudiant", header:["Matricule",{content:"textFilter"}],template:"<a href='/SIGES/public/delibarea/deliberationsemestreuniqmaster?idetudiant=#idetudiant#'  target='_blank' style='color:black;'>#idetudiant#</a>", sort:"text", width:150},
+
+
+                    { id:"ue1",	header:["Anglais",{ content:"floatNumFilter" }],
+                        template:function(obj){
+                            if (obj.ue1 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=ANG2300&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:red;'>"+obj.ue1+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=ANG2300&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:black;'>"+obj.ue1+"</a></span>";
+                        }, css:"my_styleminor", tooltip: "UE Mineure [2]",sort:"int"},
+                    { id:"ue2",	header:[{text:"Technique d'expression (Français)",
+                            css:"multiline"}, { content:"floatNumFilter" }],template:function(obj){
+                            if (obj.ue2 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=COM2300&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:red;'>"+obj.ue2+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=COM2300&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:black;'>"+obj.ue2+"</a></span>";
+                        }, css:"my_styleminor", tooltip: "UE Mineure [3]",sort:"int"},
+                    { id:"ue3",	header:[{text:"Developpement personnel",height:120,
+                            css:"multiline"},{ content:"floatNumFilter" }] , template:function(obj){
+                            if (obj.ue3 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=COM2300&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:red;'>"+obj.ue3+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=COM2300&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:black;'>"+obj.ue3+"</a></span>";
+                        }, css:"my_styleminor", tooltip: "UE Mineure [3]",sort:"int"},
+                    { id:"ue4",	header:[{text:"Gestion des projets",height:120,
+                            css:"multiline"}, { content:"floatNumFilter" }] , tooltip: "", template:function(obj){
+                            if (obj.ue4 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=OGE2300&&idetudiant="+obj.idetudiant+"'  target='_blank' style='color:red;'>"+obj.ue4+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=OGE2300&&idetudiant="+obj.idetudiant+"'  target='_blank' style='color:black;'>"+obj.ue4+"</a></span>";
+                        }, css:"my_styleminor", tooltip: "UE Mineure [3]",sort:"int"},
+
+
+
+                    { id:"ue5",	header:[{text:"Entrepreneuriat", css:"multiline"}, { content:"floatNumFilter" }] ,template:function(obj){
+                            if (obj.ue5 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=OGE2300&&idetudiant="+obj.idetudiant+"'  target='_blank'style='color:red;'>"+obj.ue5+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=OGE2300&&idetudiant="+obj.idetudiant+"' target='_blank'  style='color:black;'>"+obj.ue5+"</a></span>";
+                        }, css:"my_styleminor", tooltip: "UE Mineure [3]",sort:"int"},
+
+
+
+
+
+                    { id:"ue6",	header:[{text:"Politique et normes de securite",
+                            css:"multiline"},{ content:"floatNumFilter" }] ,template:function(obj){
+                            if (obj.ue6 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=PNS2300&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:red;'>"+obj.ue6+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=PNS2300&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:black;'>"+obj.ue6+"</a></span>";
+                        },css:"my_styleminor", tooltip: "UE Mineure [3]",sort:"int"},
+
+
+
+                    { id:"moyennesemminor",header:[{text:"Moyenne UE Mineure", css:"multiline"}, { content:"floatNumFilter" }] , css:"my_styleaver", sort:"int"},
+
+
+
+
+
+                    { id:"ue7",	header:[{text:"Data mining pour la sécurité (text mining)", css:"multiline"}, { content:"floatNumFilter" }] ,template:function(obj){
+                            if (obj.ue7 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=DTW2300&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:red;'>"+obj.ue7+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=DTW2300&&idetudiant="+obj.idetudiant+"'  target='_blank' style='color:black;'>"+obj.ue7+"</a></span>";
+                        }, css:"my_stylemajor",tooltip: "UE Majeure [6]", sort:"int",hidden:true},
+                    { id:"ue8",	header:[{text:"Java JSP", css:"multiline"}, { content:"floatNumFilter" }], css:"my_stylemajor",tooltip: "UE Majeure [6]", sort:"int",hidden:true,template:function(obj){
+                            if (obj.ue8 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=DTW2300&&idetudiant="+obj.idetudiant+"'  target='_blank'  style='color:red;'>"+obj.ue8+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=DTW2300&&idetudiant="+obj.idetudiant+"'   target='_blank' style='color:black;'>"+obj.ue8+"</a></span>";
+                        }},
+                    { id:"ue9",	header:[{text:"ASP et securité", css:"multiline"}, { content:"floatNumFilter" }] ,template:function(obj){
+                            if (obj.ue9 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=DTW2300&&idetudiant="+obj.idetudiant+"'  target='_blank'style='color:red;'>"+obj.ue9+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=DTW2300&&idetudiant="+obj.idetudiant+"' target='_blank'  style='color:black;'>"+obj.ue9+"</a></span>";
+                        }, css:"my_stylemajor",tooltip: "UE Majeure [6]", sort:"int",hidden:true},
+
+
+                    { id:"ue10",	header:[{text:"Web sémantique", css:"multiline"}, { content:"floatNumFilter" }] ,template:function(obj){
+                            if (obj.ue10 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF2101&&idetudiant="+obj.idetudiant+"'  target='_blank'style='color:red;'>"+obj.ue10+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF2101&&idetudiant="+obj.idetudiant+"' target='_blank'  style='color:black;'>"+obj.ue10+"</a></span>";
+                        }, css:"my_stylemajor",tooltip: "UE Majeure [4]", sort:"int",hidden:true},
+
+
+
+
+                    { id:"ue11",	header:[{text:"Gestion des contenus numériques", css:"multiline"}, { content:"floatNumFilter" }] ,template:function(obj){
+                            if (obj.ue11 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF2302&&idetudiant="+obj.idetudiant+"'  target='_blank'style='color:red;'>"+obj.ue11+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=INF2302&&idetudiant="+obj.idetudiant+"' target='_blank'  style='color:black;'>"+obj.ue11+"</a></span>";
+                        }, css:"my_stylemajor",tooltip: "UE Majeure [4]", sort:"int",hidden:true},
+                    { id:"ue12",	header:[{text:"Analyse des risques en sécurité", css:"multiline"}, { content:"floatNumFilter" }] ,template:function(obj){
+                            if (obj.ue12 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=SEC2300&&idetudiant="+obj.idetudiant+"'  target='_blank'style='color:red;'>"+obj.ue12+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=SEC2300&&idetudiant="+obj.idetudiant+"' target='_blank'  style='color:black;'>"+obj.ue12+"</a></span>";
+                        },css:"my_stylemajor",tooltip: "UE Majeure [6]", sort:"int",hidden:true},
+
+                    { id:"ue13",	header:[{text:"Protocoles de sécurité et Audit de sécurité", css:"multiline"}, { content:"floatNumFilter" }] ,template:function(obj){
+                            if (obj.ue13 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=SEC2300&&idetudiant="+obj.idetudiant+"'  target='_blank'style='color:red;'>"+obj.ue13+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=SEC2300&&idetudiant="+obj.idetudiant+"' target='_blank'  style='color:black;'>"+obj.ue13+"</a></span>";
+                        }, css:"my_stylemajor",tooltip: "UE Majeure [6]", sort:"int",hidden:true},
+
+                    { id:"ue14",	header:[{text:"Sécurité des cartes à puces", css:"multiline"}, { content:"floatNumFilter" }] ,template:function(obj){
+                            if (obj.ue14 < 7)
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=SEC2301&&idetudiant="+obj.idetudiant+"'  target='_blank'style='color:red;'>"+obj.ue14+"</a></span>";
+                            else
+                                return "<span><a href='/SIGES/public/delibarea/consultationecu?idue=SEC2301&&idetudiant="+obj.idetudiant+"' target='_blank'  style='color:black;'>"+obj.ue14+"</a></span>";
+                        }, css:"my_stylemajor",tooltip: "UE Majeure [4]", sort:"int",hidden:true},
+
+
+                    { id:"moyennesemmajor",header:[{text:"Moyenne UE Majeure", css:"multiline"}, { content:"floatNumFilter" }] ,css:"my_styleaver", sort:"int",hidden:true},
+
+                    { id:"moyennesem",header:[{text:"Moyenne du Semestre", css:"multiline"},  { content:"numberFilter" }] , sort:"int" ,css:{ "color": "black" },hidden:true},
+
+
+
+                    { id:"tcredit",header:[{text:"Total Crédits Validés", css:"multiline"}, { content:"numberFilter" }] ,template:function(obj){
+                            if (obj.tcredit == 30)
+                                return "<span style='color:darkgreen; font-weight: bold; ' >"+obj.tcredit+"</span>";
+                            else
+                                return "<span style='color:black; font-weight: bold'>"+obj.tcredit+"</span>";
+                        }, sort:"int",hidden:true}
+                ],
+                ready:function(){
+                    this.getFilter("Moyenne du Semestre").value = ">=9";
+                    this.filterByAll();
+                },
+
+                on:{
+                    onBeforeLoad:function(){
+                        webix.extend(this, webix.OverlayBox);
+
+                        this.showOverlay("Patientez svp...");
+                    },
+                    onAfterLoad:function(){
+                        if (!this.count())
+                            this.showOverlay("Aucune donnée à Afficher");
+                        this.hideOverlay();
+                    },
+                    "data->onStoreUpdated":function(){
+                        this.data.each(function(obj, i){
+                            obj.index = i+1;
+                        })
+                    }
+                },
+
+                hover:"myhover",
+                navigation:true,
+                spans:true,
+                select:"cell",
+                autoheight:true,
+                autowidth:true,
+                headermenu:true,
+                tooltip:true,
+
+
+
+                pager:{
+                    template:"{common.first()} {common.prev()} {common.pages()} {common.next()} {common.last()}{common.limit()}",
+                    container:"paging_herem2sitw",
+                    size:100,
+                    group:5
+
+                },
+                url:"{{ path('siges_listtabledelibm2sitwsem9') }}"
+            },
+            {
+                view: "form",
+                css: "toolbar",
+                paddingY: 5,
+                paddingX: 10,
+                cols:[
+                    {
+                        view: "label", label: "Exporter"
+                    },
+                    {
+                        view: "button", label: "EXCEL", width: 95, click:function(){
+                            webix.toExcel($$("table"));
+                        }
+                    },
+                    { view:"button", value:"PDF", autowidth:true, click:function(){
+                            webix.toPDF($$("table")), {
+                                orientation:"landscape"
+                            };
+                        }
+                    }
+
+                ]
+
+            }
+        ]
+    });
+
+    //adding progress bar functionality to it
+    webix.extend($$("idetudiant"), webix.ProgressBar);
+
+    //using the functionality
+    $$("idetudiant").showProgress({
+        type:"bottom",
+        delay:3000
+
+    });
+
+</script>
+
 </html>

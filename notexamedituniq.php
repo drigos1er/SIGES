@@ -54,7 +54,7 @@ if($_GET['idses']){
 
 
 
-    header("Location:http://localhost/SIGESV2/SIGESV2/web/app_dev.php/delibarea/edituniqnotexam");
+    header("Location:http://localhost:8888/SIGES/public/delibarea/edituniqnotexam");
 
 
 

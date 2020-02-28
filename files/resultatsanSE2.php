@@ -81,6 +81,8 @@ include("myfunctions.php");
 
         </thead>
         <?php $repos=$bdd->query("SET OPTION SQL_BIG_SELECTS=1");
+        $repos=$bdd->query("SET @@global.sql_mode=(SELECT REPLACE(@@global.sql_mode, 'ONLY_FULL_GROUP_BY', ''))");
+
 
         $repos = $bdd->prepare('  
  

@@ -1,0 +1,91 @@
+{% extends"layoutaveragesemmaster.html.twig" %}
+{% block body %}
+
+    <!-- page content -->
+    <div class="container-fluid">
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header card-header-icon" data-background-color="blue">
+                        <i class="material-icons">search</i>
+                    </div>
+                    <div class="card-content">
+                        <h4 class="card-title">Consultation de Notes/Moyennes:<span style="font-style: italic; color: grey; font-size: 14px;">  &nbsp;&nbsp;<span style="font-style: italic; color: grey; text-align: center; font-size: 14px;"><span style="font-style: italic; color: grey">  UE:{{ app.session.get('libecuconsultdelibaver') }} &nbsp;&nbsp;ECU:{{ app.session.get('libueconsultdelibaver') }} </span></h4>
+                        <table id="averagesemmaster" class="display" cellspacing="0" width="100%">
+                            <thead>
+                            <tr>
+                                <th>Matricule</th>
+
+
+                                <th>Photo</th>
+                                <th>Classe</th>
+                                <th>Nom</th>
+                                <th>Prénoms</th>
+                                <th>Genre</th>
+
+                                <th> Contrôle Continu</th>
+
+                                <th> Examen</th>
+                                <th> Moyenne</th>
+                                <th> Contrôle Continu TP</th>
+
+                                <th> Examen TP</th>
+
+                                <th> Moyennne TP</th>
+
+                                <th> Moyennne ECUE</th>
+
+                                <th> Crédit UE</th>
+
+
+
+
+                            </tr>
+                            </thead>
+                            <tfoot>
+                            <tr>
+                                <th>Matricule</th>
+
+
+                                <th>Photo</th>
+                                <th>Classe</th>
+                                <th>Nom</th>
+                                <th>Prénoms</th>
+                                <th>Genre</th>
+
+                                <th> Contrôle Continu</th>
+
+                                <th> Examen</th>
+                                <th> Moyenne</th>
+                                <th> Contrôle Continu TP</th>
+
+                                <th> Examen TP</th>
+
+                                <th> Moyennne TP</th>
+
+                                <th> Moyennne ECUE</th>
+
+                                <th> Crédit UE</th>
+
+
+
+
+                            </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    <div align="center"><a href="{{ path('siges_consultaveragedelib') }}"> <i class="fa fa-reply"></i>Retour à la liste des Eléments Constitutifs d' Unités d'Enseignements(ECU)</a></div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+
+
+    <!-- /page content -->
+
+
+
+{% endblock %}

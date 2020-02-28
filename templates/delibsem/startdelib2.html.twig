@@ -80,7 +80,7 @@
                                     <div class="card-header" data-background-color="red">
     {%if(  (app.session.get('leveliddelib')=='L1') or (app.session.get('leveliddelib')=='L3') or (app.session.get('leveliddelib')=='L2') )%} <a href="{{ path('siges_deliberationsemestre') }}"><i class="material-icons">touch_app</i></a>{% endif %}
 
-                                        {%if(  (app.session.get('leveliddelib')=='M1') or (app.session.get('leveliddelib')=='M2')  )%} <a href="{{ path('_siges_deliberationsemestremaster') }}"><i class="material-icons">touch_app</i></a>{% endif %}
+                                        {%if(  (app.session.get('leveliddelib')=='M1') or (app.session.get('leveliddelib')=='M2')  )%} <a href="{{ path('siges_deliberationsemestremaster') }}"><i class="material-icons">touch_app</i></a>{% endif %}
 
                                     </div>
 
@@ -96,6 +96,55 @@
 
 
     {%if( (app.session.get('speciddelib') =='RTEL') and (app.session.get('leveliddelib')=='L2')and (app.session.get('semiddelib')=='SEM3'))%}<a href="{{ path('siges_tabledelibrtell2sem3') }}" style="color: white" target="_blank"><button class="btn"> TABLEAU DE DELIBERATION  <i class="material-icons">forward</i></button></a>{% endif %}
+
+
+
+    {%if( (app.session.get('speciddelib') =='SRIT') and (app.session.get('leveliddelib')=='L3')and (app.session.get('semiddelib')=='SEM5'))%}<a href="{{ path('siges_tabledelibsritl3sem5') }}" style="color: white" target="_blank"><button class="btn"> TABLEAU DE DELIBERATION  <i class="material-icons">forward</i></button></a>{% endif %}
+
+
+
+
+    {%if( (app.session.get('speciddelib') =='RTEL') and (app.session.get('leveliddelib')=='L3')and (app.session.get('semiddelib')=='SEM5'))%}<a href="{{ path('siges_tabledelibrtell3sem5') }}" style="color: white" target="_blank"><button class="btn"> TABLEAU DE DELIBERATION  <i class="material-icons">forward</i></button></a>{% endif %}
+
+
+
+
+    {%if( (app.session.get('speciddelib') =='SIGL') and (app.session.get('leveliddelib')=='L3')and (app.session.get('semiddelib')=='SEM5'))%}<a href="{{ path('siges_tabledelibsigll3sem5') }}" style="color: white" target="_blank"><button class="btn"> TABLEAU DE DELIBERATION  <i class="material-icons">forward</i></button></a>{% endif %}
+
+
+
+    {%if( (app.session.get('speciddelib') =='TWIN') and (app.session.get('leveliddelib')=='L3')and (app.session.get('semiddelib')=='SEM5'))%}<a href="{{ path('siges_tabledelibtwinl3sem5') }}" style="color: white" target="_blank"><button class="btn"> TABLEAU DE DELIBERATION  <i class="material-icons">forward</i></button></a>{% endif %}
+
+
+
+
+
+
+
+
+    {%if( (app.session.get('speciddelib') =='TCSIGLSITW') and (app.session.get('leveliddelib')=='M1')and (app.session.get('semiddelib')=='SEM7'))%}<a href="{{ path('siges_tabledelibm1infosem7') }}" style="color: white" target="_blank"><button class="btn"> TABLEAU DE DELIBERATION  <i class="material-icons">forward</i></button></a>{% endif %}
+
+
+
+
+    {%if( (app.session.get('speciddelib') =='RTEL') and (app.session.get('leveliddelib')=='M1')and (app.session.get('semiddelib')=='SEM7'))%}<a href="{{ path('siges_tabledelibm1rtelsem7') }}" style="color: white" target="_blank"><button class="btn"> TABLEAU DE DELIBERATION  <i class="material-icons">forward</i></button></a>{% endif %}
+
+
+
+
+    {%if( (app.session.get('speciddelib') =='SITW') and (app.session.get('leveliddelib')=='M2')and (app.session.get('semiddelib')=='SEM9'))%}<a href="{{ path('siges_tabledelibm2sitwsem9') }}" style="color: white" target="_blank"><button class="btn"> TABLEAU DE DELIBERATION  <i class="material-icons">forward</i></button></a>{% endif %}
+
+
+
+
+
+    {%if( (app.session.get('speciddelib') =='MBDS') and (app.session.get('leveliddelib')=='M1')and (app.session.get('semiddelib')=='SEM7'))%}<a href="{{ path('siges_tabledelibm1infosem7') }}" style="color: white" target="_blank"><button class="btn"> TABLEAU DE DELIBERATION  <i class="material-icons">forward</i></button></a>{% endif %}
+
+
+
+    {%if( (app.session.get('speciddelib') =='MDSI') and (app.session.get('leveliddelib')=='M1')and (app.session.get('semiddelib')=='SEM8'))%}<a href="{{ path('siges_tabledelibmdsim1sem8') }}" style="color: white" target="_blank"><button class="btn"> TABLEAU DE DELIBERATION  <i class="material-icons">forward</i></button></a>{% endif %}
+
+    {%if( (app.session.get('speciddelib') =='MDSI') and (app.session.get('leveliddelib')=='M1')and (app.session.get('semiddelib')=='SEM7'))%}<a href="{{ path('siges_tabledelibm1mdsisem7') }}" style="color: white" target="_blank"><button class="btn"> TABLEAU DE DELIBERATION  <i class="material-icons">forward</i></button></a>{% endif %}
 
 
 

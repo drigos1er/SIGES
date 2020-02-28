@@ -1,7 +1,7 @@
 <?php
 include("myfunctions.php");
 ?>
-<page  backbottom="10mm" backtop="50mm" >
+<page  backbottom="50mm" backtop="50mm" >
 
 
     <page_header>
@@ -14,7 +14,7 @@ include("myfunctions.php");
             </tr> <tr><td style="font-size:12px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ET DE LA POSTE </td> <td><span style="font-size:14px; margin-left:320px;">.....................</span></td> </tr>
             <tr> <td><span style="font-size:14px; margin-left:80px; ">...........................</span></td><td><span style="font-size:14px; margin-left:280px;"><strong>Union_ Discipline _Travail</strong> </span></td></tr> <tr><td><span style="font-size:12px; "><img src="esatic.jpg"  alt="logoesatic" style="margin-left: 50px;" /></span></td><td><span style="font-size:20px; margin-left:40px;"></span></td></tr><tr><td><span style="font-size:12px; margin-left:80px;"> <strong>...........................</strong></span> </td> </tr><tr>  <td><strong>&nbsp;&nbsp;&nbsp;DIRECTION DE LA PEDAGOGIE</strong>  </td> </tr><tr><td><span style="font-size:12px; margin-left:26px;"></span></td></tr><tr><td><span style="font-size:12px; margin-left:26px;"></span></td></tr>
         </table><br><br>
-        <span style="margin-left:100px;font-size:18px; "><strong> RESULTATS DE LA <?php echo  $libses;?> DU <?php echo  $libsem;?> <?php echo  $idanac;?></strong></span><br><span style="margin-left:300px;font-size:18px; "><strong><?php echo  $levelname;?> : <?php if($idspec=="TCSIGLSITW"){echo "INFORMATIQUE";} else {echo $idspec;} ?></strong></span><br><span style="margin-left:270px;font-size:12px; "><strong>(LISTE DES ADMIS PAR ORDRE DE MERITE)</strong></span><br><br>
+        <span style="margin-left:100px;font-size:18px; "><strong> RESULTATS DE LA <?php echo  $libses;?> DU <?php echo  $libsem;?> <?php echo  $idanac;?></strong></span><br><span style="margin-left:300px;font-size:18px; "><strong><?php echo  $levelname;?> : <?php if($idspec=="TCSIGLSITW"){echo "INFORMATIQUE";} else {echo $idspec;} ?></strong></span><br><span style="margin-left:270px;font-size:12px; "><strong>(LISTE DES ADMIS PAR ORDRE DE MERITE)</strong></span><br><br><br>
 
     </page_header>
 
@@ -22,10 +22,10 @@ include("myfunctions.php");
 
     <page_footer>
 
-        <span style="margin-left:10px; font-size:10px; margin-top:150px;  font-style:italic;">DELIBERATION  <?php echo  $libses;?> DU <?php echo  $libsem;?> &nbsp;&nbsp; <?php echo  $idanac;?>  &nbsp;&nbsp;<?php echo  $levelname;?> <?php echo  $idspec;?>&nbsp;&nbsp;<?php echo  $date;?> </span>   <span style="margin-left:250px; font-size:10px; margin-top:150px;  font-style:italic;">  [[page_cu]]/[[page_nb]]</span>
+        <span style="margin-left:10px; font-size:10px; margin-top:150px;  font-style:italic;">DELIBERATION  <?php echo  $libses;?> DU <?php echo  $libsem;?> &nbsp;&nbsp; <?php echo  $idanac;?>  &nbsp;&nbsp;<?php echo  $levelname;?> <?php echo  $idspec;?>&nbsp;&nbsp;<?php echo  $date;?> </span>   <span style="margin-left:200px; font-size:10px; margin-top:150px;  font-style:italic;">  [[page_cu]]/[[page_nb]]</span>
     </page_footer>
 
-    <br><br>
+    <br><br><br>
 
     <table style="border:solid 1px black;  text-align:center; font-size:11px;  border-collapse:collapse; " align="center">
         <col style="width: 5%">
@@ -84,6 +84,7 @@ include("myfunctions.php");
 
 
         $repos=$bdd->query("SET OPTION SQL_BIG_SELECTS=1");
+        $repos=$bdd->query("SET @@global.sql_mode=(SELECT REPLACE(@@global.sql_mode, 'ONLY_FULL_GROUP_BY', ''))");
 
         $repos = $bdd->prepare('SELECT DISTINCT halfyearly_delib.studentid FROM `halfyearly_delib` INNER JOIN student on student.id=halfyearly_delib.studentid WHERE halfyearly_delib.semesterid=:idsem and halfyearly_delib.sessionid=:idses and halfyearly_delib.specialityid=:idspec and halfyearly_delib.acadyearid=:idanac order by student.firstname,student.lastname ' );
 

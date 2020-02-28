@@ -492,7 +492,7 @@ class StudentSpecialityRepository extends ServiceEntityRepository
 
 
 
-    public function delibannuelse2($idanac,$idniv,$idspecialite)
+    public function delibannuelse2($idanac,$idniv,$idspecialite,$idsem)
     {
 
 
@@ -507,7 +507,7 @@ class StudentSpecialityRepository extends ServiceEntityRepository
 
 
 
-        $sql = 'SELECT  DISTINCT halfyearly_delib.studentid FROM `halfyearly_delib`  WHERE  halfyearly_delib.specialityid=:idspecialite  and halfyearly_delib.acadyearid=:idanac and halfyearly_delib.sessionid="SE1" and halfyearly_delib.decision="REFUSE"   and halfyearly_delib.studentid IN (select studentid from student_speciality where levelid=:idniveau and acadyearid=:idanac) ';
+        $sql = 'SELECT  DISTINCT halfyearly_delib.studentid FROM `halfyearly_delib`  WHERE halfyearly_delib.semesterid=:idsem and  halfyearly_delib.specialityid=:idspecialite  and halfyearly_delib.acadyearid=:idanac and halfyearly_delib.sessionid="SE1" and halfyearly_delib.decision="REFUSE"   and halfyearly_delib.studentid IN (select studentid from student_speciality where levelid=:idniveau and acadyearid=:idanac) ';
         $query = $this->_em->createNativeQuery($sql, $rsm);
 
 
@@ -517,6 +517,8 @@ class StudentSpecialityRepository extends ServiceEntityRepository
         $query->setParameter('idniveau', $idniv);
 
         $query->setParameter('idspecialite', $idspecialite);
+
+        $query->setParameter('idsem', $idsem );
 
 
 

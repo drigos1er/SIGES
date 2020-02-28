@@ -384,6 +384,21 @@ siges_listviewaveragesem:
 
 
 
+
+
+siges_viewaveragesemmaster:
+  path:     /delibarea/viewaveragesemmaster
+  defaults: { _controller: App\Controller\DelibSemController::viewaveragesemmaster}
+
+siges_listviewaveragesemmaster:
+  path:     /delibarea/listviewaveragesemmaster
+  defaults: { _controller: App\Controller\DelibSemController::listviewaveragesemmaster }
+
+
+
+
+
+
 siges_startdelibmaster:
   path:     /delibarea/startdelibmaster
   defaults: { _controller: App\Controller\DelibSemController::startdelibmaster }
@@ -494,6 +509,11 @@ siges_deliberationsemestreuniq:
 
 
 
+siges_deliberationsemestreuniqmaster:
+  path:     /delibarea/deliberationsemestreuniqmaster
+  defaults: { _controller: App\Controller\DelibSemController::deliberationsemestreuniqmaster }
+
+
 siges_consultationecu:
   path:     /delibarea/consultationecu
   defaults: { _controller: App\Controller\DelibSemController::consultationecu }
@@ -520,3 +540,176 @@ siges_redirectaverageccedituniq:
 siges_edituniqaveragecc:
   path:     /delibarea/edituniqaveragecc
   defaults: { _controller: App\Controller\DelibSemController::edituniqaveragecc }
+
+
+
+siges_redirectnotexamedituniq:
+  path:     /delibarea/redirectnotexamedituniq
+  defaults: { _controller: App\Controller\DelibSemController::redirectnotexamedituniq }
+
+
+
+
+siges_edituniqnotexam:
+  path:     /delibarea/edituniqnotexam
+  defaults: { _controller: App\Controller\DelibSemController::edituniqnotexam }
+
+
+
+
+siges_tabledecisionjury:
+  path:     /delibarea/tabledecisionjury
+  defaults: { _controller: App\Controller\DelibSemController::tabledecisionjury }
+
+
+siges_tabledelibannuel:
+  path:     /delibarea/tabledelibannuel
+  defaults: { _controller: App\Controller\DelibSemController::tabledelibannuel }
+
+
+
+siges_resultannuel:
+  path:     /delibarea/resultannuel
+  defaults: { _controller: App\Controller\DelibSemController::resultannuel }
+
+
+
+
+siges_tableresultannuel:
+  path:     /delibarea/tableresultannuel
+  defaults: { _controller: App\Controller\DelibSemController::tableresultannuel }
+
+
+
+siges_startorientation:
+  path:     /delibarea/startorientation
+  defaults: { _controller: App\Controller\DelibSemController::startorientation }
+
+
+
+siges_tabledelibm1infosem7:
+  path:     /delibarea/tabledelibm1infosem7
+  defaults: { _controller: App\Controller\DelibSemController::tabledelibm1infosem7 }
+
+
+
+
+siges_listtabledelibm1infosem7:
+  path:     /delibarea/listtabledelibm1infosem7
+  defaults: { _controller: App\Controller\DelibSemController::listtabledelibm1infosem7 }
+
+
+
+
+siges_tabledelibmdsim1sem8:
+  path:     /delibarea/tabledelibmdsim1sem8
+  defaults: { _controller: App\Controller\DelibSemController::tabledelibmdsim1sem8 }
+
+
+
+
+siges_listtabledelibmdsim1sem8:
+  path:     /delibarea/listtabledelibmdsim1sem8
+  defaults: { _controller: App\Controller\DelibSemController::listtabledelibmdsim1sem8 }
+
+
+
+
+
+
+siges_tabledelibm1mdsisem7:
+  path:     /delibarea/tabledelibm1mdsisem7
+  defaults: { _controller: App\Controller\DelibSemController::tabledelibm1mdsisem7 }
+
+
+
+
+siges_listtabledelibm1mdsisem7:
+  path:     /delibarea/listtabledelibm1mdsisem7
+  defaults: { _controller: App\Controller\DelibSemController::listtabledelibm1mdsisem7 }
+
+
+
+
+
+siges_tabledelibsritl3sem5:
+  path:     /delibarea/tabledelibsritl3sem5
+  defaults: { _controller: App\Controller\DelibSemController::tabledelibsritl3sem5 }
+
+
+
+
+siges_listtabledelibsritl3sem5:
+  path:     /delibarea/listtabledelibsritl3sem5
+  defaults: { _controller: App\Controller\DelibSemController::listtabledelibsritl3sem5 }
+
+
+
+
+
+
+siges_tabledelibrtell3sem5:
+  path:     /delibarea/tabledelibrtell3sem5
+  defaults: { _controller: App\Controller\DelibSemController::tabledelibrtell3sem5 }
+
+
+
+
+siges_listtabledelibrtell3sem5:
+  path:     /delibarea/listtabledelibrtell3sem5
+  defaults: { _controller: App\Controller\DelibSemController::listtabledelibrtell3sem5 }
+
+
+
+
+
+siges_tabledelibsigll3sem5:
+  path:     /delibarea/tabledelibsigll3sem5
+  defaults: { _controller: App\Controller\DelibSemController::tabledelibsigll3sem5 }
+
+
+
+
+siges_listtabledelibsigll3sem5:
+  path:     /delibarea/listtabledelibsigll3sem5
+  defaults: { _controller: App\Controller\DelibSemController::listtabledelibsigll3sem5 }
+
+
+
+
+
+siges_tabledelibtwinl3sem5:
+  path:     /delibarea/tabledelibtwinl3sem5
+  defaults: { _controller: App\Controller\DelibSemController::tabledelibtwinl3sem5 }
+
+
+
+
+siges_listtabledelibtwinl3sem5:
+  path:     /delibarea/listtabledelibtwinl3sem5
+  defaults: { _controller: App\Controller\DelibSemController::listtabledelibtwinl3sem5 }
+
+
+siges_tabledelibm1rtelsem7:
+  path:     /delibarea/tabledelibm1rtelsem7
+  defaults: { _controller: App\Controller\DelibSemController::tabledelibm1rtelsem7 }
+
+
+
+
+siges_listtabledelibm1rtelsem7:
+  path:     /delibarea/listtabledelibm1rtelsem7
+  defaults: { _controller: App\Controller\DelibSemController::listtabledelibm1rtelsem7 }
+
+
+siges_tabledelibm2sitwsem9:
+  path:     /delibarea/tabledelibm2sitwsem9
+  defaults: { _controller: App\Controller\DelibSemController::tabledelibm2sitwsem9 }
+
+
+
+
+siges_listtabledelibm2sitwsem9:
+  path:     /delibarea/listtabledelibm2sitwsem9
+  defaults: { _controller: App\Controller\DelibSemController::listtabledelibm2sitwsem9 }
+

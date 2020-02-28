@@ -1,0 +1,69 @@
+{% extends"layoutdecisionjury.html.twig" %}
+{% block body %}
+
+    <!-- page content -->
+    <div class="container-fluid">
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header card-header-icon" data-background-color="blue">
+                        <i class="material-icons">search</i>
+                    </div>
+                    <div class="card-content">
+                        <h4 class="card-title">RESULTAT DE LA DELIBERATION DU SEMESTRE</h4>
+                        <table id="averagesem" class="display" cellspacing="0" width="100%">
+                            <thead>
+                            <tr>
+                                <th>Matricule</th>
+                                <th>Photo</th>
+                                <th>Nom</th>
+                                <th>Prénoms</th>
+                                <th>Genre</th>
+                                <th>Classe</th>
+                                <th>Statut</th>
+                                <th> Total Crédits validés</th>
+                                <th>Moyenne du Semestre</th>
+                                <th>Décision du Jury</th>
+
+
+
+
+
+                            </tr>
+                            </thead>
+                            <tfoot>
+                            <tr>
+                                <th>Matricule</th>
+                                <th>Photo</th>
+                                <th>Nom</th>
+                                <th>Prénoms</th>
+                                <th>Genre</th>
+                                <th>Classe</th>
+                                <th>Statut</th>
+                                <th> Total Crédits validés</th>
+                                <th>Moyenne du Semestre</th>
+                                <th>Décision du Jury</th>
+
+
+
+
+
+                            </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    <div align="center"><a href="{{ path('siges_dashboarddelibbylevel') }}"> <i class="fa fa-reply"></i>Retour </a></div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+
+
+    <!-- /page content -->
+
+
+
+{% endblock %}

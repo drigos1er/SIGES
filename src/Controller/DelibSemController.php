@@ -13,6 +13,7 @@ use App\Repository\AcademicYearRepository;
 use App\Repository\EcuRepository;
 use App\Repository\EcuSpecialityRepository;
 use App\Repository\HalfYearlyDelibRepository;
+use App\Repository\SemesterRepository;
 use App\Repository\StudentAveragesRepository;
 use App\Repository\StudentExamNotesRepository;
 use App\Repository\StudentRepository;
@@ -52,7 +53,7 @@ class DelibSemController extends AbstractController
                 $idanacad =$form['academicyear']->getData()->getId();
 
                 $request->getSession()->set('anacademiq', $anacad);
-                $request->getSession()->set('idanacademiq', $idanacad);
+                $request->getSession()->set('anacad', $idanacad);
 
                 return $this->redirectToRoute('siges_dashboarddelib');
             }}
@@ -93,9 +94,9 @@ class DelibSemController extends AbstractController
 
 
 
-    public function listdelibspecbylevel(Request $request, StudentSpecialityRepository $studspecrepo, MyFunction $callfunction)
+    public function listdelibspecbylevel(Request $request, StudentSpecialityRepository $studspecrepo, MyFunction $callfunction, SemesterRepository $semrepo)
     {
-        $idanac = $this->get('session')->get('idanacademiq');
+        $idanac = $this->get('session')->get('anacad');
         $semtype = $this->get('session')->get('semtypedelib');
         $idses = $this->get('session')->get('idsesdelib');
 
@@ -137,7 +138,7 @@ class DelibSemController extends AbstractController
                 $urldelib = $this->generateUrl('siges_redirectdelibbylevel', array('levelid' => $user['levelid'], 'specid' => $user['specialityid'], 'idsem' => $semster, 'idses' => $idses));
 
 
-                $liendelib = '<a href="' . $urldelib . '"  class="btn btn-danger btn-xs"> <i class="material-icons">school</i>  </a>';
+                $liendelib = '<a href="' . $urldelib . '"  class="btn btn-primary btn-xs"> <i class="material-icons">touch_app</i> Effectuer la Déliberation </a>';
 
 
                 $output['data'][] = [
@@ -154,6 +155,7 @@ class DelibSemController extends AbstractController
             return new Response(json_encode($output), 200, ['Content-Type' => 'application/json']);
 
         } else {
+
             $length = $request->get('length');
             $length = $length && ($length != -1) ? $length : 0;
 
@@ -165,19 +167,19 @@ class DelibSemController extends AbstractController
                 'query' => @$search['value']
             ];
 
-            $users = $studspecrepo->levelspecse2($idanac, $filters, $start, $length
+            $users = $studspecrepo->levelspecse2($idanac,$semtype, $filters, $start, $length
             );
 
             $output = array(
                 'data' => array(),
-                'recordsFiltered' => count($studspecrepo->levelspecse2($idanac, $filters, 0, false)),
-                'recordsTotal' => count($studspecrepo->levelspecse2($idanac, 0, false))
+                'recordsFiltered' => count($studspecrepo->levelspecse2($idanac,$semtype, $filters, 0, false)),
+                'recordsTotal' => count($studspecrepo->levelspecse2($idanac,$semtype, 0, false))
             );
 
             foreach ($users as $user) {
 
 
-                $semster = $callfunction->findsemesterid($user['levelid'], $semtype);
+               $levelid = $semrepo->findOneById($user['semesterid']);
 
 
                 if ($user['specialityid'] == 'TCSIGLSITW') {
@@ -186,16 +188,16 @@ class DelibSemController extends AbstractController
                 } else {
                     $libspec = $user['specialityid'];
                 }
-                $urldelib = $this->generateUrl('siges_redirectdelibbylevel', array('levelid' => $user['levelid'], 'specid' => $user['specialityid'], 'idsem' => $semster, 'idses' => $idses));
+                $urldelib = $this->generateUrl('siges_redirectdelibbylevel', array('levelid' => $levelid->getLevel()->getId(), 'specid' => $user['specialityid'], 'idsem' => $user['semesterid'], 'idses' => $idses));
 
 
-                $liendelib = '<a href="' . $urldelib . '"  class="btn btn-danger btn-xs"> <i class="material-icons">school</i>  </a>';
+                $liendelib = '<a href="' . $urldelib . '"  class="btn btn-primary btn-xs"> <i class="material-icons">touch_app</i> Effectuer la Déliberation </a>';
 
 
                 $output['data'][] = [
-                    'levelid' => $user['levelid'],
+                    'levelid' => $levelid->getLevel()->getId(),
                     'specid' => $libspec,
-                    'idsem' => $semster,
+                    'idsem' => $user['semesterid'],
 
                     'delib' => $liendelib,
 
@@ -204,7 +206,6 @@ class DelibSemController extends AbstractController
             }
 
             return new Response(json_encode($output), 200, ['Content-Type' => 'application/json']);
-
         }
 
 
@@ -785,7 +786,7 @@ class DelibSemController extends AbstractController
 
 
 
-            $urlconsultmaster = $this->generateUrl('siges_viewaveragesem', array('idue' =>$ue->getId(), 'idecu' => $ecu->getId(), 'libue' => $ue->getUename(), 'libecu' => $ecu->getEcuname()));
+            $urlconsultmaster = $this->generateUrl('siges_viewaveragesemmaster', array('idue' =>$ue->getId(), 'idecu' => $ecu->getId(), 'libue' => $ue->getUename(), 'libecu' => $ecu->getEcuname()));
 
 
 
@@ -2984,7 +2985,7 @@ class DelibSemController extends AbstractController
         $sql = "SELECT picture,school_classeid,state FROM `student_speciality`  WHERE student_speciality.studentid=:idstud and student_speciality.specialityid=:idspec and student_speciality.acadyearid=:idanac and student_speciality.levelid=:idlev  ";
         $query = $em->createNativeQuery($sql, $rsm);
 
-        $query->setParameter('idanac', $this->get('session')->get('anacademiq'));
+        $query->setParameter('idanac', $this->get('session')->get('anacad'));
         $query->setParameter('idniv', $this->get('session')->get('idniv'));
 
         $query->setParameter('idspec', $idspecialite);
@@ -4367,7 +4368,7 @@ class DelibSemController extends AbstractController
                     $deliberationue->setSemesterid($semid);
                     $deliberationue->setSessionid($sessionid);
                     $deliberationue->setCreditvalided($callfunctiondelib->creditsvalide($idetudiant,$semid,$puev->getUeid(),$acadid,$specid,$sessionid));
-                    $deliberationue->setUeaverage($callfunctiondelib>ueaverage($idetudiant, $specid,$puev->getUeid(), $semid, $sessionid, $acadid));
+                    $deliberationue->setUeaverage($callfunctiondelib->ueaverage($idetudiant, $specid,$puev->getUeid(), $semid, $sessionid, $acadid));
 
                     $deliberationue->setDelibDate(new \Datetime());
                     $deliberationue->setDelibUser($userdelib);
@@ -4499,7 +4500,7 @@ class DelibSemController extends AbstractController
         $idsem=$this->get('session')->get('semiddelib');
 
 
-        $idanac=$this->get('session')->get('idanacademiq');;
+        $idanac=$this->get('session')->get('anacad');;
         $idue=$this->get('session')->get('ueconsultation') ;
         $idstudent=$this->get('session')->get('idetudiant') ;
 
@@ -4815,7 +4816,7 @@ class DelibSemController extends AbstractController
 
             $lienmoycc='<a style="color:#13b9ce; font-weight:bold"  target="_blank" href="/SIGES/public/delibarea/redirectaverageccedituniq?idue=' . $idue. '&amp;idecu=' . $ecu->getId(). '&amp;idetud=' . $idstudent. '&amp;moycc=' . $averagcc. '&amp;libue=' . $this->get('session')->get('libueconsultation'). '&amp;libecu=' . $ecu->getEcuname(). '&amp;catnote=MCC">'.$averagcc.'  </a>';
 
-            $lienmoyex='<a style="color:#13b9ce; font-weight:bold"  target="_blank" href="/SIGES/public/delibarea/delibarea/redirectnotexamedituniq?idue=' . $idue. '&amp;idecu=' . $ecu->getId(). '&amp;idetud=' . $idstudent. '&amp;moyex=' . $notexam. '&amp;libue=' . $this->get('session')->get('libueconsultation'). '&amp;libecu=' . $ecu->getEcuname(). '&amp;catnote=EXCC">'.$notexam.'  </a>';
+            $lienmoyex='<a style="color:#13b9ce; font-weight:bold"  target="_blank" href="/SIGES/public/delibarea/redirectnotexamedituniq?idue=' . $idue. '&amp;idecu=' . $ecu->getId(). '&amp;idetud=' . $idstudent. '&amp;moyex=' . $notexam. '&amp;libue=' . $this->get('session')->get('libueconsultation'). '&amp;libecu=' . $ecu->getEcuname(). '&amp;catnote=EXCC">'.$notexam.'  </a>';
 
             $lienmoycctp='<a style="color:#13b9ce; font-weight:bold"  target="_blank" href="/SIGES/public/delibarea/redirectaverageccedituniq?idue=' . $idue. '&amp;idecu=' . $ecu->getId(). '&amp;idetud=' . $idstudent. '&amp;moytp=' . $averagcctp. '&amp;libue=' . $this->get('session')->get('libueconsultation'). '&amp;libecu=' . $ecu->getEcuname(). '&amp;catnote=MTP">'.$averagcctp.'  </a>';
 
@@ -4882,7 +4883,7 @@ class DelibSemController extends AbstractController
 
 
 
-        $idanac=$this->get('session')->get('idanacademiq');
+        $idanac=$this->get('session')->get('anacad');
         $idspec=$this->get('session')->get('speciddelib');
         $idsem=$this->get('session')->get('semiddelib');
         $leconnecte=$this->getUser()->getUsername();
@@ -4920,7 +4921,7 @@ class DelibSemController extends AbstractController
 
 
 
-        $idanac=$this->get('session')->get('idanacademiq');
+        $idanac=$this->get('session')->get('anacad');
         $idspec=$this->get('session')->get('speciddelib');
         $idsem=$this->get('session')->get('semiddelib');
         $leconnecte=$this->getUser()->getUsername();
@@ -4940,8 +4941,6437 @@ class DelibSemController extends AbstractController
 
     public function edituniqnotexam()
     {
-        return  $this->render('@ESATICSiges/delibsem/edituniqnotexam.html.twig');
+        return  $this->render('delibsem/edituniqnotexam.html.twig');
     }
+
+
+
+
+    public function decisionjury()
+    {
+
+
+        return  $this->render('delibsem/decisionjury.html.twig');
+    }
+
+
+
+
+
+    public function tabledecisionjury(Request $request, MyFunctionDelib $callfunctiondelib, StudentSpecialityRepository $studspecrepo, StudentRepository $studrepo, HalfYearlyDelibRepository $halfyeardelibrep)
+    {
+
+
+        $idses=$this->get('session')->get('idsesdelib');
+
+        $idspecialite=$this->get('session')->get('speciddelib');
+        $idsem=$this->get('session')->get('semiddelib');
+
+
+        $idanac=$this->get('session')->get('anacad');
+        $idlevel = $this->get('session')->get('leveliddelib');
+
+
+
+        if($idses=='SE1') {
+            $length = $request->get('length');
+            $length = $length && ($length != -1) ? $length : 0;
+
+            $start = $request->get('start');
+            $start = $length ? ($start && ($start != -1) ? $start : 0) / $length : 0;
+
+            $delibsem = $request->get('delibsem');
+            $filters = [
+                'query' => @$delibsem['value']
+            ];
+
+            $users = $studspecrepo->studspec($idanac, $idsem, $idspecialite, $idses,
+                $filters, $start, $length
+            );
+
+            $output = array(
+                'data' => array(),
+                'recordsFiltered' => count($studspecrepo->studspec($idanac, $idsem, $idspecialite, $idses, $filters, 0, false)),
+                'recordsTotal' => count($studspecrepo->studspec($idanac, $idsem, $idspecialite, $idses, 0, false))
+            );
+
+            foreach ($users as $user) {
+
+
+                $specid = $idspecialite;
+                $semid = $idsem;
+                $sessionid = $idses;
+                $acadid = $idanac;
+
+
+                $idstudent = $user['studentid'];
+
+
+                $studentecu = $studrepo->findOneById($idstudent);
+
+
+                $em = $this->getDoctrine()->getManager();
+
+
+                $rsm = new ResultSetMapping();
+
+                $rsm->addScalarResult('picture', 'picture');
+                $rsm->addScalarResult('school_classeid', 'school_classeid');
+                $rsm->addScalarResult('state', 'state');
+
+                $sql = "SELECT picture,school_classeid,state FROM `student_speciality`  WHERE student_speciality.studentid=:idstud and student_speciality.specialityid=:idspec and student_speciality.acadyearid=:idanac and student_speciality.levelid=:idlev  ";
+                $query = $em->createNativeQuery($sql, $rsm);
+                $query->setParameter('idspec', $idspecialite);
+                $query->setParameter('idstud', $idstudent);
+
+                $query->setParameter('idanac', $idanac);
+                $query->setParameter('idlev', $idlevel);
+
+
+                $studpic = $query->getResult();
+
+
+                foreach ($studpic as $ne) {
+
+
+                    $studentpic = $ne['picture'];
+                    $classeid = $ne['school_classeid'];
+                    $state= $ne['state'];
+
+                }
+
+
+                $lientof = '
+                                                <img class="img" onclick="window.open(this.src,\'_blank\',\'toolbar=0, location=0, directories=0, status=0, scrollbars=0, resizable=0, copyhistory=0, menuBar=0, width=\'+this.width+\', height=\'+this.height);" src="/SIGES/public/images/photoetudiant/' . $studentpic . '" />
+                                          ';
+
+
+                $decijury = $halfyeardelibrep->findOneBy(array('studentid' => $idstudent, 'specialityid' => $specid, 'semesterid' => $semid, 'sessionid' => $sessionid, 'acadyearid' => $acadid));
+
+
+                $creditvalide = $decijury->getTcreditvalide();
+                $moyennesemestre = $decijury->getSemaverage();;
+                $decisionsem = $decijury->getDecision();
+
+                if ($decisionsem == 'ADMIS') {
+
+
+                    $decisionaffich = '<button class="btn btn-success btn-xs">
+                                        ADMIS
+                                    </button>';
+                } else {
+
+                    $decisionaffich = '<button class="btn btn-danger btn-xs">
+                                        REFUSE
+                                    </button>';
+                }
+
+
+                $output['data'][] = [
+                    'idetudiant' => $idstudent,
+                    'tof' => $lientof,
+                    'nom' => $studentecu->getFirstname(),
+                    'prenom' =>  $studentecu->getLastname(),
+                    'genre' =>  $studentecu->getKind(),
+                    'classe' => $classeid,
+                    'statut' => $state,
+
+
+                    'creditva' => $creditvalide,
+                    'moyennesem' => $moyennesemestre,
+                    'jury' => $decisionaffich
+
+
+                ];
+
+            }
+            return new Response(json_encode($output), 200, ['Content-Type' => 'application/json']);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        }else{
+
+            $length = $request->get('length');
+            $length = $length && ($length != -1) ? $length : 0;
+
+            $start = $request->get('start');
+            $start = $length ? ($start && ($start != -1) ? $start : 0) / $length : 0;
+
+            $delibsem = $request->get('delibsem');
+            $filters = [
+                'query' => @$delibsem['value']
+            ];
+
+            $users = $studspecrepo->studspecse2($idanac, $idsem, $idspecialite, $idses,
+                $filters, $start, $length
+            );
+
+            $output = array(
+                'data' => array(),
+                'recordsFiltered' => count($studspecrepo->studspecse2($idanac, $idsem, $idspecialite, $idses, $filters, 0, false)),
+                'recordsTotal' => count($studspecrepo->studspecse2($idanac, $idsem, $idspecialite, $idses, 0, false))
+            );
+
+            foreach ($users as $user) {
+
+
+                $specid = $idspecialite;
+                $semid = $idsem;
+                $sessionid = $idses;
+                $acadid = $idanac;
+
+
+                $idstudent = $user['studentid'];
+
+
+                $studentecu = $studrepo->findOneById($idstudent);
+
+
+                $em = $this->getDoctrine()->getManager();
+
+
+                $rsm = new ResultSetMapping();
+
+                $rsm->addScalarResult('picture', 'picture');
+                $rsm->addScalarResult('school_classeid', 'school_classeid');
+                $rsm->addScalarResult('state', 'state');
+
+                $sql = "SELECT picture,school_classeid,state FROM `student_speciality`  WHERE student_speciality.studentid=:idstud and student_speciality.specialityid=:idspec and student_speciality.acadyearid=:idanac and student_speciality.levelid=:idlev  ";
+                $query = $em->createNativeQuery($sql, $rsm);
+                $query->setParameter('idspec', $idspecialite);
+                $query->setParameter('idstud', $idstudent);
+
+                $query->setParameter('idanac', $idanac);
+                $query->setParameter('idlev', $idlevel);
+
+
+                $studpic = $query->getResult();
+
+
+                foreach ($studpic as $ne) {
+
+
+                    $studentpic = $ne['picture'];
+                    $classeid = $ne['school_classeid'];
+                    $state= $ne['state'];
+
+                }
+
+
+                $lientof = '
+                                                <img class="img" onclick="window.open(this.src,\'_blank\',\'toolbar=0, location=0, directories=0, status=0, scrollbars=0, resizable=0, copyhistory=0, menuBar=0, width=\'+this.width+\', height=\'+this.height);" src="/SIGES/public/images/photoetudiant/' . $studentpic . '" />
+                                          ';
+
+
+                $decijury = $halfyeardelibrep->findOneBy(array('studentid' => $idstudent, 'specialityid' => $specid, 'semesterid' => $semid, 'sessionid' => $sessionid, 'acadyearid' => $acadid));
+
+
+                $creditvalide = $decijury->getTcreditvalide();
+                $moyennesemestre = $decijury->getSemaverage();;
+                $decisionsem = $decijury->getDecision();
+
+                if ($decisionsem == 'ADMIS') {
+
+
+                    $decisionaffich = '<button class="btn btn-success btn-xs">
+                                        ADMIS
+                                    </button>';
+                } else {
+
+                    $decisionaffich = '<button class="btn btn-danger btn-xs">
+                                        REFUSE
+                                    </button>';
+                }
+
+
+                $output['data'][] = [
+                    'idetudiant' => $idstudent,
+                    'tof' => $lientof,
+                    'nom' => $studentecu->getFirstname(),
+                    'prenom' =>  $studentecu->getLastname(),
+                    'genre' =>  $studentecu->getKind(),
+                    'classe' => $classeid,
+                    'statut' => $state,
+
+
+                    'creditva' => $creditvalide,
+                    'moyennesem' => $moyennesemestre,
+                    'jury' => $decisionaffich
+
+
+                ];
+
+            }
+            return new Response(json_encode($output), 200, ['Content-Type' => 'application/json']);
+
+
+
+
+
+        }
+
+
+
+
+
+    }
+
+
+
+    public function delibannuel()
+    {
+
+
+        return $this->render('delibsem/delibannuel.html.twig', array('current_menu'=>'delibannuel'));
+    }
+
+
+
+    public function tabledelibannuel(Request $request, MyFunctionDelib $callfunctiondelib, StudentSpecialityRepository $stdspecrepo, StudentRepository $stdrepo, HalfYearlyDelibRepository $halfyearlydelib)
+    {
+
+
+
+
+
+        $idses=$this->get('session')->get('idsesdelib');
+
+        $idspecialite=$this->get('session')->get('speciddelib');
+        $idsem=$this->get('session')->get('semiddelib');
+
+
+        $idanac=$this->get('session')->get('anacad');
+        $idlevel = $this->get('session')->get('leveliddelib');
+
+
+        if($idses=='SE1'){
+            $length = $request->get('length');
+            $length = $length && ($length != -1) ? $length : 0;
+
+            $start = $request->get('start');
+            $start = $length ? ($start && ($start != -1) ? $start : 0) / $length : 0;
+
+            $delibsem = $request->get('delibsem');
+            $filters = [
+                'query' => @$delibsem['value']
+            ];
+
+            $users = $stdspecrepo->delibannuel($idanac, $idlevel, $idspecialite,
+                $filters, $start, $length
+            );
+
+            $output = array(
+                'data' => array(),
+                'recordsFiltered' => count($stdspecrepo->delibannuel($idanac, $idlevel, $idspecialite,  $filters, 0, false)),
+                'recordsTotal' => count($stdspecrepo->delibannuel($idanac, $idlevel, $idspecialite, 0, false))
+            );
+
+            foreach ($users as $user) {
+
+                $idetudiant = $user['studentid'];
+
+
+
+                $etudiant = $stdrepo->findOneById($idetudiant);
+
+
+
+
+                if($idlevel=='L1') {
+
+                    $em = $this->getDoctrine()->getManager();
+                    $rsm = new ResultSetMapping();
+
+                    $rsm->addScalarResult('acadyearid', 'acadyearid');
+
+
+
+                    $sql = "SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM1'  order by acadyearid DESC  LIMIT 1  ";
+                    $query = $em->createNativeQuery($sql, $rsm);
+
+
+
+
+                    $query->setParameter('idetudiant', $idetudiant);
+                    $query->setParameter('idspecialite', $idspecialite);
+                    $anacetud = $query->getResult();
+                    foreach ($anacetud as $ma){
+                        $anacsem1=$ma['acadyearid'];
+                    }
+
+
+
+
+
+
+
+
+
+
+
+                    $decijury = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM1', 'sessionid' => 'SE2', 'acadyearid' => $anacsem1));
+
+
+
+
+
+
+                    if(!$decijury){
+
+
+                        $decijuryse1 = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM1', 'sessionid' => 'SE1', 'acadyearid' => $anacsem1));
+
+                        if($decijuryse1){
+                            $creditvalide = $decijuryse1->getTcreditvalide();
+                            $moyennesemestre = $decijuryse1->getSemaverage();
+                            $decisionsem = $decijuryse1->getDecision();
+                        }else{
+                            $creditvalide=0;
+                            $moyennesemestre=0;
+                            $decisionsem="REFUSE";
+                        }
+
+
+
+
+
+
+
+                    }else{  $creditvalide = $decijury->getTcreditvalide();
+                        $moyennesemestre = $decijury->getSemaverage();
+                        $decisionsem = $decijury->getDecision();}
+
+
+
+                    $em = $this->getDoctrine()->getManager();
+                    $rsm = new ResultSetMapping();
+
+                    $rsm->addScalarResult('acadyearid', 'acadyearid');
+
+
+
+                    $sql = "SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM2'  order by acadyearid DESC  LIMIT 1  ";
+                    $query = $em->createNativeQuery($sql, $rsm);
+
+
+
+
+                    $query->setParameter('idetudiant', $idetudiant);
+                    $query->setParameter('idspecialite', $idspecialite);
+                    $anacetudse = $query->getResult();
+                    foreach ($anacetudse as $ma){
+                        $anacsem2=$ma['acadyearid'];
+                    }
+
+
+
+
+
+
+
+                    $decijurys = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM2', 'sessionid' => 'SE2', 'acadyearid' => $anacsem2));
+
+
+                    if(!$decijurys){
+
+
+                        $decijurysse1 = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM2', 'sessionid' => 'SE1', 'acadyearid' => $anacsem2
+
+                        ));
+                        if($decijurysse1){
+                            $creditvalide2= $decijurysse1->getTcreditvalide();
+                            $moyennesemestre2 = $decijurysse1->getSemaverage();
+                            $decisionsem2= $decijurysse1->getDecision();
+
+                        }else{ $creditvalide2=0;
+                            $moyennesemestre2=0;
+                            $decisionsem2="REFUSE";}
+
+                    }else{
+                        $creditvalide2= $decijurys->getTcreditvalide();
+                        $moyennesemestre2 = $decijurys->getSemaverage();
+                        $decisionsem2= $decijurys->getDecision();
+                    }
+
+
+                    $creditan = $creditvalide2 + $creditvalide;
+                    $mgan = number_format((($moyennesemestre + $moyennesemestre2) / 2), 2);
+
+
+                    if ($decisionsem2 == 'ADMIS' && $decisionsem == 'ADMIS') {
+
+
+                        $decian = 'ADMIS';
+                    } else {
+
+                        $decian = 'REFUSE';
+                    }
+
+
+                }
+
+                if($idlevel=='L3') {
+
+                    $em = $this->getDoctrine()->getManager();
+                    $rsm = new ResultSetMapping();
+
+                    $rsm->addScalarResult('acadyearid', 'acadyearid');
+
+
+
+                    $sql = "SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM5'  order by acadyearid DESC  LIMIT 1  ";
+                    $query = $em->createNativeQuery($sql, $rsm);
+
+
+
+
+                    $query->setParameter('idetudiant', $idetudiant);
+                    $query->setParameter('idspecialite', $idspecialite);
+                    $anacetud = $query->getResult();
+                    foreach ($anacetud as $ma){
+                        $anacsem1=$ma['acadyearid'];
+                    }
+
+
+
+
+
+
+
+
+
+
+
+                    $decijury = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM5', 'sessionid' => 'SE2', 'acadyearid' => $anacsem1));
+
+
+
+
+
+
+                    if(!$decijury){
+
+
+                        $decijuryse1 = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM5', 'sessionid' => 'SE1', 'acadyearid' => $anacsem1));
+
+                        if($decijuryse1){
+                            $creditvalide = $decijuryse1->getTcreditvalide();
+                            $moyennesemestre = $decijuryse1->getSemaverage();
+                            $decisionsem = $decijuryse1->getDecision();
+                        }else{
+                            $creditvalide=0;
+                            $moyennesemestre=0;
+                            $decisionsem="REFUSE";
+                        }
+
+
+
+
+
+
+
+                    }else{  $creditvalide = $decijury->getTcreditvalide();
+                        $moyennesemestre = $decijury->getSemaverage();
+                        $decisionsem = $decijury->getDecision();}
+
+
+
+                    $em = $this->getDoctrine()->getManager();
+                    $rsm = new ResultSetMapping();
+
+                    $rsm->addScalarResult('acadyearid', 'acadyearid');
+
+
+
+                    $sql = "SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM6'  order by acadyearid DESC  LIMIT 1  ";
+                    $query = $em->createNativeQuery($sql, $rsm);
+
+
+
+
+                    $query->setParameter('idetudiant', $idetudiant);
+                    $query->setParameter('idspecialite', $idspecialite);
+                    $anacetudse = $query->getResult();
+                    foreach ($anacetudse as $ma){
+                        $anacsem2=$ma['acadyearid'];
+                    }
+
+
+
+
+
+
+
+                    $decijurys = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM6', 'sessionid' => 'SE2', 'acadyearid' => $anacsem2));
+
+
+                    if(!$decijurys){
+
+
+                        $decijurysse1 = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM6', 'sessionid' => 'SE1', 'acadyearid' => $anacsem2
+
+                        ));
+                        if($decijurysse1){
+                            $creditvalide2= $decijurysse1->getTcreditvalide();
+                            $moyennesemestre2 = $decijurysse1->getSemaverage();
+                            $decisionsem2= $decijurysse1->getDecision();
+
+                        }else{ $creditvalide2=0;
+                            $moyennesemestre2=0;
+                            $decisionsem2="REFUSE";}
+
+                    }else{
+                        $creditvalide2= $decijurys->getTcreditvalide();
+                        $moyennesemestre2 = $decijurys->getSemaverage();
+                        $decisionsem2= $decijurys->getDecision();
+                    }
+
+
+                    $creditan = $creditvalide2 + $creditvalide;
+                    $mgan = number_format((($moyennesemestre + $moyennesemestre2) / 2), 2);
+
+
+                    if ($decisionsem2 == 'ADMIS' && $decisionsem == 'ADMIS') {
+
+
+                        $decian = 'ADMIS';
+                    } else {
+
+                        $decian = 'REFUSE';
+                    }
+
+
+                }
+
+
+                if($idlevel=='L2') {
+
+                    $em = $this->getDoctrine()->getManager();
+                    $rsm = new ResultSetMapping();
+
+                    $rsm->addScalarResult('acadyearid', 'acadyearid');
+
+                    $sql = "SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM3'  order by acadyearid DESC  LIMIT 1  ";
+                    $query = $em->createNativeQuery($sql, $rsm);
+
+                    $query->setParameter('idetudiant', $idetudiant);
+                    $query->setParameter('idspecialite', $idspecialite);
+                    $anacetud = $query->getResult();
+                    foreach ($anacetud as $ma){
+                        $anacsem1=$ma['acadyearid'];
+                    }
+
+
+
+
+
+
+
+
+
+
+                    $decijury = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM3', 'sessionid' => 'SE2', 'acadyearid' => $anacsem1));
+
+
+
+
+
+
+                    if(!$decijury){
+
+
+                        $decijuryse1 = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM3', 'sessionid' => 'SE1', 'acadyearid' => $anacsem1));
+
+                        if($decijuryse1){
+                            $creditvalide = $decijuryse1->getTcreditvalide();
+                            $moyennesemestre = $decijuryse1->getSemaverage();
+                            $decisionsem = $decijuryse1->getDecision();
+                        }else{
+                            $creditvalide=0;
+                            $moyennesemestre=0;
+                            $decisionsem="REFUSE";
+                        }
+
+
+
+
+
+
+
+                    }else{  $creditvalide = $decijury->getTcreditvalide();
+                        $moyennesemestre = $decijury->getSemaverage();
+                        $decisionsem = $decijury->getDecision();}
+
+
+
+                    $em = $this->getDoctrine()->getManager();
+                    $rsm = new ResultSetMapping();
+
+                    $rsm->addScalarResult('acadyearid', 'acadyearid');
+
+
+
+                    $sql = "SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM4'  order by acadyearid DESC  LIMIT 1  ";
+                    $query = $em->createNativeQuery($sql, $rsm);
+
+
+
+
+                    $query->setParameter('idetudiant', $idetudiant);
+                    $query->setParameter('idspecialite', $idspecialite);
+                    $anacetudse = $query->getResult();
+                    foreach ($anacetudse as $ma){
+                        $anacsem2=$ma['acadyearid'];
+                    }
+
+
+
+
+
+
+
+                    $decijurys = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM4', 'sessionid' => 'SE2', 'acadyearid' => $anacsem2));
+
+
+                    if(!$decijurys){
+
+
+                        $decijurysse1 = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM4', 'sessionid' => 'SE1', 'acadyearid' => $anacsem2
+
+                        ));
+                        if($decijurysse1){
+                            $creditvalide2= $decijurysse1->getTcreditvalide();
+                            $moyennesemestre2 = $decijurysse1->getSemaverage();
+                            $decisionsem2= $decijurysse1->getDecision();
+
+                        }else{ $creditvalide2=0;
+                            $moyennesemestre2=0;
+                            $decisionsem2="REFUSE";}
+
+                    }else{
+                        $creditvalide2= $decijurys->getTcreditvalide();
+                        $moyennesemestre2 = $decijurys->getSemaverage();
+                        $decisionsem2= $decijurys->getDecision();
+                    }
+
+
+                    $creditan = $creditvalide2 + $creditvalide;
+                    $mgan = number_format((($moyennesemestre + $moyennesemestre2) / 2), 2);
+
+
+                    if ($decisionsem2 == 'ADMIS' && $decisionsem == 'ADMIS') {
+
+
+                        $decian = 'ADMIS';
+                    } else {
+
+                        $decian = 'REFUSE';
+                    }
+
+
+                }
+
+                if($idlevel=='M1') {
+
+
+
+
+
+
+                    if($idspecialite=='RTEL' || $idspecialite=='MBDS' || $idspecialite=='MDSI' )
+                    {
+
+
+                        $em = $this->getDoctrine()->getManager();
+                        $rsm = new ResultSetMapping();
+
+                        $rsm->addScalarResult('acadyearid', 'acadyearid');
+
+
+
+                        $sql = "SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1  ";
+                        $query = $em->createNativeQuery($sql, $rsm);
+
+
+
+
+                        $query->setParameter('idetudiant', $idetudiant);
+                        $query->setParameter('idspecialite', $idspecialite);
+                        $anacetud = $query->getResult();
+                        foreach ($anacetud as $ma){
+                            $anacsem1=$ma['acadyearid'];
+                        }
+
+
+
+
+
+
+
+
+
+                        $decijury = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM7', 'sessionid' => 'SE2', 'acadyearid' => $anacsem1));
+
+
+
+
+
+
+                        if(!$decijury){
+
+
+                            $decijuryse1 = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM7', 'sessionid' => 'SE1', 'acadyearid' => $anacsem1));
+
+                            if($decijuryse1){
+                                $creditvalide = $decijuryse1->getTcreditvalide();
+                                $moyennesemestre = $decijuryse1->getSemaverage();
+                                $decisionsem = $decijuryse1->getDecision();
+                            }else{
+                                $creditvalide=0;
+                                $moyennesemestre=0;
+                                $decisionsem="REFUSE";
+                            }
+
+
+
+
+
+
+
+                        }
+
+
+
+
+
+
+
+                        else{  $creditvalide = $decijury->getTcreditvalide();
+                            $moyennesemestre = $decijury->getSemaverage();
+                            $decisionsem = $decijury->getDecision();}
+
+
+
+                        $em = $this->getDoctrine()->getManager();
+                        $rsm = new ResultSetMapping();
+
+                        $rsm->addScalarResult('acadyearid', 'acadyearid');
+
+
+
+                        $sql = "SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1  ";
+                        $query = $em->createNativeQuery($sql, $rsm);
+
+
+
+
+                        $query->setParameter('idetudiant', $idetudiant);
+                        $query->setParameter('idspecialite', $idspecialite);
+                        $anacetudse = $query->getResult();
+                        foreach ($anacetudse as $ma){
+                            $anacsem2=$ma['acadyearid'];
+                        }
+
+
+
+
+
+
+
+                        $decijurys = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM8', 'sessionid' => 'SE2', 'acadyearid' => $anacsem2));
+
+
+                        if(!$decijurys){
+
+
+                            $decijurysse1 = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM8', 'sessionid' => 'SE1', 'acadyearid' => $anacsem2
+
+                            ));
+                            if($decijurysse1){
+                                $creditvalide2= $decijurysse1->getTcreditvalide();
+                                $moyennesemestre2 = $decijurysse1->getSemaverage();
+                                $decisionsem2= $decijurysse1->getDecision();
+
+                            }else{ $creditvalide2=0;
+                                $moyennesemestre2=0;
+                                $decisionsem2="REFUSE";}
+
+                        }else{
+                            $creditvalide2= $decijurys->getTcreditvalide();
+                            $moyennesemestre2 = $decijurys->getSemaverage();
+                            $decisionsem2= $decijurys->getDecision();
+                        }
+
+
+                        $creditan = $creditvalide2 + $creditvalide;
+                        $mgan = number_format((($moyennesemestre + $moyennesemestre2) / 2), 2);
+
+
+                        if ($decisionsem2 == 'ADMIS' && $decisionsem == 'ADMIS') {
+
+
+                            $decian = 'ADMIS';
+                        } else {
+
+                            $decian = 'REFUSE';
+                        }
+                    }else{
+
+
+
+                        $em = $this->getDoctrine()->getManager();
+                        $rsm = new ResultSetMapping();
+
+                        $rsm->addScalarResult('acadyearid', 'acadyearid');
+
+
+
+                        $sql = "SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid='TCSIGLSITW' and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1  ";
+                        $query = $em->createNativeQuery($sql, $rsm);
+
+
+
+
+                        $query->setParameter('idetudiant', $idetudiant);
+
+                        $anacetud = $query->getResult();
+                        foreach ($anacetud as $ma){
+                            $anacsem1=$ma['acadyearid'];
+                        }
+
+
+
+
+
+
+                        $decijury = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => 'TCSIGLSITW', 'semesterid' => 'SEM7', 'sessionid' => 'SE2', 'acadyearid' => $anacsem1));
+
+
+
+
+
+
+                        if(!$decijury){
+
+
+                            $decijuryse1 = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => 'TCSIGLSITW', 'semesterid' => 'SEM7', 'sessionid' => 'SE1', 'acadyearid' => $anacsem1));
+
+                            if($decijuryse1){
+                                $creditvalide = $decijuryse1->getTcreditvalide();
+                                $moyennesemestre = $decijuryse1->getSemaverage();
+                                $decisionsem = $decijuryse1->getDecision();
+                            }else{
+                                $creditvalide=0;
+                                $moyennesemestre=0;
+                                $decisionsem="REFUSE";
+                            }
+
+
+
+
+
+
+
+                        }
+
+
+
+
+
+
+
+                        else{  $creditvalide = $decijury->getTcreditvalide();
+                            $moyennesemestre = $decijury->getSemaverage();
+                            $decisionsem = $decijury->getDecision();}
+
+
+
+                        $em = $this->getDoctrine()->getManager();
+                        $rsm = new ResultSetMapping();
+
+                        $rsm->addScalarResult('acadyearid', 'acadyearid');
+
+
+
+                        $sql = "SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1  ";
+                        $query = $em->createNativeQuery($sql, $rsm);
+
+
+
+
+                        $query->setParameter('idetudiant', $idetudiant);
+                        $query->setParameter('idspecialite', $idspecialite);
+                        $anacetudse = $query->getResult();
+                        foreach ($anacetudse as $ma){
+                            $anacsem2=$ma['acadyearid'];
+                        }
+
+
+
+
+
+
+
+                        $decijurys = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM8', 'sessionid' => 'SE2', 'acadyearid' => $anacsem2));
+
+
+                        if(!$decijurys){
+
+
+                            $decijurysse1 = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM8', 'sessionid' => 'SE1', 'acadyearid' => $anacsem2
+
+                            ));
+                            if($decijurysse1){
+                                $creditvalide2= $decijurysse1->getTcreditvalide();
+                                $moyennesemestre2 = $decijurysse1->getSemaverage();
+                                $decisionsem2= $decijurysse1->getDecision();
+
+                            }else{ $creditvalide2=0;
+                                $moyennesemestre2=0;
+                                $decisionsem2="REFUSE";}
+
+                        }else{
+                            $creditvalide2= $decijurys->getTcreditvalide();
+                            $moyennesemestre2 = $decijurys->getSemaverage();
+                            $decisionsem2= $decijurys->getDecision();
+                        }
+
+
+                        $creditan = $creditvalide2 + $creditvalide;
+                        $mgan = number_format((($moyennesemestre + $moyennesemestre2) / 2), 2);
+
+
+                        if ($decisionsem2 == 'ADMIS' && $decisionsem == 'ADMIS') {
+
+
+                            $decian = 'ADMIS';
+                        } else {
+
+                            $decian = 'REFUSE';
+                        }
+
+
+
+                    }
+
+
+
+
+
+                }
+
+
+                if($idlevel=='M2') {
+
+                    $em = $this->getDoctrine()->getManager();
+                    $rsm = new ResultSetMapping();
+
+                    $rsm->addScalarResult('acadyearid', 'acadyearid');
+
+
+
+                    $sql = "SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM9'  order by acadyearid DESC  LIMIT 1  ";
+                    $query = $em->createNativeQuery($sql, $rsm);
+
+
+
+
+                    $query->setParameter('idetudiant', $idetudiant);
+                    $query->setParameter('idspecialite', $idspecialite);
+                    $anacetud = $query->getResult();
+                    foreach ($anacetud as $ma){
+                        $anacsem1=$ma['acadyearid'];
+                    }
+
+
+
+
+
+
+
+
+
+
+
+                    $decijury = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM9', 'sessionid' => 'SE2', 'acadyearid' => $anacsem1));
+
+
+
+
+
+
+                    if(!$decijury){
+
+
+                        $decijuryse1 = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM9', 'sessionid' => 'SE1', 'acadyearid' => $anacsem1));
+
+                        if($decijuryse1){
+                            $creditvalide = $decijuryse1->getTcreditvalide();
+                            $moyennesemestre = $decijuryse1->getSemaverage();
+                            $decisionsem = $decijuryse1->getDecision();
+                        }else{
+                            $creditvalide=0;
+                            $moyennesemestre=0;
+                            $decisionsem="REFUSE";
+                        }
+
+
+
+
+
+
+
+                    }else{  $creditvalide = $decijury->getTcreditvalide();
+                        $moyennesemestre = $decijury->getSemaverage();
+                        $decisionsem = $decijury->getDecision();}
+
+
+
+                    $em = $this->getDoctrine()->getManager();
+                    $rsm = new ResultSetMapping();
+
+                    $rsm->addScalarResult('acadyearid', 'acadyearid');
+
+
+
+                    $sql = "SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM10'  order by acadyearid DESC  LIMIT 1  ";
+                    $query = $em->createNativeQuery($sql, $rsm);
+
+
+
+
+                    $query->setParameter('idetudiant', $idetudiant);
+                    $query->setParameter('idspecialite', $idspecialite);
+                    $anacetudse = $query->getResult();
+                    foreach ($anacetudse as $ma){
+                        $anacsem2=$ma['acadyearid'];
+                    }
+
+
+
+
+
+
+
+                    $decijurys = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM10', 'sessionid' => 'SE2', 'acadyearid' => $anacsem2));
+
+
+                    if(!$decijurys){
+
+
+                        $decijurysse1 = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM10', 'sessionid' => 'SE1', 'acadyearid' => $anacsem2
+
+                        ));
+                        if($decijurysse1){
+                            $creditvalide2= $decijurysse1->getTcreditvalide();
+                            $moyennesemestre2 = $decijurysse1->getSemaverage();
+                            $decisionsem2= $decijurysse1->getDecision();
+
+                        }else{ $creditvalide2=0;
+                            $moyennesemestre2=0;
+                            $decisionsem2="REFUSE";}
+
+                    }else{
+                        $creditvalide2= $decijurys->getTcreditvalide();
+                        $moyennesemestre2 = $decijurys->getSemaverage();
+                        $decisionsem2= $decijurys->getDecision();
+                    }
+
+
+                    $creditan = $creditvalide2 + $creditvalide;
+                    $mgan = number_format((($moyennesemestre + $moyennesemestre2) / 2), 2);
+
+
+                    if ($decisionsem2 == 'ADMIS' && $decisionsem == 'ADMIS') {
+
+
+                        $decian = 'ADMIS';
+                    } else {
+
+                        $decian = 'REFUSE';
+                    }
+
+
+                }
+
+
+
+                $output['data'][] = [
+                    'idetudiant' => $idetudiant,
+                    'nom' => $etudiant->getFirstname(),
+                    'prenom' => $etudiant->getLastname(),
+                    'genre' => $etudiant->getKind(),
+
+
+                    'moyennesem' => $moyennesemestre,
+                    'creditva' => $creditvalide,
+
+                    'jury' => $decisionsem,
+                    'moyennesem2' => $moyennesemestre2,
+                    'creditva2' => $creditvalide2,
+
+                    'jury2' => $decisionsem2,
+
+                    'moyenneseman' => $mgan,
+                    'creditvaan' => $creditan,
+
+                    'juryan' => $decian
+
+
+
+                ];
+
+
+
+
+
+
+            }
+
+            return new Response(json_encode($output), 200, ['Content-Type' => 'application/json']);}
+
+        else{
+
+            $length = $request->get('length');
+            $length = $length && ($length != -1) ? $length : 0;
+
+            $start = $request->get('start');
+            $start = $length ? ($start && ($start != -1) ? $start : 0) / $length : 0;
+
+            $delibsem = $request->get('delibsem');
+            $filters = [
+                'query' => @$delibsem['value']
+            ];
+
+            $users = $stdspecrepo->delibannuelse2($idanac, $idlevel, $idspecialite,$idsem,
+                $filters, $start, $length
+            );
+
+            $output = array(
+                'data' => array(),
+                'recordsFiltered' => count($stdspecrepo->delibannuelse2($idanac, $idlevel, $idspecialite,$idsem , $filters, 0, false)),
+                'recordsTotal' => count($stdspecrepo->delibannuelse2($idanac, $idlevel, $idspecialite,$idsem ,0, false))
+            );
+
+            foreach ($users as $user) {
+
+                $idetudiant = $user['studentid'];
+
+
+
+                $etudiant = $stdrepo->findOneById($idetudiant);
+
+
+
+
+                if($idlevel=='L1') {
+
+                    $em = $this->getDoctrine()->getManager();
+                    $rsm = new ResultSetMapping();
+
+                    $rsm->addScalarResult('acadyearid', 'acadyearid');
+
+
+
+                    $sql = "SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM1'  order by acadyearid DESC  LIMIT 1  ";
+                    $query = $em->createNativeQuery($sql, $rsm);
+
+
+
+
+                    $query->setParameter('idetudiant', $idetudiant);
+                    $query->setParameter('idspecialite', $idspecialite);
+                    $anacetud = $query->getResult();
+                    foreach ($anacetud as $ma){
+                        $anacsem1=$ma['acadyearid'];
+                    }
+
+
+
+
+
+
+
+
+
+
+
+                    $decijury = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM1', 'sessionid' => 'SE2', 'acadyearid' => $anacsem1));
+
+
+
+
+
+
+                    if(!$decijury){
+
+
+                        $decijuryse1 = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM1', 'sessionid' => 'SE1', 'acadyearid' => $anacsem1));
+
+                        if($decijuryse1){
+                            $creditvalide = $decijuryse1->getTcreditvalide();
+                            $moyennesemestre = $decijuryse1->getSemaverage();
+                            $decisionsem = $decijuryse1->getDecision();
+                        }else{
+                            $creditvalide=0;
+                            $moyennesemestre=0;
+                            $decisionsem="REFUSE";
+                        }
+
+
+
+
+
+
+
+                    }else{  $creditvalide = $decijury->getTcreditvalide();
+                        $moyennesemestre = $decijury->getSemaverage();
+                        $decisionsem = $decijury->getDecision();}
+
+
+
+                    $em = $this->getDoctrine()->getManager();
+                    $rsm = new ResultSetMapping();
+
+                    $rsm->addScalarResult('acadyearid', 'acadyearid');
+
+
+
+                    $sql = "SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM2'  order by acadyearid DESC  LIMIT 1  ";
+                    $query = $em->createNativeQuery($sql, $rsm);
+
+
+
+
+                    $query->setParameter('idetudiant', $idetudiant);
+                    $query->setParameter('idspecialite', $idspecialite);
+                    $anacetudse = $query->getResult();
+                    foreach ($anacetudse as $ma){
+                        $anacsem2=$ma['acadyearid'];
+                    }
+
+
+
+
+
+
+
+                    $decijurys = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM2', 'sessionid' => 'SE2', 'acadyearid' => $anacsem2));
+
+
+                    if(!$decijurys){
+
+
+                        $decijurysse1 = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM2', 'sessionid' => 'SE1', 'acadyearid' => $anacsem2
+
+                        ));
+                        if($decijurysse1){
+                            $creditvalide2= $decijurysse1->getTcreditvalide();
+                            $moyennesemestre2 = $decijurysse1->getSemaverage();
+                            $decisionsem2= $decijurysse1->getDecision();
+
+                        }else{ $creditvalide2=0;
+                            $moyennesemestre2=0;
+                            $decisionsem2="REFUSE";}
+
+                    }else{
+                        $creditvalide2= $decijurys->getTcreditvalide();
+                        $moyennesemestre2 = $decijurys->getSemaverage();
+                        $decisionsem2= $decijurys->getDecision();
+                    }
+
+
+                    $creditan = $creditvalide2 + $creditvalide;
+                    $mgan = number_format((($moyennesemestre + $moyennesemestre2) / 2), 2);
+
+
+                    if ($decisionsem2 == 'ADMIS' && $decisionsem == 'ADMIS') {
+
+
+                        $decian = 'ADMIS';
+                    } else {
+
+                        $decian = 'REFUSE';
+                    }
+
+
+                }
+
+                if($idlevel=='L3') {
+
+                    $em = $this->getDoctrine()->getManager();
+                    $rsm = new ResultSetMapping();
+
+                    $rsm->addScalarResult('acadyearid', 'acadyearid');
+
+
+
+                    $sql = "SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM5'  order by acadyearid DESC  LIMIT 1  ";
+                    $query = $em->createNativeQuery($sql, $rsm);
+
+
+
+
+                    $query->setParameter('idetudiant', $idetudiant);
+                    $query->setParameter('idspecialite', $idspecialite);
+                    $anacetud = $query->getResult();
+                    foreach ($anacetud as $ma){
+                        $anacsem1=$ma['acadyearid'];
+                    }
+
+
+
+
+
+
+
+
+
+
+
+                    $decijury = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM5', 'sessionid' => 'SE2', 'acadyearid' => $anacsem1));
+
+
+
+
+
+
+                    if(!$decijury){
+
+
+                        $decijuryse1 = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM5', 'sessionid' => 'SE1', 'acadyearid' => $anacsem1));
+
+                        if($decijuryse1){
+                            $creditvalide = $decijuryse1->getTcreditvalide();
+                            $moyennesemestre = $decijuryse1->getSemaverage();
+                            $decisionsem = $decijuryse1->getDecision();
+                        }else{
+                            $creditvalide=0;
+                            $moyennesemestre=0;
+                            $decisionsem="REFUSE";
+                        }
+
+
+
+
+
+
+
+                    }else{  $creditvalide = $decijury->getTcreditvalide();
+                        $moyennesemestre = $decijury->getSemaverage();
+                        $decisionsem = $decijury->getDecision();}
+
+
+
+                    $em = $this->getDoctrine()->getManager();
+                    $rsm = new ResultSetMapping();
+
+                    $rsm->addScalarResult('acadyearid', 'acadyearid');
+
+
+
+                    $sql = "SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM6'  order by acadyearid DESC  LIMIT 1  ";
+                    $query = $em->createNativeQuery($sql, $rsm);
+
+
+
+
+                    $query->setParameter('idetudiant', $idetudiant);
+                    $query->setParameter('idspecialite', $idspecialite);
+                    $anacetudse = $query->getResult();
+                    foreach ($anacetudse as $ma){
+                        $anacsem2=$ma['acadyearid'];
+                    }
+
+
+
+
+
+
+
+                    $decijurys = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM6', 'sessionid' => 'SE2', 'acadyearid' => $anacsem2));
+
+
+                    if(!$decijurys){
+
+
+                        $decijurysse1 = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM6', 'sessionid' => 'SE1', 'acadyearid' => $anacsem2
+
+                        ));
+                        if($decijurysse1){
+                            $creditvalide2= $decijurysse1->getTcreditvalide();
+                            $moyennesemestre2 = $decijurysse1->getSemaverage();
+                            $decisionsem2= $decijurysse1->getDecision();
+
+                        }else{ $creditvalide2=0;
+                            $moyennesemestre2=0;
+                            $decisionsem2="REFUSE";}
+
+                    }else{
+                        $creditvalide2= $decijurys->getTcreditvalide();
+                        $moyennesemestre2 = $decijurys->getSemaverage();
+                        $decisionsem2= $decijurys->getDecision();
+                    }
+
+
+                    $creditan = $creditvalide2 + $creditvalide;
+                    $mgan = number_format((($moyennesemestre + $moyennesemestre2) / 2), 2);
+
+
+                    if ($decisionsem2 == 'ADMIS' && $decisionsem == 'ADMIS') {
+
+
+                        $decian = 'ADMIS';
+                    } else {
+
+                        $decian = 'REFUSE';
+                    }
+
+
+                }
+
+
+                if($idlevel=='L2') {
+
+                    $em = $this->getDoctrine()->getManager();
+                    $rsm = new ResultSetMapping();
+
+                    $rsm->addScalarResult('acadyearid', 'acadyearid');
+
+
+
+                    $sql = "SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM3'  order by acadyearid DESC  LIMIT 1  ";
+                    $query = $em->createNativeQuery($sql, $rsm);
+
+
+
+
+                    $query->setParameter('idetudiant', $idetudiant);
+                    $query->setParameter('idspecialite', $idspecialite);
+                    $anacetud = $query->getResult();
+                    foreach ($anacetud as $ma){
+                        $anacsem1=$ma['acadyearid'];
+                    }
+
+
+
+
+
+
+
+
+
+
+                    $decijury = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM3', 'sessionid' => 'SE2', 'acadyearid' => $anacsem1));
+
+
+
+
+
+
+                    if(!$decijury){
+
+
+                        $decijuryse1 = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM3', 'sessionid' => 'SE1', 'acadyearid' => $anacsem1));
+
+                        if($decijuryse1){
+                            $creditvalide = $decijuryse1->getTcreditvalide();
+                            $moyennesemestre = $decijuryse1->getSemaverage();
+                            $decisionsem = $decijuryse1->getDecision();
+                        }else{
+                            $creditvalide=0;
+                            $moyennesemestre=0;
+                            $decisionsem="REFUSE";
+                        }
+
+
+
+
+
+
+
+                    }else{  $creditvalide = $decijury->getTcreditvalide();
+                        $moyennesemestre = $decijury->getSemaverage();
+                        $decisionsem = $decijury->getDecision();}
+
+
+
+                    $em = $this->getDoctrine()->getManager();
+                    $rsm = new ResultSetMapping();
+
+                    $rsm->addScalarResult('acadyearid', 'acadyearid');
+
+
+
+                    $sql = "SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM4'  order by acadyearid DESC  LIMIT 1  ";
+                    $query = $em->createNativeQuery($sql, $rsm);
+
+
+
+
+                    $query->setParameter('idetudiant', $idetudiant);
+                    $query->setParameter('idspecialite', $idspecialite);
+                    $anacetudse = $query->getResult();
+                    foreach ($anacetudse as $ma){
+                        $anacsem2=$ma['acadyearid'];
+                    }
+
+
+
+
+
+
+
+                    $decijurys = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM4', 'sessionid' => 'SE2', 'acadyearid' => $anacsem2));
+
+
+                    if(!$decijurys){
+
+
+                        $decijurysse1 = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM4', 'sessionid' => 'SE1', 'acadyearid' => $anacsem2
+
+                        ));
+                        if($decijurysse1){
+                            $creditvalide2= $decijurysse1->getTcreditvalide();
+                            $moyennesemestre2 = $decijurysse1->getSemaverage();
+                            $decisionsem2= $decijurysse1->getDecision();
+
+                        }else{ $creditvalide2=0;
+                            $moyennesemestre2=0;
+                            $decisionsem2="REFUSE";}
+
+                    }else{
+                        $creditvalide2= $decijurys->getTcreditvalide();
+                        $moyennesemestre2 = $decijurys->getSemaverage();
+                        $decisionsem2= $decijurys->getDecision();
+                    }
+
+
+                    $creditan = $creditvalide2 + $creditvalide;
+                    $mgan = number_format((($moyennesemestre + $moyennesemestre2) / 2), 2);
+
+
+                    if ($decisionsem2 == 'ADMIS' && $decisionsem == 'ADMIS') {
+
+
+                        $decian = 'ADMIS';
+                    } else {
+
+                        $decian = 'REFUSE';
+                    }
+
+
+                }
+
+                if($idlevel=='M1') {
+
+
+
+
+
+
+                    if($idspecialite=='RTEL' || $idspecialite=='MBDS' || $idspecialite=='MDSI' )
+                    {
+
+
+                        $em = $this->getDoctrine()->getManager();
+                        $rsm = new ResultSetMapping();
+
+                        $rsm->addScalarResult('acadyearid', 'acadyearid');
+
+
+
+                        $sql = "SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1  ";
+                        $query = $em->createNativeQuery($sql, $rsm);
+
+
+
+
+                        $query->setParameter('idetudiant', $idetudiant);
+                        $query->setParameter('idspecialite', $idspecialite);
+                        $anacetud = $query->getResult();
+                        foreach ($anacetud as $ma){
+                            $anacsem1=$ma['acadyearid'];
+                        }
+
+
+
+
+
+
+
+
+
+                        $decijury = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM7', 'sessionid' => 'SE2', 'acadyearid' => $anacsem1));
+
+
+
+
+
+
+                        if(!$decijury){
+
+
+                            $decijuryse1 = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM7', 'sessionid' => 'SE1', 'acadyearid' => $anacsem1));
+
+                            if($decijuryse1){
+                                $creditvalide = $decijuryse1->getTcreditvalide();
+                                $moyennesemestre = $decijuryse1->getSemaverage();
+                                $decisionsem = $decijuryse1->getDecision();
+                            }else{
+                                $creditvalide=0;
+                                $moyennesemestre=0;
+                                $decisionsem="REFUSE";
+                            }
+
+
+
+
+
+
+
+                        }
+
+
+
+
+
+
+
+                        else{  $creditvalide = $decijury->getTcreditvalide();
+                            $moyennesemestre = $decijury->getSemaverage();
+                            $decisionsem = $decijury->getDecision();}
+
+
+
+                        $em = $this->getDoctrine()->getManager();
+                        $rsm = new ResultSetMapping();
+
+                        $rsm->addScalarResult('acadyearid', 'acadyearid');
+
+
+
+                        $sql = "SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1  ";
+                        $query = $em->createNativeQuery($sql, $rsm);
+
+
+
+
+                        $query->setParameter('idetudiant', $idetudiant);
+                        $query->setParameter('idspecialite', $idspecialite);
+                        $anacetudse = $query->getResult();
+                        foreach ($anacetudse as $ma){
+                            $anacsem2=$ma['acadyearid'];
+                        }
+
+
+
+
+
+
+
+                        $decijurys = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM8', 'sessionid' => 'SE2', 'acadyearid' => $anacsem2));
+
+
+                        if(!$decijurys){
+
+
+                            $decijurysse1 = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM8', 'sessionid' => 'SE1', 'acadyearid' => $anacsem2
+
+                            ));
+                            if($decijurysse1){
+                                $creditvalide2= $decijurysse1->getTcreditvalide();
+                                $moyennesemestre2 = $decijurysse1->getSemaverage();
+                                $decisionsem2= $decijurysse1->getDecision();
+
+                            }else{ $creditvalide2=0;
+                                $moyennesemestre2=0;
+                                $decisionsem2="REFUSE";}
+
+                        }else{
+                            $creditvalide2= $decijurys->getTcreditvalide();
+                            $moyennesemestre2 = $decijurys->getSemaverage();
+                            $decisionsem2= $decijurys->getDecision();
+                        }
+
+
+                        $creditan = $creditvalide2 + $creditvalide;
+                        $mgan = number_format((($moyennesemestre + $moyennesemestre2) / 2), 2);
+
+
+                        if ($decisionsem2 == 'ADMIS' && $decisionsem == 'ADMIS') {
+
+
+                            $decian = 'ADMIS';
+                        } else {
+
+                            $decian = 'REFUSE';
+                        }
+                    }else{
+
+
+
+                        $em = $this->getDoctrine()->getManager();
+                        $rsm = new ResultSetMapping();
+
+                        $rsm->addScalarResult('acadyearid', 'acadyearid');
+
+
+
+                        $sql = "SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid='TCSIGLSITW' and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1  ";
+                        $query = $em->createNativeQuery($sql, $rsm);
+
+
+
+
+                        $query->setParameter('idetudiant', $idetudiant);
+
+                        $anacetud = $query->getResult();
+                        foreach ($anacetud as $ma){
+                            $anacsem1=$ma['acadyearid'];
+                        }
+
+
+
+
+
+
+                        $decijury = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => 'TCSIGLSITW', 'semesterid' => 'SEM7', 'sessionid' => 'SE2', 'acadyearid' => $anacsem1));
+
+
+
+
+
+
+                        if(!$decijury){
+
+
+                            $decijuryse1 = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => 'TCSIGLSITW', 'semesterid' => 'SEM7', 'sessionid' => 'SE1', 'acadyearid' => $anacsem1));
+
+                            if($decijuryse1){
+                                $creditvalide = $decijuryse1->getTcreditvalide();
+                                $moyennesemestre = $decijuryse1->getSemaverage();
+                                $decisionsem = $decijuryse1->getDecision();
+                            }else{
+                                $creditvalide=0;
+                                $moyennesemestre=0;
+                                $decisionsem="REFUSE";
+                            }
+
+
+
+
+
+
+
+                        }
+
+
+
+
+
+
+
+                        else{  $creditvalide = $decijury->getTcreditvalide();
+                            $moyennesemestre = $decijury->getSemaverage();
+                            $decisionsem = $decijury->getDecision();}
+
+
+
+                        $em = $this->getDoctrine()->getManager();
+                        $rsm = new ResultSetMapping();
+
+                        $rsm->addScalarResult('acadyearid', 'acadyearid');
+
+
+
+                        $sql = "SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1  ";
+                        $query = $em->createNativeQuery($sql, $rsm);
+
+
+
+
+                        $query->setParameter('idetudiant', $idetudiant);
+                        $query->setParameter('idspecialite', $idspecialite);
+                        $anacetudse = $query->getResult();
+                        foreach ($anacetudse as $ma){
+                            $anacsem2=$ma['acadyearid'];
+                        }
+
+
+
+
+
+
+
+                        $decijurys = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM8', 'sessionid' => 'SE2', 'acadyearid' => $anacsem2));
+
+
+                        if(!$decijurys){
+
+
+                            $decijurysse1 = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM8', 'sessionid' => 'SE1', 'acadyearid' => $anacsem2
+
+                            ));
+                            if($decijurysse1){
+                                $creditvalide2= $decijurysse1->getTcreditvalide();
+                                $moyennesemestre2 = $decijurysse1->getSemaverage();
+                                $decisionsem2= $decijurysse1->getDecision();
+
+                            }else{ $creditvalide2=0;
+                                $moyennesemestre2=0;
+                                $decisionsem2="REFUSE";}
+
+                        }else{
+                            $creditvalide2= $decijurys->getTcreditvalide();
+                            $moyennesemestre2 = $decijurys->getSemaverage();
+                            $decisionsem2= $decijurys->getDecision();
+                        }
+
+
+                        $creditan = $creditvalide2 + $creditvalide;
+                        $mgan = number_format((($moyennesemestre + $moyennesemestre2) / 2), 2);
+
+
+                        if ($decisionsem2 == 'ADMIS' && $decisionsem == 'ADMIS') {
+
+
+                            $decian = 'ADMIS';
+                        } else {
+
+                            $decian = 'REFUSE';
+                        }
+
+
+
+                    }
+
+
+
+
+
+                }
+
+
+                if($idlevel=='M2') {
+
+                    $em = $this->getDoctrine()->getManager();
+                    $rsm = new ResultSetMapping();
+
+                    $rsm->addScalarResult('acadyearid', 'acadyearid');
+
+
+
+                    $sql = "SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM9'  order by acadyearid DESC  LIMIT 1  ";
+                    $query = $em->createNativeQuery($sql, $rsm);
+
+
+
+
+                    $query->setParameter('idetudiant', $idetudiant);
+                    $query->setParameter('idspecialite', $idspecialite);
+                    $anacetud = $query->getResult();
+                    foreach ($anacetud as $ma){
+                        $anacsem1=$ma['acadyearid'];
+                    }
+
+
+
+
+
+
+
+
+
+
+
+                    $decijury = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM9', 'sessionid' => 'SE2', 'acadyearid' => $anacsem1));
+
+
+
+
+
+
+                    if(!$decijury){
+
+
+                        $decijuryse1 = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM9', 'sessionid' => 'SE1', 'acadyearid' => $anacsem1));
+
+                        if($decijuryse1){
+                            $creditvalide = $decijuryse1->getTcreditvalide();
+                            $moyennesemestre = $decijuryse1->getSemaverage();
+                            $decisionsem = $decijuryse1->getDecision();
+                        }else{
+                            $creditvalide=0;
+                            $moyennesemestre=0;
+                            $decisionsem="REFUSE";
+                        }
+
+
+
+
+
+
+
+                    }else{  $creditvalide = $decijury->getTcreditvalide();
+                        $moyennesemestre = $decijury->getSemaverage();
+                        $decisionsem = $decijury->getDecision();}
+
+
+
+                    $em = $this->getDoctrine()->getManager();
+                    $rsm = new ResultSetMapping();
+
+                    $rsm->addScalarResult('acadyearid', 'acadyearid');
+
+
+
+                    $sql = "SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM10'  order by acadyearid DESC  LIMIT 1  ";
+                    $query = $em->createNativeQuery($sql, $rsm);
+
+
+
+
+                    $query->setParameter('idetudiant', $idetudiant);
+                    $query->setParameter('idspecialite', $idspecialite);
+                    $anacetudse = $query->getResult();
+                    foreach ($anacetudse as $ma){
+                        $anacsem2=$ma['acadyearid'];
+                    }
+
+
+
+
+
+
+
+                    $decijurys = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM10', 'sessionid' => 'SE2', 'acadyearid' => $anacsem2));
+
+
+                    if(!$decijurys){
+
+
+                        $decijurysse1 = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM10', 'sessionid' => 'SE1', 'acadyearid' => $anacsem2
+
+                        ));
+                        if($decijurysse1){
+                            $creditvalide2= $decijurysse1->getTcreditvalide();
+                            $moyennesemestre2 = $decijurysse1->getSemaverage();
+                            $decisionsem2= $decijurysse1->getDecision();
+
+                        }else{ $creditvalide2=0;
+                            $moyennesemestre2=0;
+                            $decisionsem2="REFUSE";}
+
+                    }else{
+                        $creditvalide2= $decijurys->getTcreditvalide();
+                        $moyennesemestre2 = $decijurys->getSemaverage();
+                        $decisionsem2= $decijurys->getDecision();
+                    }
+
+
+                    $creditan = $creditvalide2 + $creditvalide;
+                    $mgan = number_format((($moyennesemestre + $moyennesemestre2) / 2), 2);
+
+
+                    if ($decisionsem2 == 'ADMIS' && $decisionsem == 'ADMIS') {
+
+
+                        $decian = 'ADMIS';
+                    } else {
+
+                        $decian = 'REFUSE';
+                    }
+
+
+                }
+
+
+
+                $output['data'][] = [
+                    'idetudiant' => $idetudiant,
+                    'nom' => $etudiant->getFirstname(),
+                    'prenom' => $etudiant->getLastname(),
+                    'genre' => $etudiant->getKind(),
+
+
+                    'moyennesem' => $moyennesemestre,
+                    'creditva' => $creditvalide,
+
+                    'jury' => $decisionsem,
+                    'moyennesem2' => $moyennesemestre2,
+                    'creditva2' => $creditvalide2,
+
+                    'jury2' => $decisionsem2,
+
+                    'moyenneseman' => $mgan,
+                    'creditvaan' => $creditan,
+
+                    'juryan' => $decian
+
+
+
+                ];
+
+
+
+
+
+
+            }
+
+            return new Response(json_encode($output), 200, ['Content-Type' => 'application/json']);}
+
+
+    }
+
+    public function resultannuel()
+    {
+
+
+        return $this->render('delibsem/resultannuel.html.twig', array('current_menu'=>'resultannuel'));
+    }
+
+
+
+    public function tableresultannuel(Request $request, MyFunctionDelib $callfunctiondelib, StudentSpecialityRepository $stdspecrepo, StudentRepository $stdrepo, HalfYearlyDelibRepository $halfyearlydelib)
+    {
+
+
+        $idses=$this->get('session')->get('idsesdelib');
+
+        $idspecialite=$this->get('session')->get('speciddelib');
+        $idsem=$this->get('session')->get('semiddelib');
+
+
+        $idanac=$this->get('session')->get('anacad');
+        $idlevel = $this->get('session')->get('leveliddelib');
+
+
+        $length = $request->get('length');
+        $length = $length && ($length != -1) ? $length : 0;
+
+        $start = $request->get('start');
+        $start = $length ? ($start && ($start != -1) ? $start : 0) / $length : 0;
+
+        $delibsem = $request->get('delibsem');
+        $filters = [
+            'query' => @$delibsem['value']
+        ];
+
+        $users = $stdspecrepo->delibannuel($idanac, $idlevel, $idspecialite,
+            $filters, $start, $length
+        );
+
+        $output = array(
+            'data' => array(),
+            'recordsFiltered' => count($stdspecrepo->delibannuel($idanac, $idlevel, $idspecialite,  $filters, 0, false)),
+            'recordsTotal' => count($stdspecrepo->delibannuel($idanac, $idlevel, $idspecialite, 0, false))
+        );
+
+        foreach ($users as $user) {
+
+            $idetudiant = $user['studentid'];
+
+
+
+            $etudiant = $stdrepo->findOneById($idetudiant);
+
+
+
+
+            if($idlevel=='L1') {
+
+                $em = $this->getDoctrine()->getManager();
+                $rsm = new ResultSetMapping();
+
+                $rsm->addScalarResult('acadyearid', 'acadyearid');
+
+
+
+                $sql = "SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM1'  order by acadyearid DESC  LIMIT 1  ";
+                $query = $em->createNativeQuery($sql, $rsm);
+
+
+
+
+                $query->setParameter('idetudiant', $idetudiant);
+                $query->setParameter('idspecialite', $idspecialite);
+                $anacetud = $query->getResult();
+                foreach ($anacetud as $ma){
+                    $anacsem1=$ma['acadyearid'];
+                }
+
+
+
+
+
+
+
+
+
+
+
+                $decijury = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM1', 'sessionid' => 'SE2', 'acadyearid' => $anacsem1));
+
+
+
+
+
+
+                if(!$decijury){
+
+
+                    $decijuryse1 = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM1', 'sessionid' => 'SE1', 'acadyearid' => $anacsem1));
+
+                    if($decijuryse1){
+                        $creditvalide = $decijuryse1->getTcreditvalide();
+                        $moyennesemestre = $decijuryse1->getSemaverage();
+                        $decisionsem = $decijuryse1->getDecision();
+                    }else{
+                        $creditvalide=0;
+                        $moyennesemestre=0;
+                        $decisionsem="REFUSE";
+                    }
+
+
+
+
+
+
+
+                }else{  $creditvalide = $decijury->getTcreditvalide();
+                    $moyennesemestre = $decijury->getSemaverage();
+                    $decisionsem = $decijury->getDecision();}
+
+
+
+                $em = $this->getDoctrine()->getManager();
+                $rsm = new ResultSetMapping();
+
+                $rsm->addScalarResult('acadyearid', 'acadyearid');
+
+
+
+                $sql = "SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM2'  order by acadyearid DESC  LIMIT 1  ";
+                $query = $em->createNativeQuery($sql, $rsm);
+
+
+
+
+                $query->setParameter('idetudiant', $idetudiant);
+                $query->setParameter('idspecialite', $idspecialite);
+                $anacetudse = $query->getResult();
+                foreach ($anacetudse as $ma){
+                    $anacsem2=$ma['acadyearid'];
+                }
+
+
+
+
+
+
+
+                $decijurys = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM2', 'sessionid' => 'SE2', 'acadyearid' => $anacsem2));
+
+
+                if(!$decijurys){
+
+
+                    $decijurysse1 = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM2', 'sessionid' => 'SE1', 'acadyearid' => $anacsem2
+
+                    ));
+                    if($decijurysse1){
+                        $creditvalide2= $decijurysse1->getTcreditvalide();
+                        $moyennesemestre2 = $decijurysse1->getSemaverage();
+                        $decisionsem2= $decijurysse1->getDecision();
+
+                    }else{ $creditvalide2=0;
+                        $moyennesemestre2=0;
+                        $decisionsem2="REFUSE";}
+
+                }else{
+                    $creditvalide2= $decijurys->getTcreditvalide();
+                    $moyennesemestre2 = $decijurys->getSemaverage();
+                    $decisionsem2= $decijurys->getDecision();
+                }
+
+
+                $creditan = $creditvalide2 + $creditvalide;
+                $mgan = number_format((($moyennesemestre + $moyennesemestre2) / 2), 2);
+
+
+                if ($decisionsem2 == 'ADMIS' && $decisionsem == 'ADMIS') {
+
+
+                    $decian = 'ADMIS';
+                } else {
+
+                    $decian = 'REFUSE';
+                }
+
+
+            }
+
+            if($idlevel=='L3') {
+
+                $em = $this->getDoctrine()->getManager();
+                $rsm = new ResultSetMapping();
+
+                $rsm->addScalarResult('acadyearid', 'acadyearid');
+
+
+
+                $sql = "SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM5'  order by acadyearid DESC  LIMIT 1  ";
+                $query = $em->createNativeQuery($sql, $rsm);
+
+
+
+
+                $query->setParameter('idetudiant', $idetudiant);
+                $query->setParameter('idspecialite', $idspecialite);
+                $anacetud = $query->getResult();
+                foreach ($anacetud as $ma){
+                    $anacsem1=$ma['acadyearid'];
+                }
+
+
+
+
+
+
+
+
+
+
+
+                $decijury = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM5', 'sessionid' => 'SE2', 'acadyearid' => $anacsem1));
+
+
+
+
+
+
+                if(!$decijury){
+
+
+                    $decijuryse1 = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM5', 'sessionid' => 'SE1', 'acadyearid' => $anacsem1));
+
+                    if($decijuryse1){
+                        $creditvalide = $decijuryse1->getTcreditvalide();
+                        $moyennesemestre = $decijuryse1->getSemaverage();
+                        $decisionsem = $decijuryse1->getDecision();
+                    }else{
+                        $creditvalide=0;
+                        $moyennesemestre=0;
+                        $decisionsem="REFUSE";
+                    }
+
+
+
+
+
+
+
+                }else{  $creditvalide = $decijury->getTcreditvalide();
+                    $moyennesemestre = $decijury->getSemaverage();
+                    $decisionsem = $decijury->getDecision();}
+
+
+
+                $em = $this->getDoctrine()->getManager();
+                $rsm = new ResultSetMapping();
+
+                $rsm->addScalarResult('acadyearid', 'acadyearid');
+
+
+
+                $sql = "SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM6'  order by acadyearid DESC  LIMIT 1  ";
+                $query = $em->createNativeQuery($sql, $rsm);
+
+
+
+
+                $query->setParameter('idetudiant', $idetudiant);
+                $query->setParameter('idspecialite', $idspecialite);
+                $anacetudse = $query->getResult();
+                foreach ($anacetudse as $ma){
+                    $anacsem2=$ma['acadyearid'];
+                }
+
+
+
+
+
+
+
+                $decijurys = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM6', 'sessionid' => 'SE2', 'acadyearid' => $anacsem2));
+
+
+                if(!$decijurys){
+
+
+                    $decijurysse1 = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM6', 'sessionid' => 'SE1', 'acadyearid' => $anacsem2
+
+                    ));
+                    if($decijurysse1){
+                        $creditvalide2= $decijurysse1->getTcreditvalide();
+                        $moyennesemestre2 = $decijurysse1->getSemaverage();
+                        $decisionsem2= $decijurysse1->getDecision();
+
+                    }else{ $creditvalide2=0;
+                        $moyennesemestre2=0;
+                        $decisionsem2="REFUSE";}
+
+                }else{
+                    $creditvalide2= $decijurys->getTcreditvalide();
+                    $moyennesemestre2 = $decijurys->getSemaverage();
+                    $decisionsem2= $decijurys->getDecision();
+                }
+
+
+                $creditan = $creditvalide2 + $creditvalide;
+                $mgan = number_format((($moyennesemestre + $moyennesemestre2) / 2), 2);
+
+
+                if ($decisionsem2 == 'ADMIS' && $decisionsem == 'ADMIS') {
+
+
+                    $decian = 'ADMIS';
+                } else {
+
+                    $decian = 'REFUSE';
+                }
+
+
+            }
+
+
+            if($idlevel=='L2') {
+
+                $em = $this->getDoctrine()->getManager();
+                $rsm = new ResultSetMapping();
+
+                $rsm->addScalarResult('acadyearid', 'acadyearid');
+
+                $sql = "SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM3'  order by acadyearid DESC  LIMIT 1  ";
+                $query = $em->createNativeQuery($sql, $rsm);
+
+                $query->setParameter('idetudiant', $idetudiant);
+                $query->setParameter('idspecialite', $idspecialite);
+                $anacetud = $query->getResult();
+                foreach ($anacetud as $ma){
+                    $anacsem1=$ma['acadyearid'];
+                }
+
+
+
+
+
+
+
+
+
+
+                $decijury = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM3', 'sessionid' => 'SE2', 'acadyearid' => $anacsem1));
+
+
+
+
+
+
+                if(!$decijury){
+
+
+                    $decijuryse1 = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM3', 'sessionid' => 'SE1', 'acadyearid' => $anacsem1));
+
+                    if($decijuryse1){
+                        $creditvalide = $decijuryse1->getTcreditvalide();
+                        $moyennesemestre = $decijuryse1->getSemaverage();
+                        $decisionsem = $decijuryse1->getDecision();
+                    }else{
+                        $creditvalide=0;
+                        $moyennesemestre=0;
+                        $decisionsem="REFUSE";
+                    }
+
+
+
+
+
+
+
+                }else{  $creditvalide = $decijury->getTcreditvalide();
+                    $moyennesemestre = $decijury->getSemaverage();
+                    $decisionsem = $decijury->getDecision();}
+
+
+
+                $em = $this->getDoctrine()->getManager();
+                $rsm = new ResultSetMapping();
+
+                $rsm->addScalarResult('acadyearid', 'acadyearid');
+
+
+
+                $sql = "SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM4'  order by acadyearid DESC  LIMIT 1  ";
+                $query = $em->createNativeQuery($sql, $rsm);
+
+
+
+
+                $query->setParameter('idetudiant', $idetudiant);
+                $query->setParameter('idspecialite', $idspecialite);
+                $anacetudse = $query->getResult();
+                foreach ($anacetudse as $ma){
+                    $anacsem2=$ma['acadyearid'];
+                }
+
+
+
+
+
+
+
+                $decijurys = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM4', 'sessionid' => 'SE2', 'acadyearid' => $anacsem2));
+
+
+                if(!$decijurys){
+
+
+                    $decijurysse1 = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM4', 'sessionid' => 'SE1', 'acadyearid' => $anacsem2
+
+                    ));
+                    if($decijurysse1){
+                        $creditvalide2= $decijurysse1->getTcreditvalide();
+                        $moyennesemestre2 = $decijurysse1->getSemaverage();
+                        $decisionsem2= $decijurysse1->getDecision();
+
+                    }else{ $creditvalide2=0;
+                        $moyennesemestre2=0;
+                        $decisionsem2="REFUSE";}
+
+                }else{
+                    $creditvalide2= $decijurys->getTcreditvalide();
+                    $moyennesemestre2 = $decijurys->getSemaverage();
+                    $decisionsem2= $decijurys->getDecision();
+                }
+
+
+                $creditan = $creditvalide2 + $creditvalide;
+                $mgan = number_format((($moyennesemestre + $moyennesemestre2) / 2), 2);
+
+
+                if ($decisionsem2 == 'ADMIS' && $decisionsem == 'ADMIS') {
+
+
+                    $decian = 'ADMIS';
+                } else {
+
+                    $decian = 'REFUSE';
+                }
+
+
+            }
+
+            if($idlevel=='M1') {
+
+
+
+
+
+
+                if($idspecialite=='RTEL' || $idspecialite=='MBDS' || $idspecialite=='MDSI' )
+                {
+
+
+                    $em = $this->getDoctrine()->getManager();
+                    $rsm = new ResultSetMapping();
+
+                    $rsm->addScalarResult('acadyearid', 'acadyearid');
+
+
+
+                    $sql = "SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1  ";
+                    $query = $em->createNativeQuery($sql, $rsm);
+
+
+
+
+                    $query->setParameter('idetudiant', $idetudiant);
+                    $query->setParameter('idspecialite', $idspecialite);
+                    $anacetud = $query->getResult();
+                    foreach ($anacetud as $ma){
+                        $anacsem1=$ma['acadyearid'];
+                    }
+
+
+
+
+
+
+
+
+
+                    $decijury = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM7', 'sessionid' => 'SE2', 'acadyearid' => $anacsem1));
+
+
+
+
+
+
+                    if(!$decijury){
+
+
+                        $decijuryse1 = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM7', 'sessionid' => 'SE1', 'acadyearid' => $anacsem1));
+
+                        if($decijuryse1){
+                            $creditvalide = $decijuryse1->getTcreditvalide();
+                            $moyennesemestre = $decijuryse1->getSemaverage();
+                            $decisionsem = $decijuryse1->getDecision();
+                        }else{
+                            $creditvalide=0;
+                            $moyennesemestre=0;
+                            $decisionsem="REFUSE";
+                        }
+
+
+
+
+
+
+
+                    }
+
+
+
+
+
+
+
+                    else{  $creditvalide = $decijury->getTcreditvalide();
+                        $moyennesemestre = $decijury->getSemaverage();
+                        $decisionsem = $decijury->getDecision();}
+
+
+
+                    $em = $this->getDoctrine()->getManager();
+                    $rsm = new ResultSetMapping();
+
+                    $rsm->addScalarResult('acadyearid', 'acadyearid');
+
+
+
+                    $sql = "SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1  ";
+                    $query = $em->createNativeQuery($sql, $rsm);
+
+
+
+
+                    $query->setParameter('idetudiant', $idetudiant);
+                    $query->setParameter('idspecialite', $idspecialite);
+                    $anacetudse = $query->getResult();
+                    foreach ($anacetudse as $ma){
+                        $anacsem2=$ma['acadyearid'];
+                    }
+
+
+
+
+
+
+
+                    $decijurys = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM8', 'sessionid' => 'SE2', 'acadyearid' => $anacsem2));
+
+
+                    if(!$decijurys){
+
+
+                        $decijurysse1 = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM8', 'sessionid' => 'SE1', 'acadyearid' => $anacsem2
+
+                        ));
+                        if($decijurysse1){
+                            $creditvalide2= $decijurysse1->getTcreditvalide();
+                            $moyennesemestre2 = $decijurysse1->getSemaverage();
+                            $decisionsem2= $decijurysse1->getDecision();
+
+                        }else{ $creditvalide2=0;
+                            $moyennesemestre2=0;
+                            $decisionsem2="REFUSE";}
+
+                    }else{
+                        $creditvalide2= $decijurys->getTcreditvalide();
+                        $moyennesemestre2 = $decijurys->getSemaverage();
+                        $decisionsem2= $decijurys->getDecision();
+                    }
+
+
+                    $creditan = $creditvalide2 + $creditvalide;
+                    $mgan = number_format((($moyennesemestre + $moyennesemestre2) / 2), 2);
+
+
+                    if ($decisionsem2 == 'ADMIS' && $decisionsem == 'ADMIS') {
+
+
+                        $decian = 'ADMIS';
+                    } else {
+
+                        $decian = 'REFUSE';
+                    }
+                }else{
+
+
+
+                    $em = $this->getDoctrine()->getManager();
+                    $rsm = new ResultSetMapping();
+
+                    $rsm->addScalarResult('acadyearid', 'acadyearid');
+
+
+
+                    $sql = "SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid='TCSIGLSITW' and semesterid='SEM7'  order by acadyearid DESC  LIMIT 1  ";
+                    $query = $em->createNativeQuery($sql, $rsm);
+
+
+
+
+                    $query->setParameter('idetudiant', $idetudiant);
+
+                    $anacetud = $query->getResult();
+                    foreach ($anacetud as $ma){
+                        $anacsem1=$ma['acadyearid'];
+                    }
+
+
+
+
+
+
+                    $decijury = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => 'TCSIGLSITW', 'semesterid' => 'SEM7', 'sessionid' => 'SE2', 'acadyearid' => $anacsem1));
+
+
+
+
+
+
+                    if(!$decijury){
+
+
+                        $decijuryse1 = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => 'TCSIGLSITW', 'semesterid' => 'SEM7', 'sessionid' => 'SE1', 'acadyearid' => $anacsem1));
+
+                        if($decijuryse1){
+                            $creditvalide = $decijuryse1->getTcreditvalide();
+                            $moyennesemestre = $decijuryse1->getSemaverage();
+                            $decisionsem = $decijuryse1->getDecision();
+                        }else{
+                            $creditvalide=0;
+                            $moyennesemestre=0;
+                            $decisionsem="REFUSE";
+                        }
+
+
+
+
+
+
+
+                    }
+
+
+
+
+
+
+
+                    else{  $creditvalide = $decijury->getTcreditvalide();
+                        $moyennesemestre = $decijury->getSemaverage();
+                        $decisionsem = $decijury->getDecision();}
+
+
+
+                    $em = $this->getDoctrine()->getManager();
+                    $rsm = new ResultSetMapping();
+
+                    $rsm->addScalarResult('acadyearid', 'acadyearid');
+
+
+
+                    $sql = "SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM8'  order by acadyearid DESC  LIMIT 1  ";
+                    $query = $em->createNativeQuery($sql, $rsm);
+
+
+
+
+                    $query->setParameter('idetudiant', $idetudiant);
+                    $query->setParameter('idspecialite', $idspecialite);
+                    $anacetudse = $query->getResult();
+                    foreach ($anacetudse as $ma){
+                        $anacsem2=$ma['acadyearid'];
+                    }
+
+
+
+
+
+
+
+                    $decijurys = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM8', 'sessionid' => 'SE2', 'acadyearid' => $anacsem2));
+
+
+                    if(!$decijurys){
+
+
+                        $decijurysse1 = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM8', 'sessionid' => 'SE1', 'acadyearid' => $anacsem2
+
+                        ));
+                        if($decijurysse1){
+                            $creditvalide2= $decijurysse1->getTcreditvalide();
+                            $moyennesemestre2 = $decijurysse1->getSemaverage();
+                            $decisionsem2= $decijurysse1->getDecision();
+
+                        }else{ $creditvalide2=0;
+                            $moyennesemestre2=0;
+                            $decisionsem2="REFUSE";}
+
+                    }else{
+                        $creditvalide2= $decijurys->getTcreditvalide();
+                        $moyennesemestre2 = $decijurys->getSemaverage();
+                        $decisionsem2= $decijurys->getDecision();
+                    }
+
+
+                    $creditan = $creditvalide2 + $creditvalide;
+                    $mgan = number_format((($moyennesemestre + $moyennesemestre2) / 2), 2);
+
+
+                    if ($decisionsem2 == 'ADMIS' && $decisionsem == 'ADMIS') {
+
+
+                        $decian = 'ADMIS';
+                    } else {
+
+                        $decian = 'REFUSE';
+                    }
+
+
+
+                }
+
+
+
+
+
+            }
+
+
+            if($idlevel=='M2') {
+
+                $em = $this->getDoctrine()->getManager();
+                $rsm = new ResultSetMapping();
+
+                $rsm->addScalarResult('acadyearid', 'acadyearid');
+
+
+
+                $sql = "SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM9'  order by acadyearid DESC  LIMIT 1  ";
+                $query = $em->createNativeQuery($sql, $rsm);
+
+
+
+
+                $query->setParameter('idetudiant', $idetudiant);
+                $query->setParameter('idspecialite', $idspecialite);
+                $anacetud = $query->getResult();
+                foreach ($anacetud as $ma){
+                    $anacsem1=$ma['acadyearid'];
+                }
+
+
+
+
+
+
+
+
+
+
+
+                $decijury = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM9', 'sessionid' => 'SE2', 'acadyearid' => $anacsem1));
+
+
+
+
+
+
+                if(!$decijury){
+
+
+                    $decijuryse1 = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM9', 'sessionid' => 'SE1', 'acadyearid' => $anacsem1));
+
+                    if($decijuryse1){
+                        $creditvalide = $decijuryse1->getTcreditvalide();
+                        $moyennesemestre = $decijuryse1->getSemaverage();
+                        $decisionsem = $decijuryse1->getDecision();
+                    }else{
+                        $creditvalide=0;
+                        $moyennesemestre=0;
+                        $decisionsem="REFUSE";
+                    }
+
+
+
+
+
+
+
+                }else{  $creditvalide = $decijury->getTcreditvalide();
+                    $moyennesemestre = $decijury->getSemaverage();
+                    $decisionsem = $decijury->getDecision();}
+
+
+
+                $em = $this->getDoctrine()->getManager();
+                $rsm = new ResultSetMapping();
+
+                $rsm->addScalarResult('acadyearid', 'acadyearid');
+
+
+
+                $sql = "SELECT  acadyearid FROM `halfyearly_delib` WHERE  studentid=:idetudiant and specialityid=:idspecialite and semesterid='SEM10'  order by acadyearid DESC  LIMIT 1  ";
+                $query = $em->createNativeQuery($sql, $rsm);
+
+
+
+
+                $query->setParameter('idetudiant', $idetudiant);
+                $query->setParameter('idspecialite', $idspecialite);
+                $anacetudse = $query->getResult();
+                foreach ($anacetudse as $ma){
+                    $anacsem2=$ma['acadyearid'];
+                }
+
+
+
+
+
+
+
+                $decijurys = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM10', 'sessionid' => 'SE2', 'acadyearid' => $anacsem2));
+
+
+                if(!$decijurys){
+
+
+                    $decijurysse1 = $halfyearlydelib->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $idspecialite, 'semesterid' => 'SEM10', 'sessionid' => 'SE1', 'acadyearid' => $anacsem2
+
+                    ));
+                    if($decijurysse1){
+                        $creditvalide2= $decijurysse1->getTcreditvalide();
+                        $moyennesemestre2 = $decijurysse1->getSemaverage();
+                        $decisionsem2= $decijurysse1->getDecision();
+
+                    }else{ $creditvalide2=0;
+                        $moyennesemestre2=0;
+                        $decisionsem2="REFUSE";}
+
+                }else{
+                    $creditvalide2= $decijurys->getTcreditvalide();
+                    $moyennesemestre2 = $decijurys->getSemaverage();
+                    $decisionsem2= $decijurys->getDecision();
+                }
+
+
+                $creditan = $creditvalide2 + $creditvalide;
+                $mgan = number_format((($moyennesemestre + $moyennesemestre2) / 2), 2);
+
+
+                if ($decisionsem2 == 'ADMIS' && $decisionsem == 'ADMIS') {
+
+
+                    $decian = 'ADMIS';
+                } else {
+
+                    $decian = 'REFUSE';
+                }
+
+
+            }
+
+
+
+            $output['data'][] = [
+                'idetudiant' => $idetudiant,
+                'nom' => $etudiant->getFirstname(),
+                'prenom' => $etudiant->getLastname(),
+                'genre' => $etudiant->getKind(),
+
+
+                'moyennesem' => $moyennesemestre,
+                'creditva' => $creditvalide,
+
+                'jury' => $decisionsem,
+                'moyennesem2' => $moyennesemestre2,
+                'creditva2' => $creditvalide2,
+
+                'jury2' => $decisionsem2,
+
+                'moyenneseman' => $mgan,
+                'creditvaan' => $creditan,
+
+                'juryan' => $decian
+
+
+
+            ];
+
+
+
+
+
+
+        }
+
+        return new Response(json_encode($output), 200, ['Content-Type' => 'application/json']);
+
+
+
+    }
+
+
+    public function startdelibmaster()
+    {
+
+        return $this->render('delibsem/startdelibmaster.html.twig',array('current_menu'=>'startdelibmaster'));
+
+
+    }
+
+
+    public function viewaveragesemmaster(Request $request)
+    {
+
+
+        $request->getSession()->set('ecuconsultdelibaver',$request->query->get('idecu'));
+
+
+
+        $request->getSession()->set('libecuconsultdelibaver', $request->query->get('libecu'));
+
+
+        $request->getSession()->set('ueconsultdelibaver', $request->query->get('idue'));
+
+
+        $request->getSession()->set('libueconsultdelibaver', $request->query->get('libue'));
+
+        return  $this->render('delibsem/viewaveragesemmaster.html.twig');
+    }
+
+
+
+
+    public function listviewaveragesemmaster(Request $request, MyFunctionDelib $callfunction, StudentSpecialityRepository $studspecrepo, StudentRepository $studrepo, UeValidatedRepository $uevalidrepo, StudentExamNotesRepository $studexamrepo)
+    {
+        $idanac = $this->get('session')->get('anacad');
+        $idspecialite = $this->get('session')->get('speciddelib');
+        $idsem = $this->get('session')->get('semiddelib');
+        $idses = $this->get('session')->get('idsesdelib');
+
+        $idlevel = $this->get('session')->get('leveliddelib');
+
+
+
+
+        if ($idses == 'SE1') {
+
+            $length = $request->get('length');
+            $length = $length && ($length != -1) ? $length : 0;
+
+            $start = $request->get('start');
+            $start = $length ? ($start && ($start != -1) ? $start : 0) / $length : 0;
+
+            $searchconsulnotexclass = $request->get('searchconsulnotexclass');
+            $filters = [
+                'query' => @$searchconsulnotexclass['value']
+            ];
+
+            $users = $studspecrepo->studspec($idanac, $idsem, $idspecialite, $idses,
+                $filters, $start, $length
+            );
+
+            $output = array(
+                'data' => array(),
+                'recordsFiltered' => count($studspecrepo->studspec($idanac,$idanac, $idsem, $idspecialite, $idses, $filters, 0, false)),
+                'recordsTotal' => count($studspecrepo->studspec($idanac, $idsem, $idspecialite, $idses, 0, false))
+            );
+
+            foreach ($users as $user) {
+                $idstudent = $user['studentid'];
+
+
+                $studentecu = $studrepo->findOneById($idstudent);
+
+
+                $em = $this->getDoctrine()->getManager();
+
+
+                $rsm = new ResultSetMapping();
+
+                $rsm->addScalarResult('picture', 'picture');
+                $rsm->addScalarResult('school_classeid', 'school_classeid');
+
+                $sql = "SELECT picture,school_classeid FROM `student_speciality`  WHERE student_speciality.studentid=:idstud and student_speciality.specialityid=:idspec and student_speciality.acadyearid=:idanac and student_speciality.levelid=:idlev  ";
+                $query = $em->createNativeQuery($sql, $rsm);
+                $query->setParameter('idspec', $idspecialite);
+                $query->setParameter('idstud', $idstudent);
+
+                $query->setParameter('idanac', $idanac);
+                $query->setParameter('idlev', $idlevel);
+
+
+                $studpic = $query->getResult();
+
+
+                foreach ($studpic as $ne) {
+
+
+                    $studentpic = $ne['picture'];
+                    $classeid = $ne['school_classeid'];
+
+
+                }
+
+
+                $lientof= '
+                                                <img class="img" onclick="window.open(this.src,\'_blank\',\'toolbar=0, location=0, directories=0, status=0, scrollbars=0, resizable=0, copyhistory=0, menuBar=0, width=\'+this.width+\', height=\'+this.height);" src="/SIGES/public/images/photoetudiant/'.$studentpic.'" />
+                                          ';
+
+
+
+
+
+
+                $uevalide = $uevalidrepo->findOneBy(array('studentid' => $idstudent, 'specialityid' => $idspecialite, 'semesterid' => $idsem, 'ueid' => $this->get('session')->get('ueconsultdelibaver')));
+                if ($uevalide) {
+
+                    if ($uevalide->getSessionid() == 'SE1') {
+
+
+
+                        $averagcc=$callfunction->averagecc($idstudent,$idspecialite,$uevalide->getSemesterid(), $this->get('session')->get('ueconsultdelibaver'),$this->get('session')->get('ecuconsultdelibaver'),$uevalide->getAcadyearid());
+                        $notexam=$callfunction->examnotes($idstudent,$idspecialite,$uevalide->getSemesterid(),$uevalide->getSessionid(),$this->get('session')->get('ueconsultdelibaver'),$this->get('session')->get('ecuconsultdelibaver'),$uevalide->getAcadyearid());
+
+
+                        $averagcctp=$callfunction->averagecctp($idstudent,$idspecialite,$uevalide->getSemesterid(), $this->get('session')->get('ueconsultdelibaver'),$this->get('session')->get('ecuconsultdelibaver'),$uevalide->getAcadyearid());
+                        $notexamtp=$callfunction->examnotestp($idstudent,$idspecialite,$uevalide->getSemesterid(),$uevalide->getSessionid(),$this->get('session')->get('ueconsultdelibaver'),$this->get('session')->get('ecuconsultdelibaver'),$uevalide->getAcadyearid());
+
+
+
+
+
+
+
+                        if ($averagcc == "") {
+                            $aversem = "";
+                        }else{
+                            $aversem = number_format((4 * $averagcc + 6 * $notexam) / 10, 2);
+                        }
+
+
+
+
+
+                        if ($averagcctp == "") {
+                            $aversemtp = "";
+                        }else{
+                            $aversemtp = number_format((4 * $averagcctp + 6 * $notexamtp) / 10, 2);
+                        }
+
+
+
+
+
+
+
+
+                        if ($aversemtp == "") {
+                            $averageecu = $aversem;
+                        } else {
+                            $averageecu = number_format((0.6 * $aversem + 0.4 * $aversemtp), 2);
+                        }
+
+
+                        $creditvalideue = $uevalide->getCreditvalided();
+                    }
+                    else {
+
+
+
+                        $averagcc=$callfunction->averagecc($idstudent,$idspecialite,$uevalide->getSemesterid(), $this->get('session')->get('ueconsultdelibaver'),$this->get('session')->get('ecuconsultdelibaver'),$uevalide->getAcadyearid());
+
+
+
+
+                        $etudiant101 = $studexamrepo->findOneBy(array(
+                            'studentid' => $idstudent, 'specialityid' => $idspecialite, 'ecuid' => $this->get('session')->get('ecuconsultdelibaver'), 'semesterid' => $uevalide->getSemesterid(), 'sessionid' => $uevalide->getSessionid(), 'typeofexamnotes' => 'EXCC', 'acadyearid' => $uevalide->getAcadyearid()
+                        ));
+                        if ($etudiant101 != NULL) {
+
+                            if ($etudiant101->getExamnotes() == 99) {
+
+                                $notexam = "NC";
+
+
+                            } else {
+
+                                $notexam = $etudiant101->getExamnotes();
+
+                            }
+
+                        } else {
+                            $notexam = "";
+                        }
+
+
+
+
+
+                        if ($uevalide->getAcadyearid() == '2015-2016') {
+                            $averagcc = number_format((float)$notexam, 2);
+                            $aversem = number_format((float)$notexam, 2);
+
+                        } else {
+                            $aversem = number_format((4 * $averagcc + 6 * $notexam) / 10, 2);
+                        }
+
+
+
+                        $averagcctp=$callfunction->averagecctp($idstudent,$idspecialite,$uevalide->getSemesterid(), $this->get('session')->get('ueconsultdelibaver'),$this->get('session')->get('ecuconsultdelibaver'),$uevalide->getAcadyearid());
+
+
+
+                        $etudiant103 =$studexamrepo->findOneBy(array('studentid' => $idstudent, 'specialityid' => $idspecialite, 'ecuid' => $this->get('session')->get('ecuconsultdelibaver'), 'semesterid' => $uevalide->getSemesterid(), 'sessionid' => $uevalide->getSessionid(), 'typeofexamnotes' => 'EXTP', 'acadyearid' => $uevalide->getAcadyearid()));
+                        if($etudiant103!=NULL){
+
+                            if($etudiant103->getExamnotes()==99){
+
+                                $notexamtp="NC";
+
+
+                            }else{
+
+                                $notexamtp=$etudiant103->getExamnotes();
+
+                            }
+
+                        }else{
+                            $notexamtp="";
+                        }
+
+
+
+
+                        if ($averagcctp == ""  ) {
+                            $aversemtp = "";
+                        }else{
+                            $aversemtp = number_format((4 * $averagcctp + 6 * $notexamtp) / 10, 2);
+                        }
+
+
+                        if($aversemtp==""){
+
+                            if($etudiant101->getEntryuser()=='admin'){
+                                $averageecu=$aversem;
+
+                            }else{
+
+
+                                $averageecu1=$aversem ;
+                                if($averageecu1 < $notexam){
+                                    $averageecu=$notexam;
+                                }else{
+                                    $averageecu=$averageecu1;
+                                }
+
+                            }
+
+                        }else{
+                            if($etudiant101->getEntryuser()=='admin'){
+                                $m1=$aversem;
+
+                            }else{
+
+                                $averageecu1=$aversem ;
+                                if($averageecu1 < $notexam){
+
+                                    $m1=$notexam;
+                                    $aversem=$notexam;
+
+                                }else{
+                                    $m1=$averageecu1;
+                                }
+
+                            }
+
+                            if($etudiant103->getEntryuser()=='admin'){
+                                $m2=$aversemtp;
+
+                            }else{
+
+
+                                $averageecu2=$aversemtp ;
+                                if($averageecu2 < $notexamtp){
+                                    $m2=$notexamtp;
+                                    $aversemtp=$notexamtp;
+
+                                }else{
+                                    $m2=$averageecu2;
+                                }
+
+
+
+
+                            }
+
+
+
+
+
+                            $averageecu=number_format((0.6*$m1+0.4*$m2),2);
+
+                        }
+
+
+
+
+
+                        $creditvalideue = $uevalide->getCreditvalided();
+
+
+                    }
+                }
+                else {
+
+
+
+
+
+
+                    $averagcc=$callfunction->averagecc($idstudent,$idspecialite,$idsem, $this->get('session')->get('ueconsultdelibaver'),$this->get('session')->get('ecuconsultdelibaver'),$idanac);
+                    $notexam=$callfunction->examnotes($idstudent,$idspecialite,$idsem,$idses,$this->get('session')->get('ueconsultdelibaver'),$this->get('session')->get('ecuconsultdelibaver'),$this->get('session')->get('anacad'));
+
+                    if($averagcc==""){
+                        $aversem = "";
+                    }else{
+                        $aversem = number_format((4 * $averagcc + 6 * $notexam) / 10, 2);
+                    }
+
+
+
+
+                    $averagcctp=$callfunction->averagecctp($idstudent,$idspecialite,$idsem, $this->get('session')->get('ueconsultdelibaver'),$this->get('session')->get('ecuconsultdelibaver'),$idanac);
+                    $notexamtp=$callfunction->examnotestp($idstudent,$idspecialite,$idsem,$idses,$this->get('session')->get('ueconsultdelibaver'),$this->get('session')->get('ecuconsultdelibaver'),$this->get('session')->get('anacad'));
+
+
+
+
+                    if($averagcctp==""){
+                        $aversemtp = "";
+                    }else{
+                        $aversemtp = number_format((4 * $averagcctp + 6 * $notexamtp) / 10, 2);
+                    }
+
+
+
+
+
+                    if ($aversemtp == "") {
+                        $averageecu = $aversem;
+                    } else {
+                        $averageecu = number_format((0.6 * $aversem + 0.4 * $aversemtp), 2);
+                    }
+
+
+
+
+
+                    $creditvalideue = $callfunction->creditsvalidemaster($idstudent, $idsem, $this->get('session')->get('ueconsultdelibaver'), $idanac, $idspecialite, $idses);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                }
+
+
+
+
+
+                $output['data'][] = [
+                    'username' => $studentecu->getId(),
+                    'tof' => $lientof,
+                    'idclasse' => $classeid,
+                    'firstname' => $studentecu->getFirstname(),
+                    'lastname' => $studentecu->getLastname(),
+                    'kind' => $studentecu->getKind(),
+                    'averagecc' => $averagcc,
+
+                    'examnote' =>$notexam,
+                    'average' =>$aversem ,
+                    'averagecctp' =>$averagcctp,
+                    'examnotetp' => $notexamtp,
+                    'averagetp' => $aversemtp,
+                    'moyenneecu' => $averageecu,
+                    'creditue' => $creditvalideue,
+
+
+
+                ];
+            }
+
+            return new Response(json_encode($output), 200, ['Content-Type' => 'application/json']);
+        }
+
+
+
+
+
+        else{
+
+
+            $length = $request->get('length');
+            $length = $length && ($length != -1) ? $length : 0;
+
+            $start = $request->get('start');
+            $start = $length ? ($start && ($start != -1) ? $start : 0) / $length : 0;
+
+            $searchconsulnotexclass = $request->get('searchconsulnotexclass');
+            $filters = [
+                'query' => @$searchconsulnotexclass['value']
+            ];
+
+            $users = $studspecrepo->studspecse2($idanac, $idsem, $idspecialite, $idses,
+                $filters, $start, $length
+            );
+
+            $output = array(
+                'data' => array(),
+                'recordsFiltered' => count($studspecrepo->studspecse2($idanac,$idanac, $idsem, $idspecialite, $idses, $filters, 0, false)),
+                'recordsTotal' => count($studspecrepo->studspecse2($idanac, $idsem, $idspecialite, $idses, 0, false))
+            );
+
+            foreach ($users as $user) {
+              $idstudent = $user['studentid'];
+
+
+                               $studentecu = $studrepo->findOneById($idstudent);
+
+
+                                           $em = $this->getDoctrine()->getManager();
+
+
+                                           $rsm = new ResultSetMapping();
+
+                                           $rsm->addScalarResult('picture', 'picture');
+                                           $rsm->addScalarResult('school_classeid', 'school_classeid');
+
+                                           $sql = "SELECT picture,school_classeid FROM `student_speciality`  WHERE student_speciality.studentid=:idstud and student_speciality.specialityid=:idspec and student_speciality.acadyearid=:idanac and student_speciality.levelid=:idlev  ";
+                                           $query = $em->createNativeQuery($sql, $rsm);
+                                           $query->setParameter('idspec', $idspecialite);
+                                           $query->setParameter('idstud', $idstudent);
+
+                                           $query->setParameter('idanac', $idanac);
+                                           $query->setParameter('idlev', $idlevel);
+
+
+                                           $studpic = $query->getResult();
+
+
+                                           foreach ($studpic as $ne) {
+
+
+                                               $studentpic = $ne['picture'];
+                                               $classeid = $ne['school_classeid'];
+
+
+                                           }
+
+
+                                           $lientof= '
+                                                                           <img class="img" onclick="window.open(this.src,\'_blank\',\'toolbar=0, location=0, directories=0, status=0, scrollbars=0, resizable=0, copyhistory=0, menuBar=0, width=\'+this.width+\', height=\'+this.height);" src="/SIGES/public/images/photoetudiant/'.$studentpic.'" />
+                                                                     ';
+
+
+
+
+
+
+                                           $uevalide = $uevalidrepo->findOneBy(array('studentid' => $idstudent, 'specialityid' => $idspecialite, 'semesterid' => $idsem, 'ueid' => $this->get('session')->get('ueconsultdelibaver')));
+                                           if ($uevalide) {
+
+                                               if ($uevalide->getSessionid() == 'SE1') {
+
+
+
+                                                   $averagcc=$callfunction->averagecc($idstudent,$idspecialite,$uevalide->getSemesterid(), $this->get('session')->get('ueconsultdelibaver'),$this->get('session')->get('ecuconsultdelibaver'),$uevalide->getAcadyearid());
+                                                   $notexam=$callfunction->examnotes($idstudent,$idspecialite,$uevalide->getSemesterid(),$uevalide->getSessionid(),$this->get('session')->get('ueconsultdelibaver'),$this->get('session')->get('ecuconsultdelibaver'),$uevalide->getAcadyearid());
+
+
+                                                   $averagcctp=$callfunction->averagecctp($idstudent,$idspecialite,$uevalide->getSemesterid(), $this->get('session')->get('ueconsultdelibaver'),$this->get('session')->get('ecuconsultdelibaver'),$uevalide->getAcadyearid());
+                                                   $notexamtp=$callfunction->examnotestp($idstudent,$idspecialite,$uevalide->getSemesterid(),$uevalide->getSessionid(),$this->get('session')->get('ueconsultdelibaver'),$this->get('session')->get('ecuconsultdelibaver'),$uevalide->getAcadyearid());
+
+
+
+
+
+
+
+                                                   if ($averagcc == "") {
+                                                       $aversem = "";
+                                                   }else{
+                                                       $aversem = number_format((4 * $averagcc + 6 * $notexam) / 10, 2);
+                                                   }
+
+
+
+
+
+                                                   if ($averagcctp == "") {
+                                                       $aversemtp = "";
+                                                   }else{
+                                                       $aversemtp = number_format((4 * $averagcctp + 6 * $notexamtp) / 10, 2);
+                                                   }
+
+
+
+
+
+
+
+
+                                                   if ($aversemtp == "") {
+                                                       $averageecu = $aversem;
+                                                   } else {
+                                                       $averageecu = number_format((0.6 * $aversem + 0.4 * $aversemtp), 2);
+                                                   }
+
+
+                                                   $creditvalideue = $uevalide->getCreditvalided();
+                                               }
+                                               else {
+
+
+
+                                                   $averagcc=$callfunction->averagecc($idstudent,$idspecialite,$uevalide->getSemesterid(), $this->get('session')->get('ueconsultdelibaver'),$this->get('session')->get('ecuconsultdelibaver'),$uevalide->getAcadyearid());
+
+
+
+
+                                                   $etudiant101 = $studexamrepo->findOneBy(array(
+                                                       'studentid' => $idstudent, 'specialityid' => $idspecialite, 'ecuid' => $this->get('session')->get('ecuconsultdelibaver'), 'semesterid' => $uevalide->getSemesterid(), 'sessionid' => $uevalide->getSessionid(), 'typeofexamnotes' => 'EXCC', 'acadyearid' => $uevalide->getAcadyearid()
+                                                   ));
+                                                   if ($etudiant101 != NULL) {
+
+                                                       if ($etudiant101->getExamnotes() == 99) {
+
+                                                           $notexam = "NC";
+
+
+                                                       } else {
+
+                                                           $notexam = $etudiant101->getExamnotes();
+
+                                                       }
+
+                                                   } else {
+                                                       $notexam = "";
+                                                   }
+
+
+
+
+
+                                                   if ($uevalide->getAcadyearid() == '2015-2016') {
+                                                       $averagcc = number_format((float)$notexam, 2);
+                                                       $aversem = number_format((float)$notexam, 2);
+
+                                                   } else {
+                                                       $aversem = number_format((4 * $averagcc + 6 * $notexam) / 10, 2);
+                                                   }
+
+
+
+                                                   $averagcctp=$callfunction->averagecctp($idstudent,$idspecialite,$uevalide->getSemesterid(), $this->get('session')->get('ueconsultdelibaver'),$this->get('session')->get('ecuconsultdelibaver'),$uevalide->getAcadyearid());
+
+
+
+                                                   $etudiant103 =$studexamrepo->findOneBy(array('studentid' => $idstudent, 'specialityid' => $idspecialite, 'ecuid' => $this->get('session')->get('ecuconsultdelibaver'), 'semesterid' => $uevalide->getSemesterid(), 'sessionid' => $uevalide->getSessionid(), 'typeofexamnotes' => 'EXTP', 'acadyearid' => $uevalide->getAcadyearid()));
+                                                   if($etudiant103!=NULL){
+
+                                                       if($etudiant103->getExamnotes()==99){
+
+                                                           $notexamtp="NC";
+
+
+                                                       }else{
+
+                                                           $notexamtp=$etudiant103->getExamnotes();
+
+                                                       }
+
+                                                   }else{
+                                                       $notexamtp="";
+                                                   }
+
+
+
+
+                                                   if ($averagcctp == ""  ) {
+                                                       $aversemtp = "";
+                                                   }else{
+                                                       $aversemtp = number_format((4 * $averagcctp + 6 * $notexamtp) / 10, 2);
+                                                   }
+
+
+                                                   if($aversemtp==""){
+
+                                                       if($etudiant101->getEntryuser()=='admin'){
+                                                           $averageecu=$aversem;
+
+                                                       }else{
+
+
+                                                           $averageecu1=$aversem ;
+                                                           if($averageecu1 < $notexam){
+                                                               $averageecu=$notexam;
+                                                           }else{
+                                                               $averageecu=$averageecu1;
+                                                           }
+
+                                                       }
+
+                                                   }else{
+                                                       if($etudiant101->getEntryuser()=='admin'){
+                                                           $m1=$aversem;
+
+                                                       }else{
+
+                                                           $averageecu1=$aversem ;
+                                                           if($averageecu1 < $notexam){
+
+                                                               $m1=$notexam;
+                                                               $aversem=$notexam;
+
+                                                           }else{
+                                                               $m1=$averageecu1;
+                                                           }
+
+                                                       }
+
+                                                       if($etudiant103->getEntryuser()=='admin'){
+                                                           $m2=$aversemtp;
+
+                                                       }else{
+
+
+                                                           $averageecu2=$aversemtp ;
+                                                           if($averageecu2 < $notexamtp){
+                                                               $m2=$notexamtp;
+                                                               $aversemtp=$notexamtp;
+
+                                                           }else{
+                                                               $m2=$averageecu2;
+                                                           }
+
+
+
+
+                                                       }
+
+
+
+
+
+                                                       $averageecu=number_format((0.6*$m1+0.4*$m2),2);
+
+                                                   }
+
+
+
+
+
+                                                   $creditvalideue = $uevalide->getCreditvalided();
+
+
+                                               }
+                                           }
+                                           else {
+
+
+
+
+
+
+                                               $averagcc=$callfunction->averagecc($idstudent,$idspecialite,$idsem, $this->get('session')->get('ueconsultdelibaver'),$this->get('session')->get('ecuconsultdelibaver'),$idanac);
+                                               $notexam=$callfunction->examnotes($idstudent,$idspecialite,$idsem,$idses,$this->get('session')->get('ueconsultdelibaver'),$this->get('session')->get('ecuconsultdelibaver'),$this->get('session')->get('anacad'));
+
+
+
+
+
+                                               if($averagcc==""){
+                                                   $aversem = "";
+                                               }else{
+                                                   $aversem = number_format((4 * $averagcc + 6 * $notexam) / 10, 2);
+                                               }
+
+
+
+
+                                               $averagcctp=$callfunction->averagecctp($idstudent,$idspecialite,$idsem, $this->get('session')->get('ueconsultdelibaver'),$this->get('session')->get('ecuconsultdelibaver'),$idanac);
+                                               $notexamtp=$callfunction->examnotestp($idstudent,$idspecialite,$idsem,$idses,$this->get('session')->get('ueconsultdelibaver'),$this->get('session')->get('ecuconsultdelibaver'),$this->get('session')->get('anacad'));
+
+
+
+
+                                               if($averagcctp==""){
+                                                   $aversemtp = "";
+                                               }else{
+                                                   $aversemtp = number_format((4 * $averagcctp + 6 * $notexamtp) / 10, 2);
+                                               }
+
+
+
+
+
+                                               if ($aversemtp == "") {
+                                                   $averageecu = $aversem;
+                                               } else {
+                                                   $averageecu = number_format((0.6 * $aversem + 0.4 * $aversemtp), 2);
+                                               }
+
+
+
+
+
+                                               $creditvalideue = $callfunction->creditsvalidemaster($idstudent, $idsem, $this->get('session')->get('ueconsultdelibaver'), $idanac, $idspecialite, $idses);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                           }
+
+
+
+
+
+                $output['data'][] = [
+                    'username' => $studentecu->getId(),
+                   'tof' => $lientof,
+                    'idclasse' => $classeid,
+                    'firstname' => $studentecu->getFirstname(),
+                    'lastname' => $studentecu->getLastname(),
+                    'kind' => $studentecu->getKind(),
+                    'averagecc' => $averagcc,
+
+                    'examnote' =>$notexam,
+                    'average' =>$aversem ,
+                    'averagecctp' =>$averagcctp,
+                    'examnotetp' => $notexamtp,
+                    'averagetp' => $aversemtp,
+                    'moyenneecu' => $averageecu,
+                    'creditue' => $creditvalideue,
+
+
+
+                ];
+            }
+
+            return new Response(json_encode($output), 200, ['Content-Type' => 'application/json']);
+
+
+
+
+
+
+        }
+
+
+
+
+
+
+    }
+
+
+
+
+    public function deliberationsemestremaster(Request $request, MyFunctionDelib $callfunction, StudentSpecialityRepository $studspecrepo,UeSpecialityRepository $uespecrepo, UeValidatedRepository $uevalidrepo)
+    {
+
+
+        $idses=$this->get('session')->get('idsesdelib');
+
+        $idspecialite=$this->get('session')->get('speciddelib');
+        $idsem=$this->get('session')->get('semiddelib');
+
+
+        $idanac=$this->get('session')->get('anacad');
+
+
+
+
+        if($idses=='SE1'){
+            $length = $request->get('length');
+            $length = $length && ($length != -1) ? $length : 0;
+
+            $start = $request->get('start');
+            $start = $length ? ($start && ($start != -1) ? $start : 0) / $length : 0;
+
+            $delibsem = $request->get('delibsem');
+            $filters = [
+                'query' => @$delibsem['value']
+            ];
+
+            $users = $studspecrepo->studspec($idanac, $idsem, $idspecialite, $idses,
+                $filters, $start, $length
+            );
+
+            $output = array(
+                'data' => array(),
+                'recordsFiltered' => count($studspecrepo->studspec($idanac, $idsem, $idspecialite, $idses, $filters, 0, false)),
+                'recordsTotal' => count($studspecrepo->studspec($idanac, $idsem, $idspecialite, $idses, 0, false))
+            );
+
+            foreach ($users as $user) {
+
+                $idetudiant = $user['studentid'];
+                $specid= $idspecialite;
+                $semid = $idsem;
+                $sessionid= $idses;
+                $acadid = $idanac;
+                $userdelib = $this->getUser()->getUsername();
+
+
+
+
+
+                $pue=$uespecrepo->findBy(array('specialityid' => $specid,'semester' => $semid,'acadyearid'=>$acadid));
+                foreach ($pue as $puev) {
+
+
+
+                    $uevalids = $uevalidrepo->findOneBy(array('acadyearid' => $idetudiant, 'specialityid' => $specid, 'semesterid' =>$semid, 'ueid' => $puev->getUeid()->getId()));
+
+
+
+                    if(!$uevalids){
+
+
+
+                        if($callfunction->creditsvalidemaster($idetudiant,$semid,$puev->getUeid()->getId(),$acadid,$specid,$sessionid)==$callfunction->creditue($idspecialite,$puev->getUeid()->getId(),$semid,$acadid)){
+
+                            $deliberationue = new UeValidated();
+
+                            $deliberationue->setStudentid($idetudiant);
+
+                            $deliberationue->setAcadyearid($acadid);
+                            $deliberationue->setSpecialityid($specid);
+                            $deliberationue->setUeid($puev->getUeid()->getId());
+                            $deliberationue->setSemesterid($semid);
+                            $deliberationue->setSessionid($sessionid);
+                            $deliberationue->setCreditvalided($callfunction->creditsvalidemaster($idetudiant,$semid,$puev->getUeid(),$acadid,$specid,$sessionid));
+                            $deliberationue->setUeaverage($callfunction->ueaverage($idetudiant, $specid,$puev->getUeid(), $semid, $sessionid, $acadid));
+
+                            $deliberationue->setDelibDate(new \Datetime());
+                            $deliberationue->setDelibUser($userdelib);
+
+
+                            $em = $this->getDoctrine()->getManager();
+
+                            $em->persist($deliberationue);
+                            $em->flush();
+
+                        }
+
+
+
+
+
+
+
+                    }
+
+
+
+
+
+
+
+
+
+
+                }
+
+
+
+
+
+
+
+
+
+
+
+
+
+                $creditvalide = $callfunction->tcreditmaster($idetudiant, $specid, $semid, $sessionid, $acadid);
+                $moyennesemestre = $callfunction->ecusemaverage($idetudiant, $specid, $semid, $sessionid, $acadid);
+                $decisionsem = $callfunction->decisionmaster($idetudiant, $specid, $semid, $sessionid, $acadid);
+
+                $deliberation = new HalfYearlyDelib();
+
+                $deliberation->setStudentid($idetudiant);
+
+                $deliberation->setAcadyearid($acadid);
+                $deliberation->setSpecialityid($specid);
+                $deliberation->setSemesterid($semid);
+                $deliberation->setSessionid($sessionid);
+                $deliberation->setTcreditvalide($creditvalide);
+                $deliberation->setSemaverage($moyennesemestre);
+                $deliberation->setDecision($decisionsem);
+                $deliberation->setDelibDate(new \Datetime());
+                $deliberation->setDelibUser($userdelib);
+
+
+                $em = $this->getDoctrine()->getManager();
+
+                $em->persist($deliberation);
+                $em->flush();
+
+            }
+
+            return $this->redirectToRoute('siges_startdelib2');
+        }else{
+            $length = $request->get('length');
+            $length = $length && ($length != -1) ? $length : 0;
+
+            $start = $request->get('start');
+            $start = $length ? ($start && ($start != -1) ? $start : 0) / $length : 0;
+
+            $delibsem = $request->get('delibsem');
+            $filters = [
+                'query' => @$delibsem['value']
+            ];
+
+            $users = $studspecrepo->studspecse2($idanac, $idsem, $idspecialite, $idses,
+                $filters, $start, $length
+            );
+
+            $output = array(
+                'data' => array(),
+                'recordsFiltered' => count($studspecrepo->studspecse2($idanac, $idsem, $idspecialite, $idses, $filters, 0, false)),
+                'recordsTotal' => count($studspecrepo->studspecse2($idanac, $idsem, $idspecialite, $idses, 0, false))
+            );
+
+            foreach ($users as $user) {
+
+                $idetudiant = $user['studentid'];
+                $specid= $idspecialite;
+                $semid = $idsem;
+                $sessionid= $idses;
+                $acadid = $idanac;
+                $userdelib = $this->getUser()->getUsername();
+
+
+
+
+
+                $pue=$uespecrepo->findBy(array('specialityid' => $specid,'semester' => $semid,'acadyearid'=>$acadid));
+                foreach ($pue as $puev) {
+
+
+
+                    $uevalids = $uevalidrepo->findOneBy(array('acadyearid' => $idetudiant, 'specialityid' => $specid, 'semesterid' =>$semid, 'ueid' => $puev->getUeid()->getId()));
+
+
+
+                    if(!$uevalids){
+
+
+
+                        if($callfunction->creditsvalidemaster($idetudiant,$semid,$puev->getUeid()->getId(),$acadid,$specid,$sessionid)==$callfunction->creditue($idspecialite,$puev->getUeid()->getId(),$semid,$acadid)){
+
+                            $deliberationue = new UeValidated();
+
+                            $deliberationue->setStudentid($idetudiant);
+
+                            $deliberationue->setAcadyearid($acadid);
+                            $deliberationue->setSpecialityid($specid);
+                            $deliberationue->setUeid($puev->getUeid()->getId());
+                            $deliberationue->setSemesterid($semid);
+                            $deliberationue->setSessionid($sessionid);
+                            $deliberationue->setCreditvalided($callfunction->creditsvalidemaster($idetudiant,$semid,$puev->getUeid(),$acadid,$specid,$sessionid));
+                            $deliberationue->setUeaverage($callfunction->ueaverage($idetudiant, $specid,$puev->getUeid(), $semid, $sessionid, $acadid));
+
+                            $deliberationue->setDelibDate(new \Datetime());
+                            $deliberationue->setDelibUser($userdelib);
+
+
+                            $em = $this->getDoctrine()->getManager();
+
+                            $em->persist($deliberationue);
+                            $em->flush();
+
+                        }
+
+
+
+
+
+
+
+                    }
+
+
+
+
+
+
+
+
+
+
+                }
+
+
+
+
+
+
+
+
+
+
+
+
+
+                $creditvalide = $callfunction->tcreditmaster($idetudiant, $specid, $semid, $sessionid, $acadid);
+                $moyennesemestre = $callfunction->ecusemaverage($idetudiant, $specid, $semid, $sessionid, $acadid);
+                $decisionsem = $callfunction->decisionmaster($idetudiant, $specid, $semid, $sessionid, $acadid);
+
+                $deliberation = new HalfYearlyDelib();
+
+                $deliberation->setStudentid($idetudiant);
+
+                $deliberation->setAcadyearid($acadid);
+                $deliberation->setSpecialityid($specid);
+                $deliberation->setSemesterid($semid);
+                $deliberation->setSessionid($sessionid);
+                $deliberation->setTcreditvalide($creditvalide);
+                $deliberation->setSemaverage($moyennesemestre);
+                $deliberation->setDecision($decisionsem);
+                $deliberation->setDelibDate(new \Datetime());
+                $deliberation->setDelibUser($userdelib);
+
+
+                $em = $this->getDoctrine()->getManager();
+
+                $em->persist($deliberation);
+                $em->flush();
+
+            }
+
+            return $this->redirectToRoute('siges_startdelib2');
+        }
+
+
+
+
+
+
+
+
+    }
+
+    public function tabledelibm1infosem7()
+    {
+
+
+
+
+        return  $this->render('delibsem/tabledelibm1infosem7.html.twig');
+    }
+
+
+    public function listtabledelibm1infosem7(Request $request, MyFunctionDelib $callfunction, StudentSpecialityRepository $studentspecrepo, StudentRepository $studentrepo)
+    {
+
+        $idses=$this->get('session')->get('idsesdelib');
+
+        $idspecialite=$this->get('session')->get('speciddelib');
+        $idsem=$this->get('session')->get('semiddelib');
+
+
+        $idanac=$this->get('session')->get('anacad');
+
+
+
+        if($idses=='SE1') {
+
+            $length = $request->get('length');
+            $length = $length && ($length != -1) ? $length : 0;
+
+            $start = $request->get('start');
+            $start = $length ? ($start && ($start != -1) ? $start : 0) / $length : 0;
+
+            $delibsem = $request->get('delibsem');
+            $filters = [
+                'query' => @$delibsem['value']
+            ];
+
+            $users = $studentspecrepo->studspec($idanac, $idsem, $idspecialite, $idses,
+                $filters, $start, $length
+            );
+
+            $output = array(
+                'data' => array(),
+                'recordsFiltered' => count($studentspecrepo->studspec($idanac, $idsem, $idspecialite, $idses, $filters, 0, false)),
+                'recordsTotal' => count($studentspecrepo->studspec($idanac, $idsem, $idspecialite, $idses, 0, false))
+            );
+
+            foreach ($users as $user) {
+                $idetudiant = $user['studentid'];
+
+
+
+                $etudiant = $studentrepo->findOneById($idetudiant);
+
+
+
+                $m1=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1ANG2200', $idsem, $idses, $idanac);
+
+
+
+
+                $m2=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1COM2200', $idsem, $idses, $idanac);
+
+
+
+
+                $m3=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2COM2200', $idsem, $idses, $idanac);
+
+
+
+
+                $m4=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1DRT2101', $idsem, $idses, $idanac);
+
+
+                $m5=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1INF2103', $idsem, $idses, $idanac);
+
+
+
+
+
+
+                $m6=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1INF2100', $idsem, $idses, $idanac);
+
+
+
+                $m7=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2INF2100', $idsem, $idses, $idanac);
+
+
+
+
+
+                $m8=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU3INF2100', $idsem, $idses, $idanac);
+
+
+
+
+
+
+                $m9=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1INF2101', $idsem, $idses, $idanac);
+
+                $m10=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2INF2101', $idsem, $idses, $idanac);
+
+
+                $m11=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1MTH2100', $idsem, $idses, $idanac);
+                $m12=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2MTH2100', $idsem, $idses, $idanac);
+                $m13=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1ROP2100', $idsem, $idses, $idanac);
+                $m14=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2ROP2100', $idsem, $idses, $idanac);
+                $m15=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU3ROP2100', $idsem, $idses, $idanac);
+
+
+                $output['data'][] = [
+                    'idetudiant' => $etudiant->getId(),
+
+
+
+
+                    'ue1' =>(float)$m1,
+                    'ue2' =>(float)$m2,
+                    'ue3' =>(float)$m3,
+                    'ue4' =>(float)$m4,
+                    'ue5' =>(float)$m5,
+
+                    'moyennesemminor' =>(float)$callfunction->ueminorsemaverage($idetudiant, $idspecialite,  $idsem, $idses, $idanac),
+
+                    'ue6' =>(float)$m6,
+                    'ue7' =>(float)$m7,
+                    'ue8' =>(float)$m8,
+                    'ue9' =>(float)$m9,
+                    'ue10' =>(float)$m10,
+                    'ue11' =>(float)$m11,
+                    'ue12' =>(float)$m12,
+
+                    'ue13' =>(float)$m13,
+                    'ue14' =>(float)$m14,
+                    'ue15' =>(float)$m15,
+
+                    'moyennesemmajor' =>(float)$callfunction->uemajorsemaverage($idetudiant, $idspecialite,  $idsem, $idses, $idanac),
+
+
+
+                    'moyennesem' =>(float)$callfunction->moyennesemecusemestrielle($idetudiant,$idsem,$idanac,$idspecialite,$idses),
+
+
+
+
+                    'tcredit' =>(float)$callfunction->tcreditsemestrielle($idetudiant,$idsem,$idanac,$idspecialite,$idses)
+
+
+
+
+
+
+
+
+
+
+
+
+                ];
+            }
+
+            return new Response(json_encode($output), 200, ['Content-Type' => 'application/json']);
+
+
+        }
+
+
+
+
+        else{
+            $length = $request->get('length');
+            $length = $length && ($length != -1) ? $length : 0;
+
+            $start = $request->get('start');
+            $start = $length ? ($start && ($start != -1) ? $start : 0) / $length : 0;
+
+            $delibsem = $request->get('delibsem');
+            $filters = [
+                'query' => @$delibsem['value']
+            ];
+
+            $users = $studentspecrepo->studspecse2($idanac, $idsem, $idspecialite, $idses,
+                $filters, $start, $length
+            );
+
+            $output = array(
+                'data' => array(),
+                'recordsFiltered' => count($studentspecrepo->studspecse2($idanac, $idsem, $idspecialite, $idses, $filters, 0, false)),
+                'recordsTotal' => count($studentspecrepo->studspecse2($idanac, $idsem, $idspecialite, $idses, 0, false))
+            );
+
+            foreach ($users as $user) {
+                $idetudiant = $user['studentid'];
+
+
+
+                $etudiant = $studentrepo->findOneById($idetudiant);
+
+
+                /*    if($this->moyennesemecu($idetudiant, $idspecialite, $idsem, $idses, $idanac)>=10){
+
+
+                        $moysem=  '<span style="background-color: green;">'.$this->moyennesemecu($idetudiant, $idspecialite, $idsem, $idses, $idanac).'</span>';
+
+
+
+                    }else{
+
+                        $moysem=  '<span style="background-color: red;">'.$this->moyennesemecu($idetudiant, $idspecialite, $idsem, $idses, $idanac).'</span>';
+
+                    } */
+
+
+
+                $m1=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1ANG2200', $idsem, $idses, $idanac);
+
+
+
+
+                $m2=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1COM2200', $idsem, $idses, $idanac);
+
+
+
+
+                $m3=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2COM2200', $idsem, $idses, $idanac);
+
+
+
+
+                $m4=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1DRT2101', $idsem, $idses, $idanac);
+
+
+                $m5=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1INF2103', $idsem, $idses, $idanac);
+
+
+
+
+
+
+                $m6=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1INF2100', $idsem, $idses, $idanac);
+
+
+
+                $m7=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2INF2100', $idsem, $idses, $idanac);
+
+
+
+
+
+                $m8=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU3INF2100', $idsem, $idses, $idanac);
+
+
+
+
+
+
+                $m9=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1INF2101', $idsem, $idses, $idanac);
+
+                $m10=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2INF2101', $idsem, $idses, $idanac);
+
+
+                $m11=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1MTH2100', $idsem, $idses, $idanac);
+                $m12=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2MTH2100', $idsem, $idses, $idanac);
+                $m13=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1ROP2100', $idsem, $idses, $idanac);
+                $m14=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2ROP2100', $idsem, $idses, $idanac);
+                $m15=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU3ROP2100', $idsem, $idses, $idanac);
+
+
+                $output['data'][] = [
+                    'idetudiant' => $etudiant->getId(),
+
+
+
+
+                    'ue1' =>(float)$m1,
+                    'ue2' =>(float)$m2,
+                    'ue3' =>(float)$m3,
+                    'ue4' =>(float)$m4,
+                    'ue5' =>(float)$m5,
+
+                    'moyennesemminor' =>(float)$callfunction->ueminorsemaverage($idetudiant, $idspecialite,  $idsem, $idses, $idanac),
+
+                    'ue6' =>(float)$m6,
+                    'ue7' =>(float)$m7,
+                    'ue8' =>(float)$m8,
+                    'ue9' =>(float)$m9,
+                    'ue10' =>(float)$m10,
+                    'ue11' =>(float)$m11,
+                    'ue12' =>(float)$m12,
+
+                    'ue13' =>(float)$m13,
+                    'ue14' =>(float)$m14,
+                    'ue15' =>(float)$m15,
+
+                    'moyennesemmajor' =>(float)$callfunction->uemajorsemaverage($idetudiant, $idspecialite,  $idsem, $idses, $idanac),
+
+
+
+                    'moyennesem' =>(float)$callfunction->moyennesemecusemestrielle($idetudiant,$idsem,$idanac,$idspecialite,$idses),
+
+
+
+
+                    'tcredit' =>(float)$callfunction->tcreditsemestrielle($idetudiant,$idsem,$idanac,$idspecialite,$idses)
+
+
+
+
+
+
+
+
+
+                ];
+            }
+
+            return new Response(json_encode($output), 200, ['Content-Type' => 'application/json']);
+
+
+        }
+
+
+
+
+    }
+
+
+
+
+
+
+
+    public function deliberationsemestreuniqmaster(Request $request, MyFunctionDelib $callfunction, UeSpecialityRepository $uespecrepo, UeValidatedRepository $uevalidrepo, HalfYearlyDelibRepository $halfyearlyrepo)
+    {
+        $idetudiant = $request->query->get('idetudiant');
+        $specid= $this->get('session')->get('speciddelib');
+        $semid = $this->get('session')->get('semiddelib');
+        $sessionid= $this->get('session')->get('idsesdelib');
+        $acadid = $this->get('session')->get('anacad');
+        $userdelib = $this->getUser()->getUsername();
+
+
+
+
+
+        $pue=$uespecrepo->findBy(array('specialityid' => $specid,'semester' => $semid,'acadyearid'=>$acadid));
+        foreach ($pue as $puev) {
+
+
+
+            $uevalids = $uevalidrepo->findOneBy(array('studentid' => $idetudiant, 'specialityid' => $specid, 'semesterid' =>$semid, 'ueid' => $puev->getUeid()->getId()));
+
+
+
+            if(!$uevalids){
+
+                if($callfunction->creditsvalidemaster($idetudiant,$semid,$puev->getUeid()->getId(),$acadid,$specid,$sessionid)==$callfunction->creditue($specid,$puev->getUeid()->getId(),$semid,$acadid)){
+
+                    $deliberationue = new UeValidated();
+
+                    $deliberationue->setStudentid($idetudiant);
+
+                    $deliberationue->setAcadyearid($acadid);
+                    $deliberationue->setSpecialityid($specid);
+                    $deliberationue->setUeid($puev->getUeid()->getId());
+                    $deliberationue->setSemesterid($semid);
+                    $deliberationue->setSessionid($sessionid);
+                    $deliberationue->setCreditvalided($callfunction->creditsvalidemaster($idetudiant,$semid,$puev->getUeid(),$acadid,$specid,$sessionid));
+                    $deliberationue->setUeaverage($callfunction->ueaverage($idetudiant, $specid,$puev->getUeid(), $semid, $sessionid, $acadid));
+
+                    $deliberationue->setDelibDate(new \Datetime());
+                    $deliberationue->setDelibUser($userdelib);
+
+
+                    $em = $this->getDoctrine()->getManager();
+
+                    $em->persist($deliberationue);
+                    $em->flush();
+
+                }
+            }else{
+
+                if($callfunction->ueaverage($idetudiant, $specid,$puev->getUeid(), $semid, $sessionid, $acadid)!= $uevalids->getUeaverage()){
+
+
+
+
+
+
+                    $uevalids->setSemesterid($semid);
+                    $uevalids->setSessionid($sessionid);
+
+                    $uevalids->setUeaverage($callfunction->ueaverage($idetudiant, $specid,$puev->getUeid(), $semid, $sessionid, $acadid));
+
+                    $uevalids->setDelibDate(new \Datetime());
+                    $uevalids->setDelibUser($userdelib);
+
+
+                    $em = $this->getDoctrine()->getManager();
+
+                    $em->persist($uevalids);
+                    $em->flush();
+
+                }
+
+
+
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            $deliberation = $halfyearlyrepo->findOneBy(array('studentid' => $idetudiant,'specialityid' =>$specid,'semesterid' => $semid,'acadyearid'=>$acadid,'sessionid'=>$sessionid));
+
+
+
+
+            $creditvalide = $callfunction->tcreditmaster($idetudiant, $specid, $semid, $sessionid, $acadid);
+            $moyennesemestre = $callfunction->ecusemaverage($idetudiant, $specid, $semid, $sessionid, $acadid);
+            $decisionsem = $callfunction->decisionmaster($idetudiant, $specid, $semid, $sessionid, $acadid);
+
+
+
+            $deliberation->setStudentid($idetudiant);
+
+            $deliberation->setAcadyearid($acadid);
+            $deliberation->setSpecialityid($specid);
+            $deliberation->setSemesterid($semid);
+            $deliberation->setSessionid($sessionid);
+            $deliberation->setTcreditvalide($creditvalide);
+            $deliberation->setSemaverage($moyennesemestre);
+            $deliberation->setDecision($decisionsem);
+            $deliberation->setDelibDate(new \Datetime());
+            $deliberation->setDelibUser($userdelib);
+
+
+            $em = $this->getDoctrine()->getManager();
+
+            $em->persist($deliberation);
+            $em->flush();
+
+        }
+
+        return $this->redirectToRoute('siges_startdelib2');
+    }
+
+
+
+    public function tabledelibmdsim1sem8()
+    {
+
+
+
+
+        return  $this->render('delibsem/tabledelibmdsim1sem8.html.twig');
+    }
+
+
+
+
+    public function listtabledelibmdsim1sem8(Request $request, MyFunctionDelib $callfunction, StudentSpecialityRepository $studentspecrepo, StudentRepository $studentrepo)
+    {
+
+        $idses=$this->get('session')->get('idsesdelib');
+
+        $idspecialite=$this->get('session')->get('speciddelib');
+        $idsem=$this->get('session')->get('semiddelib');
+
+
+        $idanac=$this->get('session')->get('anacad');
+
+
+
+        if($idses=='SE1') {
+
+            $length = $request->get('length');
+            $length = $length && ($length != -1) ? $length : 0;
+
+            $start = $request->get('start');
+            $start = $length ? ($start && ($start != -1) ? $start : 0) / $length : 0;
+
+            $delibsem = $request->get('delibsem');
+            $filters = [
+                'query' => @$delibsem['value']
+            ];
+
+            $users = $studentspecrepo->studspec($idanac, $idsem, $idspecialite, $idses,
+                $filters, $start, $length
+            );
+
+            $output = array(
+                'data' => array(),
+                'recordsFiltered' => count($studentspecrepo->studspec($idanac, $idsem, $idspecialite, $idses, $filters, 0, false)),
+                'recordsTotal' => count($studentspecrepo->studspec($idanac, $idsem, $idspecialite, $idses, 0, false))
+            );
+
+            foreach ($users as $user) {
+                $idetudiant = $user['studentid'];
+
+
+
+                $etudiant = $studentrepo->findOneById($idetudiant);
+
+
+
+
+                $m1=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1ANG2200', $idsem, $idses, $idanac);
+
+
+
+
+                $m2=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1COM2200', $idsem, $idses, $idanac);
+
+
+
+
+                $m3=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2COM2200', $idsem, $idses, $idanac);
+
+
+
+
+                $m4=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1BUS2200', $idsem, $idses, $idanac);
+
+
+                $m5=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2BUS2200', $idsem, $idses, $idanac);
+
+
+
+
+
+                $m6=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU3BUS2200', $idsem, $idses, $idanac);
+
+
+
+
+
+                $m7=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1DSS2200', $idsem, $idses, $idanac);
+
+
+
+
+
+
+                $m8=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2DSS2200', $idsem, $idses, $idanac);
+
+                $m9=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1ECO2201', $idsem, $idses, $idanac);
+
+                $m10=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1GES2200', $idsem, $idses, $idanac);
+                $m11=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2GES2200', $idsem, $idses, $idanac);
+                $m12=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1TDS2200', $idsem, $idses, $idanac);
+
+
+                $output['data'][] = [
+                    'idetudiant' => $etudiant->getId(),
+
+
+
+
+
+                    'moyennesem' =>(float)$callfunction->moyennesemecusemestrielle($idetudiant,$idsem,$idanac,$idspecialite,$idses),
+                    'ue1' =>(float)$m1,
+                    'ue2' =>(float)$m2,
+                    'ue3' =>(float)$m3,
+                    'ue4' =>(float)$m4,
+                    'ue5' =>(float)$m5,
+
+                    'ue6' =>(float)$m6,
+                    'ue7' =>(float)$m7,
+                    'ue8' =>(float)$m8,
+                    'ue9' =>(float)$m9,
+                    'ue10' =>(float)$m10,
+                    'ue11' =>(float)$m11,
+                    'ue12' =>(float)$m12,
+
+
+                    'tcredit' =>(float)$callfunction->tcreditsemestrielle($idetudiant,$idsem,$idanac,$idspecialite,$idses)
+
+
+
+
+
+
+
+
+                ];
+            }
+
+            return new Response(json_encode($output), 200, ['Content-Type' => 'application/json']);
+
+
+        }
+
+
+
+
+        else{
+            $length = $request->get('length');
+            $length = $length && ($length != -1) ? $length : 0;
+
+            $start = $request->get('start');
+            $start = $length ? ($start && ($start != -1) ? $start : 0) / $length : 0;
+
+            $delibsem = $request->get('delibsem');
+            $filters = [
+                'query' => @$delibsem['value']
+            ];
+
+            $users = $studentspecrepo->studspecse2($idanac, $idsem, $idspecialite, $idses,
+                $filters, $start, $length
+            );
+
+            $output = array(
+                'data' => array(),
+                'recordsFiltered' => count($studentspecrepo->studspecse2($idanac, $idsem, $idspecialite, $idses, $filters, 0, false)),
+                'recordsTotal' => count($studentspecrepo->studspecse2($idanac, $idsem, $idspecialite, $idses, 0, false))
+            );
+
+            foreach ($users as $user) {
+                $idetudiant = $user['studentid'];
+
+
+
+                $etudiant = $studentrepo->findOneById($idetudiant);
+
+
+                /*    if($this->moyennesemecu($idetudiant, $idspecialite, $idsem, $idses, $idanac)>=10){
+
+
+                        $moysem=  '<span style="background-color: green;">'.$this->moyennesemecu($idetudiant, $idspecialite, $idsem, $idses, $idanac).'</span>';
+
+
+
+                    }else{
+
+                        $moysem=  '<span style="background-color: red;">'.$this->moyennesemecu($idetudiant, $idspecialite, $idsem, $idses, $idanac).'</span>';
+
+                    } */
+
+
+
+                $m1=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1ANG2200', $idsem, $idses, $idanac);
+
+
+
+
+                $m2=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1COM2200', $idsem, $idses, $idanac);
+
+
+
+
+                $m3=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2COM2200', $idsem, $idses, $idanac);
+
+
+
+
+                $m4=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1DRT2101', $idsem, $idses, $idanac);
+
+
+                $m5=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1INF2103', $idsem, $idses, $idanac);
+
+
+
+
+
+
+                $m6=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1INF2100', $idsem, $idses, $idanac);
+
+
+
+                $m7=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2INF2100', $idsem, $idses, $idanac);
+
+
+
+
+
+                $m8=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU3INF2100', $idsem, $idses, $idanac);
+
+
+
+
+
+
+                $m9=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1INF2101', $idsem, $idses, $idanac);
+
+                $m10=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2INF2101', $idsem, $idses, $idanac);
+
+
+                $m11=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1MTH2100', $idsem, $idses, $idanac);
+                $m12=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2MTH2100', $idsem, $idses, $idanac);
+                $m13=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1ROP2100', $idsem, $idses, $idanac);
+                $m14=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2ROP2100', $idsem, $idses, $idanac);
+                $m15=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU3ROP2100', $idsem, $idses, $idanac);
+
+
+                $output['data'][] = [
+                    'idetudiant' => $etudiant->getId(),
+
+
+
+
+                    'ue1' =>(float)$m1,
+                    'ue2' =>(float)$m2,
+                    'ue3' =>(float)$m3,
+                    'ue4' =>(float)$m4,
+                    'ue5' =>(float)$m5,
+
+                    'moyennesemminor' =>(float)$callfunction->ueminorsemaverage($idetudiant, $idspecialite,  $idsem, $idses, $idanac),
+
+                    'ue6' =>(float)$m6,
+                    'ue7' =>(float)$m7,
+                    'ue8' =>(float)$m8,
+                    'ue9' =>(float)$m9,
+                    'ue10' =>(float)$m10,
+                    'ue11' =>(float)$m11,
+                    'ue12' =>(float)$m12,
+
+                    'ue13' =>(float)$m13,
+                    'ue14' =>(float)$m14,
+                    'ue15' =>(float)$m15,
+
+                    'moyennesemmajor' =>(float)$callfunction->uemajorsemaverage($idetudiant, $idspecialite,  $idsem, $idses, $idanac),
+
+
+
+                    'moyennesem' =>(float)$callfunction->moyennesemecusemestrielle($idetudiant,$idsem,$idanac,$idspecialite,$idses),
+
+
+
+
+                    'tcredit' =>(float)$callfunction->tcreditsemestrielle($idetudiant,$idsem,$idanac,$idspecialite,$idses)
+
+
+
+
+
+
+
+
+
+                ];
+            }
+
+            return new Response(json_encode($output), 200, ['Content-Type' => 'application/json']);
+
+
+        }
+
+
+
+
+    }
+
+
+
+
+
+    public function tabledelibm1mdsisem7()
+    {
+
+
+
+
+        return  $this->render('delibsem/tabledelibmdsim1sem7.html.twig');
+    }
+
+
+
+
+
+
+
+
+    public function listtabledelibm1mdsisem7(Request $request, MyFunctionDelib $callfunction, StudentSpecialityRepository $studentspecrepo, StudentRepository $studentrepo)
+    {
+
+        $idses=$this->get('session')->get('idsesdelib');
+
+        $idspecialite=$this->get('session')->get('speciddelib');
+        $idsem=$this->get('session')->get('semiddelib');
+
+
+        $idanac=$this->get('session')->get('anacad');
+
+
+
+        if($idses=='SE1') {
+
+            $length = $request->get('length');
+            $length = $length && ($length != -1) ? $length : 0;
+
+            $start = $request->get('start');
+            $start = $length ? ($start && ($start != -1) ? $start : 0) / $length : 0;
+
+            $delibsem = $request->get('delibsem');
+            $filters = [
+                'query' => @$delibsem['value']
+            ];
+
+            $users = $studentspecrepo->studspec($idanac, $idsem, $idspecialite, $idses,
+                $filters, $start, $length
+            );
+
+            $output = array(
+                'data' => array(),
+                'recordsFiltered' => count($studentspecrepo->studspec($idanac, $idsem, $idspecialite, $idses, $filters, 0, false)),
+                'recordsTotal' => count($studentspecrepo->studspec($idanac, $idsem, $idspecialite, $idses, 0, false))
+            );
+
+            foreach ($users as $user) {
+                $idetudiant = $user['studentid'];
+
+
+
+                $etudiant = $studentrepo->findOneById($idetudiant);
+
+
+
+
+                $m1=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1ANG2100', $idsem, $idses, $idanac);
+
+
+
+
+                $m2=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1COM2100', $idsem, $idses, $idanac);
+
+
+
+
+                $m3=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2COM2100', $idsem, $idses, $idanac);
+
+
+
+
+                $m4=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1DRT2102', $idsem, $idses, $idanac);
+
+
+                $m5=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1ARC2100', $idsem, $idses, $idanac);
+
+
+                $m6=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1SSI2100', $idsem, $idses, $idanac);
+
+
+                $m7=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1TEC2100', $idsem, $idses, $idanac);
+
+
+
+
+
+                $m8=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2TEC2100', $idsem, $idses, $idanac);
+
+
+
+
+
+
+                $m9=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1MSI2100', $idsem, $idses, $idanac);
+
+                $m10=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1MAN2100', $idsem, $idses, $idanac);
+
+                $m11=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2MAN2100', $idsem, $idses, $idanac);
+
+
+                $output['data'][] = [
+                    'idetudiant' => $etudiant->getId(),
+
+
+
+
+
+                    'moyennesem' =>(float)$callfunction->moyennesemecusemestrielle($idetudiant,$idsem,$idanac,$idspecialite,$idses),
+                    'ue1' =>(float)$m1,
+                    'ue2' =>(float)$m2,
+                    'ue3' =>(float)$m3,
+                    'ue4' =>(float)$m4,
+                    'ue5' =>(float)$m5,
+
+                    'ue6' =>(float)$m6,
+                    'ue7' =>(float)$m7,
+                    'ue8' =>(float)$m8,
+                    'ue9' =>(float)$m9,
+                    'ue10' =>(float)$m10,
+                    'ue11' =>(float)$m11,
+
+
+                    'tcredit' =>(float)$callfunction->tcreditsemestrielle($idetudiant,$idsem,$idanac,$idspecialite,$idses)
+
+
+
+
+
+
+
+
+
+                ];
+            }
+
+            return new Response(json_encode($output), 200, ['Content-Type' => 'application/json']);
+
+
+
+        }
+
+
+
+
+        else{
+            $length = $request->get('length');
+            $length = $length && ($length != -1) ? $length : 0;
+
+            $start = $request->get('start');
+            $start = $length ? ($start && ($start != -1) ? $start : 0) / $length : 0;
+
+            $delibsem = $request->get('delibsem');
+            $filters = [
+                'query' => @$delibsem['value']
+            ];
+
+            $users = $studentspecrepo->studspecse2($idanac, $idsem, $idspecialite, $idses,
+                $filters, $start, $length
+            );
+
+            $output = array(
+                'data' => array(),
+                'recordsFiltered' => count($studentspecrepo->studspecse2($idanac, $idsem, $idspecialite, $idses, $filters, 0, false)),
+                'recordsTotal' => count($studentspecrepo->studspecse2($idanac, $idsem, $idspecialite, $idses, 0, false))
+            );
+
+            foreach ($users as $user) {
+                $idetudiant = $user['studentid'];
+
+
+
+                $etudiant = $studentrepo->findOneById($idetudiant);
+
+
+                $m1=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1ANG2100', $idsem, $idses, $idanac);
+
+
+
+
+                $m2=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1COM2100', $idsem, $idses, $idanac);
+
+
+
+
+                $m3=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2COM2100', $idsem, $idses, $idanac);
+
+
+
+
+                $m4=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1DRT2102', $idsem, $idses, $idanac);
+
+
+                $m5=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1ARC2100', $idsem, $idses, $idanac);
+
+
+                $m6=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1SSI2100', $idsem, $idses, $idanac);
+
+
+                $m7=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1TEC2100', $idsem, $idses, $idanac);
+
+
+
+
+
+                $m8=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2TEC2100', $idsem, $idses, $idanac);
+
+
+
+
+
+
+                $m9=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1MSI2100', $idsem, $idses, $idanac);
+
+                $m10=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1MAN2100', $idsem, $idses, $idanac);
+
+                $m11=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2MAN2100', $idsem, $idses, $idanac);
+
+
+                $output['data'][] = [
+                    'idetudiant' => $etudiant->getId(),
+
+
+
+
+
+                    'moyennesem' =>(float)$callfunction->moyennesemecusemestrielle($idetudiant,$idsem,$idanac,$idspecialite,$idses),
+                    'ue1' =>(float)$m1,
+                    'ue2' =>(float)$m2,
+                    'ue3' =>(float)$m3,
+                    'ue4' =>(float)$m4,
+                    'ue5' =>(float)$m5,
+
+                    'ue6' =>(float)$m6,
+                    'ue7' =>(float)$m7,
+                    'ue8' =>(float)$m8,
+                    'ue9' =>(float)$m9,
+                    'ue10' =>(float)$m10,
+                    'ue11' =>(float)$m11,
+
+
+                    'tcredit' =>(float)$callfunction->tcreditsemestrielle($idetudiant,$idsem,$idanac,$idspecialite,$idses)
+
+
+
+
+
+
+
+
+
+                ];
+            }
+
+            return new Response(json_encode($output), 200, ['Content-Type' => 'application/json']);
+
+
+
+        }
+
+
+
+
+    }
+
+
+
+
+
+    public function tabledelibsritl3sem5()
+    {
+
+
+
+
+        return  $this->render('delibsem/tabledelibsritl3sem5.html.twig');
+    }
+
+
+
+
+    public function listtabledelibsritl3sem5(Request $request, MyFunctionDelib $callfunctiondelib, StudentSpecialityRepository $studentspecrep, StudentRepository $stdrepo)
+    {
+
+        $idses=$this->get('session')->get('idsesdelib');
+
+        $idspecialite=$this->get('session')->get('speciddelib');
+        $idsem=$this->get('session')->get('semiddelib');
+
+
+        $idanac=$this->get('session')->get('anacad');
+
+
+
+        if($idses=='SE1') {
+
+            $length = $request->get('length');
+            $length = $length && ($length != -1) ? $length : 0;
+
+            $start = $request->get('start');
+            $start = $length ? ($start && ($start != -1) ? $start : 0) / $length : 0;
+
+            $delibsem = $request->get('delibsem');
+            $filters = [
+                'query' => @$delibsem['value']
+            ];
+
+            $users = $studentspecrep->studspec($idanac, $idsem, $idspecialite, $idses,
+                $filters, $start, $length
+            );
+
+            $output = array(
+                'data' => array(),
+                'recordsFiltered' => count($studentspecrep->studspec($idanac, $idsem, $idspecialite, $idses, $filters, 0, false)),
+                'recordsTotal' => count($studentspecrep->studspec($idanac, $idsem, $idspecialite, $idses, 0, false))
+            );
+
+            foreach ($users as $user) {
+                $idetudiant = $user['studentid'];
+
+
+
+                $etudiant = $stdrepo->findOneById($idetudiant);
+
+
+
+
+
+                $m1=$callfunctiondelib->ueaverage($idetudiant, $idspecialite,'PHY3401', $idsem, $idses, $idanac);
+
+
+
+
+                $m2=$callfunctiondelib->ueaverage($idetudiant, $idspecialite,'COM3400', $idsem, $idses, $idanac);
+
+
+
+
+
+                $m3=$callfunctiondelib->ueaverage($idetudiant, $idspecialite,'DRT3400', $idsem, $idses, $idanac);
+
+
+
+                $m4=$callfunctiondelib->ueaverage($idetudiant, $idspecialite,'INF3400', $idsem, $idses, $idanac);
+
+
+                $m5=$callfunctiondelib->ueaverage($idetudiant, $idspecialite,'INF3401', $idsem, $idses, $idanac);
+
+
+
+
+
+                $m6=$callfunctiondelib->ueaverage($idetudiant, $idspecialite,'MTH3400', $idsem, $idses, $idanac);
+
+
+
+
+
+                $m7=$callfunctiondelib->ueaverage($idetudiant, $idspecialite,'PHY3400', $idsem, $idses, $idanac);
+
+
+
+
+
+
+
+
+                $output['data'][] = [
+                    'idetudiant' => $etudiant->getId(),
+
+
+
+
+
+                    'moyennesem' =>(float)$callfunctiondelib->moyennesemecusemestrielle($idetudiant,$idsem,$idanac,$idspecialite,$idses),
+                    'ue1' =>(float)$m1,
+
+
+                    'moyennesemminor' =>(float)$callfunctiondelib->ueminorsemaverage($idetudiant, $idspecialite,  $idsem, $idses, $idanac),
+
+                    'ue2' =>(float)$m2,
+                    'ue3' =>(float)$m3,
+
+                    'ue4' =>(float)$m4,
+                    'ue5' =>(float)$m5,
+
+                    'ue6' =>(float)$m6,
+                    'ue7' =>(float)$m7,
+
+
+                    'moyennesemmajor' =>(float)$callfunctiondelib->uemajorsemaverage($idetudiant, $idspecialite,  $idsem, $idses, $idanac),
+
+
+                    'tcredit' =>$callfunctiondelib->tcreditsemestrielle($idetudiant,$idsem,$idanac,$idspecialite,$idses)
+
+
+
+
+
+
+
+
+
+                ];
+            }
+
+            return new Response(json_encode($output), 200, ['Content-Type' => 'application/json']);
+
+
+        }
+
+
+
+
+
+    }
+
+
+
+
+
+
+    public function tabledelibrtell3sem5()
+    {
+
+
+
+
+        return  $this->render('delibsem/tabledelibrtell3sem5.html.twig');
+    }
+
+
+
+
+
+    public function listtabledelibrtell3sem5(Request $request, MyFunctionDelib $callfunctiondelib, StudentSpecialityRepository $studentspecrep, StudentRepository $stdrepo)
+    {
+
+        $idses=$this->get('session')->get('idsesdelib');
+
+        $idspecialite=$this->get('session')->get('speciddelib');
+        $idsem=$this->get('session')->get('semiddelib');
+
+
+        $idanac=$this->get('session')->get('anacad');
+
+
+
+        if($idses=='SE1') {
+
+            $length = $request->get('length');
+            $length = $length && ($length != -1) ? $length : 0;
+
+            $start = $request->get('start');
+            $start = $length ? ($start && ($start != -1) ? $start : 0) / $length : 0;
+
+            $delibsem = $request->get('delibsem');
+            $filters = [
+                'query' => @$delibsem['value']
+            ];
+
+            $users = $studentspecrep->studspec($idanac, $idsem, $idspecialite, $idses,
+                $filters, $start, $length
+            );
+
+            $output = array(
+                'data' => array(),
+                'recordsFiltered' => count($studentspecrep->studspec($idanac, $idsem, $idspecialite, $idses, $filters, 0, false)),
+                'recordsTotal' => count($studentspecrep->studspec($idanac, $idsem, $idspecialite, $idses, 0, false))
+            );
+
+            foreach ($users as $user) {
+                $idetudiant = $user['studentid'];
+
+
+
+                $etudiant = $stdrepo->findOneById($idetudiant);
+
+
+
+
+
+                $m1=$callfunctiondelib->ueaverage($idetudiant, $idspecialite,'INF3405', $idsem, $idses, $idanac);
+
+
+
+
+                $m2=$callfunctiondelib->ueaverage($idetudiant, $idspecialite,'PHY3404', $idsem, $idses, $idanac);
+
+
+
+
+
+                $m3=$callfunctiondelib->ueaverage($idetudiant, $idspecialite,'RES3402', $idsem, $idses, $idanac);
+
+
+
+                $m4=$callfunctiondelib->ueaverage($idetudiant, $idspecialite,'COM3400', $idsem, $idses, $idanac);
+
+
+                $m5=$callfunctiondelib->ueaverage($idetudiant, $idspecialite,'DRT3400', $idsem, $idses, $idanac);
+
+
+
+
+
+                $m6=$callfunctiondelib->ueaverage($idetudiant, $idspecialite,'PHY3402', $idsem, $idses, $idanac);
+
+
+
+
+
+                $m7=$callfunctiondelib->ueaverage($idetudiant, $idspecialite,'RES3400', $idsem, $idses, $idanac);
+
+
+
+
+                $m8=$callfunctiondelib->ueaverage($idetudiant, $idspecialite,'RES3401', $idsem, $idses, $idanac);
+
+
+
+
+
+
+
+                $output['data'][] = [
+                    'idetudiant' => $etudiant->getId(),
+
+
+
+
+
+                    'moyennesem' =>(float)$callfunctiondelib->moyennesemecusemestrielle($idetudiant,$idsem,$idanac,$idspecialite,$idses),
+                    'ue1' =>(float)$m1,
+                    'ue2' =>(float)$m2,
+                    'ue3' =>(float)$m3,
+
+                    'moyennesemminor' =>(float)$callfunctiondelib->ueminorsemaverage($idetudiant, $idspecialite,  $idsem, $idses, $idanac),
+
+
+
+                    'ue4' =>(float)$m4,
+                    'ue5' =>(float)$m5,
+
+                    'ue6' =>(float)$m6,
+                    'ue7' =>(float)$m7,
+                    'ue8' =>(float)$m8,
+
+
+                    'moyennesemmajor' =>(float)$callfunctiondelib->uemajorsemaverage($idetudiant, $idspecialite,  $idsem, $idses, $idanac),
+
+
+                    'tcredit' =>$callfunctiondelib->tcreditsemestrielle($idetudiant,$idsem,$idanac,$idspecialite,$idses)
+
+
+
+
+
+
+
+
+
+                ];
+            }
+
+            return new Response(json_encode($output), 200, ['Content-Type' => 'application/json']);
+
+
+        }
+
+
+
+
+
+    }
+
+
+
+
+
+
+    public function tabledelibsigll3sem5()
+    {
+
+
+
+
+        return  $this->render('delibsem/tabledelibsigll3sem5.html.twig');
+    }
+
+
+
+
+
+    public function listtabledelibsigll3sem5(Request $request, MyFunctionDelib $callfunctiondelib, StudentSpecialityRepository $studentspecrep, StudentRepository $stdrepo)
+    {
+
+        $idses=$this->get('session')->get('idsesdelib');
+
+        $idspecialite=$this->get('session')->get('speciddelib');
+        $idsem=$this->get('session')->get('semiddelib');
+
+
+        $idanac=$this->get('session')->get('anacad');
+
+
+
+        if($idses=='SE1') {
+
+            $length = $request->get('length');
+            $length = $length && ($length != -1) ? $length : 0;
+
+            $start = $request->get('start');
+            $start = $length ? ($start && ($start != -1) ? $start : 0) / $length : 0;
+
+            $delibsem = $request->get('delibsem');
+            $filters = [
+                'query' => @$delibsem['value']
+            ];
+
+            $users = $studentspecrep->studspec($idanac, $idsem, $idspecialite, $idses,
+                $filters, $start, $length
+            );
+
+            $output = array(
+                'data' => array(),
+                'recordsFiltered' => count($studentspecrep->studspec($idanac, $idsem, $idspecialite, $idses, $filters, 0, false)),
+                'recordsTotal' => count($studentspecrep->studspec($idanac, $idsem, $idspecialite, $idses, 0, false))
+            );
+
+            foreach ($users as $user) {
+                $idetudiant = $user['studentid'];
+
+
+
+                $etudiant = $stdrepo->findOneById($idetudiant);
+
+
+
+
+
+                $m1=$callfunctiondelib->ueaverage($idetudiant, $idspecialite,'INF34055', $idsem, $idses, $idanac);
+
+
+
+
+                $m2=$callfunctiondelib->ueaverage($idetudiant, $idspecialite,'INF3410', $idsem, $idses, $idanac);
+
+
+
+
+
+                $m3=$callfunctiondelib->ueaverage($idetudiant, $idspecialite,'INF3451', $idsem, $idses, $idanac);
+
+
+
+                $m4=$callfunctiondelib->ueaverage($idetudiant, $idspecialite,'COM3400', $idsem, $idses, $idanac);
+
+
+                $m5=$callfunctiondelib->ueaverage($idetudiant, $idspecialite,'DRT3400', $idsem, $idses, $idanac);
+
+
+
+
+
+                $m6=$callfunctiondelib->ueaverage($idetudiant, $idspecialite,'INF3406', $idsem, $idses, $idanac);
+
+
+
+
+
+                $m7=$callfunctiondelib->ueaverage($idetudiant, $idspecialite,'INF3407', $idsem, $idses, $idanac);
+
+
+
+
+                $m8=$callfunctiondelib->ueaverage($idetudiant, $idspecialite,'INF3408', $idsem, $idses, $idanac);
+
+
+
+
+
+
+
+                $output['data'][] = [
+                    'idetudiant' => $etudiant->getId(),
+
+
+
+
+
+                    'moyennesem' =>(float)$callfunctiondelib->moyennesemecusemestrielle($idetudiant,$idsem,$idanac,$idspecialite,$idses),
+                    'ue1' =>(float)$m1,
+                    'ue2' =>(float)$m2,
+                    'ue3' =>(float)$m3,
+
+                    'moyennesemminor' =>(float)$callfunctiondelib->ueminorsemaverage($idetudiant, $idspecialite,  $idsem, $idses, $idanac),
+
+
+
+                    'ue4' =>(float)$m4,
+                    'ue5' =>(float)$m5,
+
+                    'ue6' =>(float)$m6,
+                    'ue7' =>(float)$m7,
+                    'ue8' =>(float)$m8,
+
+
+                    'moyennesemmajor' =>(float)$callfunctiondelib->uemajorsemaverage($idetudiant, $idspecialite,  $idsem, $idses, $idanac),
+
+
+                    'tcredit' =>$callfunctiondelib->tcreditsemestrielle($idetudiant,$idsem,$idanac,$idspecialite,$idses)
+
+
+
+
+
+
+
+
+
+                ];
+            }
+
+            return new Response(json_encode($output), 200, ['Content-Type' => 'application/json']);
+
+
+        }
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+    public function tabledelibtwinl3sem5()
+    {
+
+
+
+
+        return  $this->render('delibsem/tabledelibtwinl3sem5.html.twig');
+    }
+
+
+
+
+
+    public function listtabledelibtwinl3sem5(Request $request, MyFunctionDelib $callfunctiondelib, StudentSpecialityRepository $studentspecrep, StudentRepository $stdrepo)
+    {
+
+        $idses=$this->get('session')->get('idsesdelib');
+
+        $idspecialite=$this->get('session')->get('speciddelib');
+        $idsem=$this->get('session')->get('semiddelib');
+
+
+        $idanac=$this->get('session')->get('anacad');
+
+
+
+        if($idses=='SE1') {
+
+            $length = $request->get('length');
+            $length = $length && ($length != -1) ? $length : 0;
+
+            $start = $request->get('start');
+            $start = $length ? ($start && ($start != -1) ? $start : 0) / $length : 0;
+
+            $delibsem = $request->get('delibsem');
+            $filters = [
+                'query' => @$delibsem['value']
+            ];
+
+            $users = $studentspecrep->studspec($idanac, $idsem, $idspecialite, $idses,
+                $filters, $start, $length
+            );
+
+            $output = array(
+                'data' => array(),
+                'recordsFiltered' => count($studentspecrep->studspec($idanac, $idsem, $idspecialite, $idses, $filters, 0, false)),
+                'recordsTotal' => count($studentspecrep->studspec($idanac, $idsem, $idspecialite, $idses, 0, false))
+            );
+
+            foreach ($users as $user) {
+                $idetudiant = $user['studentid'];
+
+
+
+                $etudiant = $stdrepo->findOneById($idetudiant);
+
+
+
+
+
+                $m1=$callfunctiondelib->ueaverage($idetudiant, $idspecialite,'ANG3460', $idsem, $idses, $idanac);
+
+
+
+
+                $m2=$callfunctiondelib->ueaverage($idetudiant, $idspecialite,'COM3460', $idsem, $idses, $idanac);
+
+
+
+
+
+                $m3=$callfunctiondelib->ueaverage($idetudiant, $idspecialite,'GES3460', $idsem, $idses, $idanac);
+
+
+
+                $m4=$callfunctiondelib->ueaverage($idetudiant, $idspecialite,'INF3463', $idsem, $idses, $idanac);
+
+
+                $m5=$callfunctiondelib->ueaverage($idetudiant, $idspecialite,'INF3464', $idsem, $idses, $idanac);
+
+
+
+
+
+                $m6=$callfunctiondelib->ueaverage($idetudiant, $idspecialite,'INF3460', $idsem, $idses, $idanac);
+
+
+
+
+
+                $m7=$callfunctiondelib->ueaverage($idetudiant, $idspecialite,'INF3461', $idsem, $idses, $idanac);
+
+
+
+
+                $m8=$callfunctiondelib->ueaverage($idetudiant, $idspecialite,'INF3462', $idsem, $idses, $idanac);
+
+
+
+
+
+
+
+                $output['data'][] = [
+                    'idetudiant' => $etudiant->getId(),
+
+
+
+
+
+                    'moyennesem' =>(float)$callfunctiondelib->moyennesemecusemestrielle($idetudiant,$idsem,$idanac,$idspecialite,$idses),
+                    'ue1' =>(float)$m1,
+                    'ue2' =>(float)$m2,
+                    'ue3' =>(float)$m3,
+
+                    'ue4' =>(float)$m4,
+                    'ue5' =>(float)$m5,
+
+                    'moyennesemminor' =>(float)$callfunctiondelib->ueminorsemaverage($idetudiant, $idspecialite,  $idsem, $idses, $idanac),
+
+
+
+
+
+                    'ue6' =>(float)$m6,
+                    'ue7' =>(float)$m7,
+                    'ue8' =>(float)$m8,
+
+
+                    'moyennesemmajor' =>(float)$callfunctiondelib->uemajorsemaverage($idetudiant, $idspecialite,  $idsem, $idses, $idanac),
+
+
+                    'tcredit' =>$callfunctiondelib->tcreditsemestrielle($idetudiant,$idsem,$idanac,$idspecialite,$idses)
+
+
+
+
+
+
+
+
+
+                ];
+            }
+
+            return new Response(json_encode($output), 200, ['Content-Type' => 'application/json']);
+
+
+        }
+
+
+
+
+
+    }
+
+
+
+    public function tabledelibm1rtelsem7()
+    {
+
+
+
+
+        return  $this->render('delibsem/tabledelibm1rtelsem7.html.twig');
+    }
+
+
+    public function listtabledelibm1rtelsem7(Request $request, MyFunctionDelib $callfunction, StudentSpecialityRepository $studentspecrepo, StudentRepository $studentrepo)
+    {
+
+        $idses=$this->get('session')->get('idsesdelib');
+
+        $idspecialite=$this->get('session')->get('speciddelib');
+        $idsem=$this->get('session')->get('semiddelib');
+
+
+        $idanac=$this->get('session')->get('anacad');
+
+
+
+        if($idses=='SE1') {
+
+            $length = $request->get('length');
+            $length = $length && ($length != -1) ? $length : 0;
+
+            $start = $request->get('start');
+            $start = $length ? ($start && ($start != -1) ? $start : 0) / $length : 0;
+
+            $delibsem = $request->get('delibsem');
+            $filters = [
+                'query' => @$delibsem['value']
+            ];
+
+            $users = $studentspecrepo->studspec($idanac, $idsem, $idspecialite, $idses,
+                $filters, $start, $length
+            );
+
+            $output = array(
+                'data' => array(),
+                'recordsFiltered' => count($studentspecrepo->studspec($idanac, $idsem, $idspecialite, $idses, $filters, 0, false)),
+                'recordsTotal' => count($studentspecrepo->studspec($idanac, $idsem, $idspecialite, $idses, 0, false))
+            );
+
+            foreach ($users as $user) {
+                $idetudiant = $user['studentid'];
+
+
+
+                $etudiant = $studentrepo->findOneById($idetudiant);
+
+
+
+                $m1=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1ANG2300', $idsem, $idses, $idanac);
+
+
+
+
+                $m2=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1COM2300', $idsem, $idses, $idanac);
+
+
+
+
+                $m3=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2COM2300', $idsem, $idses, $idanac);
+
+
+
+
+                $m4=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1DRT2100', $idsem, $idses, $idanac);
+
+
+                $m5=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1INF2102', $idsem, $idses, $idanac);
+
+
+
+
+
+
+
+                $m6=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1INF2100', $idsem, $idses, $idanac);
+
+
+
+
+
+
+                $m7=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2INF2100', $idsem, $idses, $idanac);
+
+
+
+                $m8=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU3INF2100', $idsem, $idses, $idanac);
+
+
+
+
+
+                $m9=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1INF2101', $idsem, $idses, $idanac);
+
+
+
+
+
+
+                $m10=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2INF2101', $idsem, $idses, $idanac);
+
+
+                $m11=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1MTH2100', $idsem, $idses, $idanac);
+                $m12=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2MTH2100', $idsem, $idses, $idanac);
+                $m13=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1ROP2100', $idsem, $idses, $idanac);
+                $m14=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2ROP2100', $idsem, $idses, $idanac);
+                $m15=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU3ROP2100', $idsem, $idses, $idanac);
+
+
+                $output['data'][] = [
+                    'idetudiant' => $etudiant->getId(),
+
+
+
+
+                    'ue1' =>(float)$m1,
+                    'ue2' =>(float)$m2,
+                    'ue3' =>(float)$m3,
+                    'ue4' =>(float)$m4,
+
+                    'moyennesemminor' =>(float)$callfunction->ueminorsemaverage($idetudiant, $idspecialite,  $idsem, $idses, $idanac),
+
+                    'ue5' =>(float)$m5,
+
+                    'ue6' =>(float)$m6,
+                    'ue7' =>(float)$m7,
+                    'ue8' =>(float)$m8,
+                    'ue9' =>(float)$m9,
+                    'ue10' =>(float)$m10,
+                    'ue11' =>(float)$m11,
+                    'ue12' =>(float)$m12,
+
+                    'ue13' =>(float)$m13,
+                    'ue14' =>(float)$m14,
+                    'ue15' =>(float)$m15,
+
+                    'moyennesemmajor' =>(float)$callfunction->uemajorsemaverage($idetudiant, $idspecialite,  $idsem, $idses, $idanac),
+
+
+
+                    'moyennesem' =>(float)$callfunction->moyennesemecusemestrielle($idetudiant,$idsem,$idanac,$idspecialite,$idses),
+
+
+
+
+                    'tcredit' =>(float)$callfunction->tcreditsemestrielle($idetudiant,$idsem,$idanac,$idspecialite,$idses)
+
+
+
+
+
+
+
+
+
+
+
+
+                ];
+            }
+
+            return new Response(json_encode($output), 200, ['Content-Type' => 'application/json']);
+
+
+        }
+
+
+
+
+        else{
+            $length = $request->get('length');
+            $length = $length && ($length != -1) ? $length : 0;
+
+            $start = $request->get('start');
+            $start = $length ? ($start && ($start != -1) ? $start : 0) / $length : 0;
+
+            $delibsem = $request->get('delibsem');
+            $filters = [
+                'query' => @$delibsem['value']
+            ];
+
+            $users = $studentspecrepo->studspecse2($idanac, $idsem, $idspecialite, $idses,
+                $filters, $start, $length
+            );
+
+            $output = array(
+                'data' => array(),
+                'recordsFiltered' => count($studentspecrepo->studspecse2($idanac, $idsem, $idspecialite, $idses, $filters, 0, false)),
+                'recordsTotal' => count($studentspecrepo->studspecse2($idanac, $idsem, $idspecialite, $idses, 0, false))
+            );
+
+            foreach ($users as $user) {
+                $idetudiant = $user['studentid'];
+
+
+
+                $etudiant = $studentrepo->findOneById($idetudiant);
+
+
+                /*    if($this->moyennesemecu($idetudiant, $idspecialite, $idsem, $idses, $idanac)>=10){
+
+
+                        $moysem=  '<span style="background-color: green;">'.$this->moyennesemecu($idetudiant, $idspecialite, $idsem, $idses, $idanac).'</span>';
+
+
+
+                    }else{
+
+                        $moysem=  '<span style="background-color: red;">'.$this->moyennesemecu($idetudiant, $idspecialite, $idsem, $idses, $idanac).'</span>';
+
+                    } */
+
+
+
+                $m1=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1ANG2200', $idsem, $idses, $idanac);
+
+
+
+
+                $m2=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1COM2200', $idsem, $idses, $idanac);
+
+
+
+
+                $m3=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2COM2200', $idsem, $idses, $idanac);
+
+
+
+
+                $m4=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1DRT2101', $idsem, $idses, $idanac);
+
+
+                $m5=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1INF2103', $idsem, $idses, $idanac);
+
+
+
+
+
+
+                $m6=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1INF2100', $idsem, $idses, $idanac);
+
+
+
+                $m7=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2INF2100', $idsem, $idses, $idanac);
+
+
+
+
+
+                $m8=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU3INF2100', $idsem, $idses, $idanac);
+
+
+
+
+
+
+                $m9=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1INF2101', $idsem, $idses, $idanac);
+
+                $m10=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2INF2101', $idsem, $idses, $idanac);
+
+
+                $m11=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1MTH2100', $idsem, $idses, $idanac);
+                $m12=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2MTH2100', $idsem, $idses, $idanac);
+                $m13=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1ROP2100', $idsem, $idses, $idanac);
+                $m14=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2ROP2100', $idsem, $idses, $idanac);
+                $m15=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU3ROP2100', $idsem, $idses, $idanac);
+
+
+                $output['data'][] = [
+                    'idetudiant' => $etudiant->getId(),
+
+
+
+
+                    'ue1' =>(float)$m1,
+                    'ue2' =>(float)$m2,
+                    'ue3' =>(float)$m3,
+                    'ue4' =>(float)$m4,
+                    'ue5' =>(float)$m5,
+
+                    'moyennesemminor' =>(float)$callfunction->ueminorsemaverage($idetudiant, $idspecialite,  $idsem, $idses, $idanac),
+
+                    'ue6' =>(float)$m6,
+                    'ue7' =>(float)$m7,
+                    'ue8' =>(float)$m8,
+                    'ue9' =>(float)$m9,
+                    'ue10' =>(float)$m10,
+                    'ue11' =>(float)$m11,
+                    'ue12' =>(float)$m12,
+
+                    'ue13' =>(float)$m13,
+                    'ue14' =>(float)$m14,
+                    'ue15' =>(float)$m15,
+
+                    'moyennesemmajor' =>(float)$callfunction->uemajorsemaverage($idetudiant, $idspecialite,  $idsem, $idses, $idanac),
+
+
+
+                    'moyennesem' =>(float)$callfunction->moyennesemecusemestrielle($idetudiant,$idsem,$idanac,$idspecialite,$idses),
+
+
+
+
+                    'tcredit' =>(float)$callfunction->tcreditsemestrielle($idetudiant,$idsem,$idanac,$idspecialite,$idses)
+
+
+
+
+
+
+
+
+
+                ];
+            }
+
+            return new Response(json_encode($output), 200, ['Content-Type' => 'application/json']);
+
+
+        }
+
+
+
+
+    }
+
+
+
+
+    public function tabledelibm2sitwsem9()
+    {
+
+
+
+
+        return  $this->render('delibsem/tabledelibm2sitwsem9.html.twig');
+    }
+
+
+    public function listtabledelibm2sitwsem9(Request $request, MyFunctionDelib $callfunction, StudentSpecialityRepository $studentspecrepo, StudentRepository $studentrepo)
+    {
+
+        $idses=$this->get('session')->get('idsesdelib');
+
+        $idspecialite=$this->get('session')->get('speciddelib');
+        $idsem=$this->get('session')->get('semiddelib');
+
+
+        $idanac=$this->get('session')->get('anacad');
+
+
+
+        if($idses=='SE1') {
+
+            $length = $request->get('length');
+            $length = $length && ($length != -1) ? $length : 0;
+
+            $start = $request->get('start');
+            $start = $length ? ($start && ($start != -1) ? $start : 0) / $length : 0;
+
+            $delibsem = $request->get('delibsem');
+            $filters = [
+                'query' => @$delibsem['value']
+            ];
+
+            $users = $studentspecrepo->studspec($idanac, $idsem, $idspecialite, $idses,
+                $filters, $start, $length
+            );
+
+            $output = array(
+                'data' => array(),
+                'recordsFiltered' => count($studentspecrepo->studspec($idanac, $idsem, $idspecialite, $idses, $filters, 0, false)),
+                'recordsTotal' => count($studentspecrepo->studspec($idanac, $idsem, $idspecialite, $idses, 0, false))
+            );
+
+            foreach ($users as $user) {
+                $idetudiant = $user['studentid'];
+
+
+
+                $etudiant = $studentrepo->findOneById($idetudiant);
+
+
+
+                $m1=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1ANG2300', $idsem, $idses, $idanac);
+
+
+
+
+                $m2=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1COM2300', $idsem, $idses, $idanac);
+
+
+
+
+                $m3=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2COM2300', $idsem, $idses, $idanac);
+
+
+
+
+                $m4=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1OGE2300', $idsem, $idses, $idanac);
+
+
+                $m5=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2OGE2300', $idsem, $idses, $idanac);
+
+
+
+
+
+
+
+                $m6=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1PNS2300', $idsem, $idses, $idanac);
+
+
+
+
+
+
+                $m7=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1DTW2300', $idsem, $idses, $idanac);
+
+
+
+                $m8=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2DTW2300', $idsem, $idses, $idanac);
+
+
+
+
+
+                $m9=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU3DTW2300', $idsem, $idses, $idanac);
+
+
+
+
+
+
+                $m10=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1INF2302', $idsem, $idses, $idanac);
+
+
+                $m11=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2INF2302', $idsem, $idses, $idanac);
+                $m12=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1SEC2300', $idsem, $idses, $idanac);
+                $m13=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2SEC2300', $idsem, $idses, $idanac);
+                $m14=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1SEC2301', $idsem, $idses, $idanac);
+
+
+                $output['data'][] = [
+                    'idetudiant' => $etudiant->getId(),
+
+
+
+
+                    'ue1' =>(float)$m1,
+                    'ue2' =>(float)$m2,
+                    'ue3' =>(float)$m3,
+                    'ue4' =>(float)$m4,
+
+                    'ue5' =>(float)$m5,
+
+                    'ue6' =>(float)$m6,
+
+
+                    'moyennesemminor' =>(float)$callfunction->ueminorsemaverage($idetudiant, $idspecialite,  $idsem, $idses, $idanac),
+
+                    'ue7' =>(float)$m7,
+                    'ue8' =>(float)$m8,
+                    'ue9' =>(float)$m9,
+                    'ue10' =>(float)$m10,
+                    'ue11' =>(float)$m11,
+                    'ue12' =>(float)$m12,
+
+                    'ue13' =>(float)$m13,
+                    'ue14' =>(float)$m14,
+
+
+                    'moyennesemmajor' =>(float)$callfunction->uemajorsemaverage($idetudiant, $idspecialite,  $idsem, $idses, $idanac),
+
+
+
+                    'moyennesem' =>(float)$callfunction->moyennesemecusemestrielle($idetudiant,$idsem,$idanac,$idspecialite,$idses),
+
+
+
+
+                    'tcredit' =>(float)$callfunction->tcreditsemestrielle($idetudiant,$idsem,$idanac,$idspecialite,$idses)
+
+
+
+
+
+
+
+
+
+
+
+
+                ];
+            }
+
+            return new Response(json_encode($output), 200, ['Content-Type' => 'application/json']);
+
+
+        }
+
+
+
+
+        else{
+            $length = $request->get('length');
+            $length = $length && ($length != -1) ? $length : 0;
+
+            $start = $request->get('start');
+            $start = $length ? ($start && ($start != -1) ? $start : 0) / $length : 0;
+
+            $delibsem = $request->get('delibsem');
+            $filters = [
+                'query' => @$delibsem['value']
+            ];
+
+            $users = $studentspecrepo->studspecse2($idanac, $idsem, $idspecialite, $idses,
+                $filters, $start, $length
+            );
+
+            $output = array(
+                'data' => array(),
+                'recordsFiltered' => count($studentspecrepo->studspecse2($idanac, $idsem, $idspecialite, $idses, $filters, 0, false)),
+                'recordsTotal' => count($studentspecrepo->studspecse2($idanac, $idsem, $idspecialite, $idses, 0, false))
+            );
+
+            foreach ($users as $user) {
+                $idetudiant = $user['studentid'];
+
+
+
+                $etudiant = $studentrepo->findOneById($idetudiant);
+
+
+                /*    if($this->moyennesemecu($idetudiant, $idspecialite, $idsem, $idses, $idanac)>=10){
+
+
+                        $moysem=  '<span style="background-color: green;">'.$this->moyennesemecu($idetudiant, $idspecialite, $idsem, $idses, $idanac).'</span>';
+
+
+
+                    }else{
+
+                        $moysem=  '<span style="background-color: red;">'.$this->moyennesemecu($idetudiant, $idspecialite, $idsem, $idses, $idanac).'</span>';
+
+                    } */
+
+
+
+                $m1=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1ANG2200', $idsem, $idses, $idanac);
+
+
+
+
+                $m2=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1COM2200', $idsem, $idses, $idanac);
+
+
+
+
+                $m3=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2COM2200', $idsem, $idses, $idanac);
+
+
+
+
+                $m4=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1DRT2101', $idsem, $idses, $idanac);
+
+
+                $m5=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1INF2103', $idsem, $idses, $idanac);
+
+
+
+
+
+
+                $m6=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1INF2100', $idsem, $idses, $idanac);
+
+
+
+                $m7=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2INF2100', $idsem, $idses, $idanac);
+
+
+
+
+
+                $m8=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU3INF2100', $idsem, $idses, $idanac);
+
+
+
+
+
+
+                $m9=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1INF2101', $idsem, $idses, $idanac);
+
+                $m10=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2INF2101', $idsem, $idses, $idanac);
+
+
+                $m11=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1MTH2100', $idsem, $idses, $idanac);
+                $m12=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2MTH2100', $idsem, $idses, $idanac);
+                $m13=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1ROP2100', $idsem, $idses, $idanac);
+                $m14=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2ROP2100', $idsem, $idses, $idanac);
+                $m15=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU3ROP2100', $idsem, $idses, $idanac);
+
+
+                $output['data'][] = [
+                    'idetudiant' => $etudiant->getId(),
+
+
+
+
+                    'ue1' =>(float)$m1,
+                    'ue2' =>(float)$m2,
+                    'ue3' =>(float)$m3,
+                    'ue4' =>(float)$m4,
+                    'ue5' =>(float)$m5,
+
+                    'moyennesemminor' =>(float)$callfunction->ueminorsemaverage($idetudiant, $idspecialite,  $idsem, $idses, $idanac),
+
+                    'ue6' =>(float)$m6,
+                    'ue7' =>(float)$m7,
+                    'ue8' =>(float)$m8,
+                    'ue9' =>(float)$m9,
+                    'ue10' =>(float)$m10,
+                    'ue11' =>(float)$m11,
+                    'ue12' =>(float)$m12,
+
+                    'ue13' =>(float)$m13,
+                    'ue14' =>(float)$m14,
+                    'ue15' =>(float)$m15,
+
+                    'moyennesemmajor' =>(float)$callfunction->uemajorsemaverage($idetudiant, $idspecialite,  $idsem, $idses, $idanac),
+
+
+
+                    'moyennesem' =>(float)$callfunction->moyennesemecusemestrielle($idetudiant,$idsem,$idanac,$idspecialite,$idses),
+
+
+
+
+                    'tcredit' =>(float)$callfunction->tcreditsemestrielle($idetudiant,$idsem,$idanac,$idspecialite,$idses)
+
+
+
+
+
+
+
+
+
+                ];
+            }
+
+            return new Response(json_encode($output), 200, ['Content-Type' => 'application/json']);
+
+
+        }
+
+
+
+
+    }
+
+
+
 
 
 

@@ -30,9 +30,9 @@ include("myfunctions.php");
         <col style="width: 2.5%">
         <col style="width: 6%">
 
-        <col style="width: 6%">
+        <col style="width: 5.5%">
 
-        <col style="width: 10%">
+        <col style="width: 9.5%">
         <col style="width: 2.5%">
         <col style="width:4%">
 
@@ -66,15 +66,16 @@ include("myfunctions.php");
         <col style="width: 2%">
         <col style="width: 2%">
         <col style="width: 2.6%">
+        <col style="width: 3.8%">
         <col style="width: 3%">
 
-        <col style="width: 2%">
-        <col style="width: 2%">
+        <col style="width: 1.8%">
+        <col style="width: 1.8%">
         <col style="width: 3%">
 
-        <col style="width: 2%">
-        <col style="width: 2%">
-        <col style="width: 2%">
+        <col style="width: 1.8%">
+        <col style="width: 1.8%">
+        <col style="width: 1.8%">
         <col style="width: 2.6%">
 
         <thead>
@@ -93,6 +94,7 @@ include("myfunctions.php");
             <th style="text-align: center; border: solid 1px black;  " colspan="8">UE2 COMMUNICATION ET DEVELOPPEMENT PERSONNEL</th>
             <th style="text-align: center; border: solid 1px black;  " colspan="4">UE3 DROITS EN METHODE DE SECURITE WEB ET LOGICIEL</th>
             <th style="text-align: center; border: solid 1px black;  " colspan="4">UE4 CRYPTOGRAPHIE</th>
+            <th style="text-align: center; border: solid 1px black; background-color: #CCC " rowspan="3"> MOYENNE UE MINEURES </th>
             <th style="text-align: center; border: solid 1px black;  " colspan="8">UE5 SYSTEMES REPARTIS ET MIDDLEWARE</th>
 
 
@@ -280,6 +282,11 @@ SELECT  DISTINCT student_examnotes.studentid FROM `student_examnotes` INNER JOIN
                 <td style="text-align: center; border: solid 1px black; " > <?php $moyponde=moyenneecu($idetudiant,$idspec,$idsem,'ECU1INF2103',$idanac,$idses,$bdd)*creditecu($idsem,'ECU1INF2103',$idanac,$idspec,$bdd); echo number_format($moyponde,2); ?></td>
 
                 <td style="text-align: center; border: solid 1px black; "><?php echo creditvalideuemaster($idetudiant,$idsem,'INF2103',$idanac,$idspec,$idses,$bdd); ?></td>
+
+
+
+                <td style="text-align: center; border: solid 1px black; background-color: #CCC "><?php echo ueminorsemaverage($idetudiant, $idspec,  $idsem, $idses, $idanac,$bdd); ?></td>
+
 
 
 
@@ -720,8 +727,11 @@ SELECT  DISTINCT student_examnotes.studentid FROM `student_examnotes` INNER JOIN
             <th style="text-align: center; border: solid 1px black; " >GENRE </th>
             <th style="text-align: center; border: solid 1px black;  " >DATE DE NAISSANCE </th>
 
-            <th style="text-align: center; border: solid 1px black;  " >MOYENNE DU SEMESTRE</th>
-            <th style="text-align: center; border: solid 1px black;  ">NOMBRE DE CREDITS VALIDES </th>
+
+
+            <th style="text-align: center; border: solid 1px black; background-color: #CCC " > MOYENNE UE MAJEURES </th>
+            <th style="text-align: center; border: solid 1px black; background-color: #CCC   " >MOYENNE DU SEMESTRE</th>
+            <th style="text-align: center; border: solid 1px black;  background-color: #CCC  ">NOMBRE DE CREDITS VALIDES </th>
             <th style="text-align: center; border: solid 1px black;  " > DECISION DU JURY</th>
 
 
@@ -793,12 +803,12 @@ SELECT  DISTINCT student_examnotes.studentid FROM `student_examnotes` INNER JOIN
 
 
 
+                <td style="text-align: center; border: solid 1px black; background-color: #CCC "><?php echo uemajorsemaverage($idetudiant, $idspec,  $idsem, $idses, $idanac,$bdd); ?></td>
 
+                <td style="text-align: center; border: solid 1px black;background-color: #CCC " > <?php  echo number_format(moyennesemestre($idetudiant,$idsem,$idanac,$idspec,$idses,$bdd),2); ?></td>
+                <td style="text-align: center; border: solid 1px black; background-color: #CCC " > <?php echo tcreditmaster($idetudiant,$idsem,$idanac,$idspec,$idses,$bdd); ?></td>
 
-                <td style="text-align: center; border: solid 1px black; " > <?php  echo number_format(moyennesemestre($idetudiant,$idsem,$idanac,$idspec,$idses,$bdd),2); ?></td>
-                <td style="text-align: center; border: solid 1px black; " > <?php echo tcreditmaster($idetudiant,$idsem,$idanac,$idspec,$idses,$bdd); ?></td>
-
-                <td style="text-align: center; border: solid 1px black; " ><?php if(decisionmaster($idetudiant,$idsem,$idanac,$idspec,$idses,$bdd)=='ADMIS' AND $result['kind']=='F') {echo 'ADMISE';}elseif(decisionmaster($idetudiant,$idsem,$idanac,$idspec,$idses,$bdd)=='REFUSE' AND $result['kind']=='F'){echo 'REFUSEE';}
+                <td style="text-align: center; border: solid 1px black; background-color: #CCC " ><?php if(decisionmaster($idetudiant,$idsem,$idanac,$idspec,$idses,$bdd)=='ADMIS' AND $result['kind']=='F') {echo 'ADMISE';}elseif(decisionmaster($idetudiant,$idsem,$idanac,$idspec,$idses,$bdd)=='REFUSE' AND $result['kind']=='F'){echo 'REFUSEE';}
                     elseif(decisionmaster($idetudiant,$idsem,$idanac,$idspec,$idses,$bdd)=='ADMIS' AND $result['kind']=='M') {echo 'ADMIS';}else{echo 'REFUSE';} ?></td>
 
 
