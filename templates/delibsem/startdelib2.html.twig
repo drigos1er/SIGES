@@ -137,6 +137,11 @@
 
 
 
+    {%if( (app.session.get('speciddelib') =='SIGL') and (app.session.get('leveliddelib')=='M2')and (app.session.get('semiddelib')=='SEM9'))%}<a href="{{ path('siges_tabledelibm2siglsem9') }}" style="color: white" target="_blank"><button class="btn"> TABLEAU DE DELIBERATION  <i class="material-icons">forward</i></button></a>{% endif %}
+
+
+
+
 
     {%if( (app.session.get('speciddelib') =='MBDS') and (app.session.get('leveliddelib')=='M1')and (app.session.get('semiddelib')=='SEM7'))%}<a href="{{ path('siges_tabledelibm1infosem7') }}" style="color: white" target="_blank"><button class="btn"> TABLEAU DE DELIBERATION  <i class="material-icons">forward</i></button></a>{% endif %}
 

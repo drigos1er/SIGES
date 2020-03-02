@@ -713,3 +713,37 @@ siges_listtabledelibm2sitwsem9:
   path:     /delibarea/listtabledelibm2sitwsem9
   defaults: { _controller: App\Controller\DelibSemController::listtabledelibm2sitwsem9 }
 
+
+
+
+
+siges_tabledelibm2siglsem9:
+  path:     /delibarea/tabledelibm2siglsem9
+  defaults: { _controller: App\Controller\DelibSemController::tabledelibm2siglsem9 }
+
+
+
+
+siges_listtabledelibm2siglsem9:
+  path:     /delibarea/listtabledelibm2siglsem9
+  defaults: { _controller: App\Controller\DelibSemController::listtabledelibm2siglsem9 }
+
+
+
+siges_tabledelibm2siglsem9adm:
+  path:     /delibarea/tabledelibm2siglsem9adm
+  defaults: { _controller: App\Controller\DelibSemController::tabledelibm2siglsem9adm }
+
+siges_listtabledelibm2siglsem9adm:
+  path:     /delibarea/listtabledelibm2siglsem9adm
+  defaults: { _controller: App\Controller\DelibSemController::listtabledelibm2siglsem9adm }
+
+
+
+
+
+
+
+
+
+

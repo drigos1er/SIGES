@@ -20,7 +20,7 @@ include("myfunctions.php");
 
 
 
-    <div  style="margin-top:20px; width:80%; margin-left:100px; text-align:center; font-size:18px; border: double; background-color:#CCC;"> DELIBERATION DE LA <?php echo  $libses;?> DU <?php echo  $libsem;?> <?php echo  $idanac?><BR /><span style="font-size:20px; font-weight:bold;"><?php echo  $levelname;?>&nbsp;<?php echo utf8_encode( $libspec);?><br>  </span></div>
+    <div  style="margin-top:20px; width:80%; margin-left:100px; text-align:center; font-size:18px; border: double; background-color:#CCC;"> DELIBERATION DE LA <?php echo  $libses;?> DU <?php echo  $libsem;?> <?php echo  $idanac?><BR /><span style="font-size:20px; font-weight:bold;"><?php echo  $levelname;?>&nbsp;<?php echo  $libspec;?><br>  </span></div>
 
     <br />
 
@@ -32,7 +32,7 @@ include("myfunctions.php");
 
         <col style="width: 6%">
 
-        <col style="width: 10%">
+        <col style="width: 8.5%">
         <col style="width: 2.5%">
         <col style="width:4%">
 
@@ -41,40 +41,42 @@ include("myfunctions.php");
 
         <col style="width: 2%">
         <col style="width: 2%">
+        <col style="width: 2.4%">
+
+        <col style="width: 3%">
+
+        <col style="width: 2%">
+        <col style="width: 2%">
+        <col style="width: 3%">
+
+        <col style="width: 2%">
+        <col style="width: 2%">
+        <col style="width: 2%">
+        <col style="width: 2.4%">
+
+
+        <col style="width: 3%">
+
+        <col style="width: 2%">
+        <col style="width: 2%">
+        <col style="width: 2.4%">
+
+        <col style="width: 3%">
+
+        <col style="width: 2%">
+        <col style="width: 2%">
+        <col style="width: 2.4%">
+        <col style="width: 3.5%">
+        <col style="width: 3%">
+
+        <col style="width: 2%">
+        <col style="width: 2%">
+        <col style="width: 3%">
+
+        <col style="width: 2%">
+        <col style="width: 2%">
+
         <col style="width: 2.6%">
-
-        <col style="width: 3%">
-
-        <col style="width: 2%">
-        <col style="width: 2%">
-        <col style="width: 3%">
-
-        <col style="width: 2%">
-        <col style="width: 2%">
-        <col style="width: 2%">
-        <col style="width: 2.6%">
-
-
-        <col style="width: 3%">
-
-        <col style="width: 2%">
-        <col style="width: 2%">
-        <col style="width: 2.6%">
-
-        <col style="width: 3%">
-
-        <col style="width: 2%">
-        <col style="width: 2%">
-        <col style="width: 2.6%">
-        <col style="width: 3%">
-
-        <col style="width: 2%">
-        <col style="width: 2%">
-        <col style="width: 3%">
-
-        <col style="width: 2%">
-        <col style="width: 2%">
-        <col style="width: 2%">
         <col style="width: 2.6%">
 
         <thead>
@@ -93,6 +95,9 @@ include("myfunctions.php");
             <th style="text-align: center; border: solid 1px black;  " colspan="8">UE2 COMMUNICATION ET DEVELOPPEMENT PERSONNEL</th>
             <th style="text-align: center; border: solid 1px black;  " colspan="4">UE3 DROITS EN METHODE DE SECURITE WEB ET LOGICIEL</th>
             <th style="text-align: center; border: solid 1px black;  " colspan="4">UE4 CODAGE</th>
+
+            <th style="text-align: center; border: solid 1px black; background-color: #CCC " rowspan="3"> MOYENNE UE MINEURES </th>   <!--   fin bloc ue mineur  -->
+
             <th style="text-align: center; border: solid 1px black;  " colspan="8">UE5 SYSTEMES REPARTIS ET MIDDLEWARE</th>
 
 
@@ -280,6 +285,13 @@ SELECT  DISTINCT student_examnotes.studentid FROM `student_examnotes` INNER JOIN
                 <td style="text-align: center; border: solid 1px black; "><?php echo creditvalideuemaster($idetudiant,$idsem,'INF2102',$idanac,$idspec,$idses,$bdd); ?></td>
 
 
+                <!--- TOUS LES MINEUR EN DESSUS -->
+                <td style="text-align: center; border: solid 1px black; background-color: #CCC "><?php echo ueminorsemaverage($idetudiant, $idspec,  $idsem, $idses, $idanac,$bdd); ?></td>
+
+
+
+
+
 
                 <td style="text-align: center; border: solid 1px black; " > <?php echo moyenneecu($idetudiant,$idspec,$idsem,'ECU1INF2101',$idanac,$idses,$bdd); ?></td>
                 <td style="text-align: center; border: solid 1px black; " > <?php echo creditecu($idsem,'ECU1INF2101',$idanac,$idspec,$bdd); ?></td>
@@ -348,7 +360,7 @@ SELECT  DISTINCT student_examnotes.studentid FROM `student_examnotes` INNER JOIN
 
 
 
-    <div  style="margin-top:20px; width:80%; margin-left:100px; text-align:center; font-size:18px; border: double; background-color:#CCC;"> DELIBERATION DE LA <?php echo  $libses;?> DU <?php echo  $libsem;?> <?php echo  $idanac?><BR /><span style="font-size:20px; font-weight:bold;"><?php echo  $levelname;?> <?php echo utf8_encode( $libspec);?><br>  </span></div>
+    <div  style="margin-top:20px; width:80%; margin-left:100px; text-align:center; font-size:18px; border: double; background-color:#CCC;"> DELIBERATION DE LA <?php echo  $libses;?> DU <?php echo  $libsem;?> <?php echo  $idanac?><BR /><span style="font-size:20px; font-weight:bold;"><?php echo  $levelname;?> <?php echo  $libspec;?><br>  </span></div>
 
     <br />
 
@@ -419,10 +431,10 @@ SELECT  DISTINCT student_examnotes.studentid FROM `student_examnotes` INNER JOIN
             <th style="text-align: center; border: solid 1px black; " rowspan="3"> PRENOMS </th>
             <th style="text-align: center; border: solid 1px black; " rowspan="3">GENRE </th>
             <th style="text-align: center; border: solid 1px black;  " rowspan="3">DATE DE NAISSANCE </th>
-            <th style="text-align: center; border: solid 1px black;  " colspan="11">UE1 POO ET ALGORITHMIQUE</th>
+            <th style="text-align: center; border: solid 1px black;  " colspan="11">UE6 POO ET ALGORITHMIQUE</th>
 
-            <th style="text-align: center; border: solid 1px black;  " colspan="11">UE2 RECHERCHE OPERATIONNELLE</th>
-            <th style="text-align: center; border: solid 1px black;  " colspan="8">UE3 MATHEMATIQUES</th>
+            <th style="text-align: center; border: solid 1px black;  " colspan="11">UE7 RECHERCHE OPERATIONNELLE</th>
+            <th style="text-align: center; border: solid 1px black;  " colspan="8">UE8 MATHEMATIQUES</th>
 
 
 
@@ -684,7 +696,7 @@ SELECT  DISTINCT student_examnotes.studentid FROM `student_examnotes` INNER JOIN
 
 
 
-    <div  style="margin-top:20px; width:80%; margin-left:100px; text-align:center; font-size:18px; border: double; background-color:#CCC;"> DELIBERATION DE LA <?php echo  $libses;?> DU <?php echo  $libsem;?> <?php echo  $idanac?><BR /><span style="font-size:20px; font-weight:bold;"><?php echo  $levelname;?> <?php echo utf8_encode( $libspec);?><br>  </span></div>
+    <div  style="margin-top:20px; width:80%; margin-left:100px; text-align:center; font-size:18px; border: double; background-color:#CCC;"> DELIBERATION DE LA <?php echo  $libses;?> DU <?php echo  $libsem;?> <?php echo  $idanac?><BR /><span style="font-size:20px; font-weight:bold;"><?php echo  $levelname;?> <?php echo $libspec;?><br>  </span></div>
 
     <br />
 
@@ -695,11 +707,12 @@ SELECT  DISTINCT student_examnotes.studentid FROM `student_examnotes` INNER JOIN
         <col style="width: 2.5%">
         <col style="width: 7%">
 
-        <col style="width: 8%">
+        <col style="width: 10%">
 
         <col style="width: 15%">
         <col style="width: 2.5%">
         <col style="width:4%">
+        <col style="width: 5%">
         <col style="width: 5%">
         <col style="width: 5%">
         <col style="width: 5%">
@@ -715,10 +728,10 @@ SELECT  DISTINCT student_examnotes.studentid FROM `student_examnotes` INNER JOIN
             <th style="text-align: center; border: solid 1px black; " > PRENOMS </th>
             <th style="text-align: center; border: solid 1px black; " >GENRE </th>
             <th style="text-align: center; border: solid 1px black;  " >DATE DE NAISSANCE </th>
-
-            <th style="text-align: center; border: solid 1px black;  " >MOYENNE DU SEMESTRE</th>
-            <th style="text-align: center; border: solid 1px black;  ">NOMBRE DE CREDITS VALIDES </th>
-            <th style="text-align: center; border: solid 1px black;  " > DECISION DU JURY</th>
+            <th style="text-align: center; border: solid 1px black; background-color: #CCC "  > MOYENNE UE MAJEURES </th>
+            <th style="text-align: center; border: solid 1px black; background-color: #CCC  " >MOYENNE DU SEMESTRE</th>
+            <th style="text-align: center; border: solid 1px black;  background-color: #CCC ">NOMBRE DE CREDITS VALIDES </th>
+            <th style="text-align: center; border: solid 1px black;  background-color: #CCC " > DECISION DU JURY</th>
 
 
 
@@ -789,12 +802,16 @@ SELECT  DISTINCT student_examnotes.studentid FROM `student_examnotes` INNER JOIN
 
 
 
+                <!-- Laisser intact code cidessous -->
+                <td style="text-align: center; border: solid 1px black; background-color: #CCC "><?php echo uemajorsemaverage($idetudiant, $idspec,  $idsem, $idses, $idanac,$bdd); ?></td>
 
 
-                <td style="text-align: center; border: solid 1px black; " > <?php  echo number_format(moyennesemestre($idetudiant,$idsem,$idanac,$idspec,$idses,$bdd),2); ?></td>
-                <td style="text-align: center; border: solid 1px black; " > <?php echo tcreditmaster($idetudiant,$idsem,$idanac,$idspec,$idses,$bdd); ?></td>
 
-                <td style="text-align: center; border: solid 1px black; " ><?php if(decisionmaster($idetudiant,$idsem,$idanac,$idspec,$idses,$bdd)=='ADMIS' AND $result['kind']=='F') {echo 'ADMISE';}elseif(decisionmaster($idetudiant,$idsem,$idanac,$idspec,$idses,$bdd)=='REFUSE' AND $result['kind']=='F'){echo 'REFUSEE';}
+
+                <td style="text-align: center; border: solid 1px black; background-color: #CCC" > <?php  echo number_format(moyennesemestre($idetudiant,$idsem,$idanac,$idspec,$idses,$bdd),2); ?></td>
+                <td style="text-align: center; border: solid 1px black; background-color: #CCC " > <?php echo tcreditmaster($idetudiant,$idsem,$idanac,$idspec,$idses,$bdd); ?></td>
+
+                <td style="text-align: center; border: solid 1px black; background-color: #CCC " ><?php if(decisionmaster($idetudiant,$idsem,$idanac,$idspec,$idses,$bdd)=='ADMIS' AND $result['kind']=='F') {echo 'ADMISE';}elseif(decisionmaster($idetudiant,$idsem,$idanac,$idspec,$idses,$bdd)=='REFUSE' AND $result['kind']=='F'){echo 'REFUSEE';}
                     elseif(decisionmaster($idetudiant,$idsem,$idanac,$idspec,$idses,$bdd)=='ADMIS' AND $result['kind']=='M') {echo 'ADMIS';}else{echo 'REFUSE';} ?></td>
 
 

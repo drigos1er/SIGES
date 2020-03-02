@@ -192,6 +192,11 @@
 
 
 
+                            {%if( (app.session.get('speciddelib') =='RTEL')  and (app.session.get('semiddelib')=='SEM7') and (app.session.get('anacad')=='2019-2020') )%}
+                                <li class="sub_menu"><a href="/SIGES/files/pvdelibRTELSEM720182019.php?levelid={{ app.session.get('leveliddelib') }}&amp;idsem={{ app.session.get('semiddelib') }}&amp;specid={{ app.session.get('speciddelib') }}&amp;idses={{ app.session.get('idsesdelib')  }}&amp;idanac={{ app.session.get('anacad') }}&amp;typesem={{ app.session.get('semtypedelib') }}" target="_blank"><i class="material-icons">list</i>PV de Déliberation</a>
+                                </li>{% endif %}
+
+
 
 
                             {%if( (app.session.get('speciddelib') =='MDSI')  and (app.session.get('semiddelib')=='SEM8') and (app.session.get('anacad')=='2018-2019') )%}
@@ -244,6 +249,27 @@
                             {%if( (app.session.get('speciddelib') =='SIGL')  and (app.session.get('semiddelib')=='SEM5') and (app.session.get('anacad')=='2019-2020') )%}
                                 <li class="sub_menu"><a href="/SIGES/files/pvdelibSIGLSEM520182019.php?levelid={{ app.session.get('leveliddelib') }}&amp;idsem={{ app.session.get('semiddelib') }}&amp;specid={{ app.session.get('speciddelib') }}&amp;idses={{ app.session.get('idsesdelib')  }}&amp;idanac={{ app.session.get('anacad') }}&amp;typesem={{ app.session.get('semtypedelib') }}" target="_blank">PV de Déliberation</a>
                                 </li>{% endif %}
+
+
+
+                            {%if( (app.session.get('speciddelib') =='TWIN')  and (app.session.get('semiddelib')=='SEM5') and (app.session.get('anacad')=='2019-2020') )%}
+                                <li class="sub_menu"><a href="/SIGES/files/pvdelibTWINSEM520192020.php?levelid={{ app.session.get('leveliddelib') }}&amp;idsem={{ app.session.get('semiddelib') }}&amp;specid={{ app.session.get('speciddelib') }}&amp;idses={{ app.session.get('idsesdelib')  }}&amp;idanac={{ app.session.get('anacad') }}&amp;typesem={{ app.session.get('semtypedelib') }}" target="_blank">PV de Déliberation</a>
+                                </li>{% endif %}
+
+
+
+                            {%if( (app.session.get('speciddelib') =='SITW')  and (app.session.get('semiddelib')=='SEM9') and (app.session.get('anacad')=='2019-2020') )%}
+                                <li class="sub_menu"><a href="/SIGES/files/pvdelibSITWSEM920182019.php?levelid={{ app.session.get('leveliddelib') }}&amp;idsem={{ app.session.get('semiddelib') }}&amp;specid={{ app.session.get('speciddelib') }}&amp;idses={{ app.session.get('idsesdelib')  }}&amp;idanac={{ app.session.get('anacad') }}&amp;typesem={{ app.session.get('semtypedelib') }}" target="_blank"><i class="material-icons">list</i>PV de Déliberation</a>
+                                </li>{% endif %}
+
+
+
+                            {%if( (app.session.get('speciddelib') =='SIGL')  and (app.session.get('semiddelib')=='SEM9') and (app.session.get('anacad')=='2019-2020') )%}
+                                <li class="sub_menu"><a href="/SIGES/files/pvdelibSIGLSEM920182019.php?levelid={{ app.session.get('leveliddelib') }}&amp;idsem={{ app.session.get('semiddelib') }}&amp;specid={{ app.session.get('speciddelib') }}&amp;idses={{ app.session.get('idsesdelib')  }}&amp;idanac={{ app.session.get('anacad') }}&amp;typesem={{ app.session.get('semtypedelib') }}" target="_blank"><i class="material-icons">list</i>PV de Déliberation</a>
+                                </li>{% endif %}
+
+
+
 
 
 

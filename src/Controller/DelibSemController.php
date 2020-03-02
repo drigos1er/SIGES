@@ -11373,6 +11373,350 @@ class DelibSemController extends AbstractController
 
 
 
+    public function tabledelibm2siglsem9()
+    {
+
+
+
+
+        return  $this->render('delibsem/tabledelibm2siglsem9.html.twig');
+    }
+
+
+    public function listtabledelibm2siglsem9(Request $request, MyFunctionDelib $callfunction, StudentSpecialityRepository $studentspecrepo, StudentRepository $studentrepo)
+    {
+
+        $idses=$this->get('session')->get('idsesdelib');
+
+        $idspecialite=$this->get('session')->get('speciddelib');
+        $idsem=$this->get('session')->get('semiddelib');
+
+
+        $idanac=$this->get('session')->get('anacad');
+
+
+
+        if($idses=='SE1') {
+
+            $length = $request->get('length');
+            $length = $length && ($length != -1) ? $length : 0;
+
+            $start = $request->get('start');
+            $start = $length ? ($start && ($start != -1) ? $start : 0) / $length : 0;
+
+            $delibsem = $request->get('delibsem');
+            $filters = [
+                'query' => @$delibsem['value']
+            ];
+
+            $users = $studentspecrepo->studspec($idanac, $idsem, $idspecialite, $idses,
+                $filters, $start, $length
+            );
+
+            $output = array(
+                'data' => array(),
+                'recordsFiltered' => count($studentspecrepo->studspec($idanac, $idsem, $idspecialite, $idses, $filters, 0, false)),
+                'recordsTotal' => count($studentspecrepo->studspec($idanac, $idsem, $idspecialite, $idses, 0, false))
+            );
+
+            foreach ($users as $user) {
+                $idetudiant = $user['studentid'];
+
+
+
+                $etudiant = $studentrepo->findOneById($idetudiant);
+
+
+
+                $m1=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1ANG2300', $idsem, $idses, $idanac);
+
+
+
+
+                $m2=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1COM2300', $idsem, $idses, $idanac);
+
+
+
+
+                $m3=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2COM2300', $idsem, $idses, $idanac);
+
+
+
+
+                $m4=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1OGE2300', $idsem, $idses, $idanac);
+
+
+                $m5=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2OGE2300', $idsem, $idses, $idanac);
+
+
+
+
+
+
+
+                $m6=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1INF2301', $idsem, $idses, $idanac);
+
+
+
+
+
+
+                $m7=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1AGL2300', $idsem, $idses, $idanac);
+
+
+
+                $m8=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2AGL2300', $idsem, $idses, $idanac);
+
+
+
+
+
+                $m9=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1IHM2300', $idsem, $idses, $idanac);
+
+
+
+
+
+
+                $m10=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2IHM2300', $idsem, $idses, $idanac);
+
+
+                $m11=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1INF2300', $idsem, $idses, $idanac);
+                $m12=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2INF2300', $idsem, $idses, $idanac);
+                $m13=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1PRG2300', $idsem, $idses, $idanac);
+                $m14=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2PRG2300', $idsem, $idses, $idanac);
+
+
+                $output['data'][] = [
+                    'idetudiant' => $etudiant->getId(),
+
+
+
+
+                    'ue1' =>(float)$m1,
+                    'ue2' =>(float)$m2,
+                    'ue3' =>(float)$m3,
+                    'ue4' =>(float)$m4,
+
+                    'ue5' =>(float)$m5,
+
+                    'ue6' =>(float)$m6,
+
+
+                    'moyennesemminor' =>(float)$callfunction->ueminorsemaverage($idetudiant, $idspecialite,  $idsem, $idses, $idanac),
+
+                    'ue7' =>(float)$m7,
+                    'ue8' =>(float)$m8,
+                    'ue9' =>(float)$m9,
+                    'ue10' =>(float)$m10,
+                    'ue11' =>(float)$m11,
+                    'ue12' =>(float)$m12,
+
+                    'ue13' =>(float)$m13,
+                    'ue14' =>(float)$m14,
+
+
+                    'moyennesemmajor' =>(float)$callfunction->uemajorsemaverage($idetudiant, $idspecialite,  $idsem, $idses, $idanac),
+
+
+
+                    'moyennesem' =>(float)$callfunction->moyennesemecusemestrielle($idetudiant,$idsem,$idanac,$idspecialite,$idses),
+
+
+
+
+                    'tcredit' =>(float)$callfunction->tcreditsemestrielle($idetudiant,$idsem,$idanac,$idspecialite,$idses)
+
+
+
+
+
+
+
+
+
+
+
+
+                ];
+            }
+
+            return new Response(json_encode($output), 200, ['Content-Type' => 'application/json']);
+
+
+        }
+
+
+
+
+        else{
+            $length = $request->get('length');
+            $length = $length && ($length != -1) ? $length : 0;
+
+            $start = $request->get('start');
+            $start = $length ? ($start && ($start != -1) ? $start : 0) / $length : 0;
+
+            $delibsem = $request->get('delibsem');
+            $filters = [
+                'query' => @$delibsem['value']
+            ];
+
+            $users = $studentspecrepo->studspecse2($idanac, $idsem, $idspecialite, $idses,
+                $filters, $start, $length
+            );
+
+            $output = array(
+                'data' => array(),
+                'recordsFiltered' => count($studentspecrepo->studspecse2($idanac, $idsem, $idspecialite, $idses, $filters, 0, false)),
+                'recordsTotal' => count($studentspecrepo->studspecse2($idanac, $idsem, $idspecialite, $idses, 0, false))
+            );
+
+            foreach ($users as $user) {
+                $idetudiant = $user['studentid'];
+
+
+
+                $etudiant = $studentrepo->findOneById($idetudiant);
+
+
+                /*    if($this->moyennesemecu($idetudiant, $idspecialite, $idsem, $idses, $idanac)>=10){
+
+
+                        $moysem=  '<span style="background-color: green;">'.$this->moyennesemecu($idetudiant, $idspecialite, $idsem, $idses, $idanac).'</span>';
+
+
+
+                    }else{
+
+                        $moysem=  '<span style="background-color: red;">'.$this->moyennesemecu($idetudiant, $idspecialite, $idsem, $idses, $idanac).'</span>';
+
+                    } */
+
+
+
+                $m1=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1ANG2200', $idsem, $idses, $idanac);
+
+
+
+
+                $m2=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1COM2200', $idsem, $idses, $idanac);
+
+
+
+
+                $m3=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2COM2200', $idsem, $idses, $idanac);
+
+
+
+
+                $m4=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1DRT2101', $idsem, $idses, $idanac);
+
+
+                $m5=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1INF2103', $idsem, $idses, $idanac);
+
+
+
+
+
+
+                $m6=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1INF2100', $idsem, $idses, $idanac);
+
+
+
+                $m7=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2INF2100', $idsem, $idses, $idanac);
+
+
+
+
+
+                $m8=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU3INF2100', $idsem, $idses, $idanac);
+
+
+
+
+
+
+                $m9=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1INF2101', $idsem, $idses, $idanac);
+
+                $m10=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2INF2101', $idsem, $idses, $idanac);
+
+
+                $m11=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1MTH2100', $idsem, $idses, $idanac);
+                $m12=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2MTH2100', $idsem, $idses, $idanac);
+                $m13=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU1ROP2100', $idsem, $idses, $idanac);
+                $m14=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU2ROP2100', $idsem, $idses, $idanac);
+                $m15=$callfunction->ecuaverage($idetudiant, $idspecialite,'ECU3ROP2100', $idsem, $idses, $idanac);
+
+
+                $output['data'][] = [
+                    'idetudiant' => $etudiant->getId(),
+
+
+
+
+                    'ue1' =>(float)$m1,
+                    'ue2' =>(float)$m2,
+                    'ue3' =>(float)$m3,
+                    'ue4' =>(float)$m4,
+                    'ue5' =>(float)$m5,
+
+                    'moyennesemminor' =>(float)$callfunction->ueminorsemaverage($idetudiant, $idspecialite,  $idsem, $idses, $idanac),
+
+                    'ue6' =>(float)$m6,
+                    'ue7' =>(float)$m7,
+                    'ue8' =>(float)$m8,
+                    'ue9' =>(float)$m9,
+                    'ue10' =>(float)$m10,
+                    'ue11' =>(float)$m11,
+                    'ue12' =>(float)$m12,
+
+                    'ue13' =>(float)$m13,
+                    'ue14' =>(float)$m14,
+                    'ue15' =>(float)$m15,
+
+                    'moyennesemmajor' =>(float)$callfunction->uemajorsemaverage($idetudiant, $idspecialite,  $idsem, $idses, $idanac),
+
+
+
+                    'moyennesem' =>(float)$callfunction->moyennesemecusemestrielle($idetudiant,$idsem,$idanac,$idspecialite,$idses),
+
+
+
+
+                    'tcredit' =>(float)$callfunction->tcreditsemestrielle($idetudiant,$idsem,$idanac,$idspecialite,$idses)
+
+
+
+
+
+
+
+
+
+                ];
+            }
+
+            return new Response(json_encode($output), 200, ['Content-Type' => 'application/json']);
+
+
+        }
+
+
+
+
+    }
+
+
+
+    public function tabledelibm2siglsem9adm()
+    {
+
+
+
+
+        return  $this->render('delibsem/tabledelibm2siglsem9adm.html.twig');
+    }
+
 
 
 }

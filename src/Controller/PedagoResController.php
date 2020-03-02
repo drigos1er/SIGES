@@ -1457,14 +1457,14 @@ class PedagoResController extends AbstractController
                     $listing = '';
                 } elseif($nbcptnotemoycc <$nbcptetud){
 
-                    $listing = '<a href="http://localhost:8888/SIGES/files/calllistingnex.php?levelname=' .$lev->getLevelname(). '&amp;semname=' .$sem->getSemname(). '&amp;classid=' .$tspec['classeid']. '&amp;specid=' .$spe->getId(). '&amp;ueid=' . $tspec['ueid']. '&amp;ecuid=' .$tspec['ecuid']. '&amp;uename=' . $ue->getUename(). '&amp;classname=' . $classincor->getClassname(). ' &amp;semid=' . $tspec['semesterid']. ' &amp;ecuname=' . $ecu->getEcuname(). '&amp;idanac='.$idanac.'&amp;idses=&amp;typeaver=" class="btn btn-warning btn-xs"><i class="fa fa-file-pdf-o"></i>  </a>';
+                    $listing = '<a href="http://localhost:8888/SIGES/files/calllistingnex.php?levelname=' .$lev->getLevelname(). '&amp;semname=' .$sem->getSemname(). '&amp;classid=' .$tspec['classeid']. '&amp;specid=' .$spe->getId(). '&amp;ueid=' . $tspec['ueid']. '&amp;ecuid=' .$tspec['ecuid']. '&amp;uename=' . $ue->getUename(). '&amp;classname=' . $classincor->getClassname(). ' &amp;semid=' . $tspec['semesterid']. ' &amp;ecuname=' . $ecu->getEcuname(). '&amp;idanac='.$idanac.'&amp;idses='.$idses.'&amp;typeaver=" class="btn btn-warning btn-xs"><i class="fa fa-file-pdf-o"></i>  </a>';
                 }
 
 
 
                 else{
 
-                    $listing = '<a href="http://localhost:8888/SIGES/files/calllistingnex.php?levelname=' .$lev->getLevelname(). '&amp;semname=' .$sem->getSemname(). '&amp;classid=' .$tspec['classeid']. '&amp;specid=' .$spe->getId(). '&amp;ueid=' . $tspec['ueid']. '&amp;ecuid=' . $tspec['ecuid']. '&amp;uename=' . $ue->getUename(). '&amp;classname=' . $classincor->getClassname(). ' &amp;semid=' . $tspec['semesterid']. ' &amp;ecuname=' . $ecu->getEcuname(). '&amp;idanac='.$idanac.'&amp;idses=&amp;typeaver=" class="btn btn-success btn-xs"><i class="fa fa-file-pdf-o"></i>  </a>';
+                    $listing = '<a href="http://localhost:8888/SIGES/files/calllistingnex.php?levelname=' .$lev->getLevelname(). '&amp;semname=' .$sem->getSemname(). '&amp;classid=' .$tspec['classeid']. '&amp;specid=' .$spe->getId(). '&amp;ueid=' . $tspec['ueid']. '&amp;ecuid=' . $tspec['ecuid']. '&amp;uename=' . $ue->getUename(). '&amp;classname=' . $classincor->getClassname(). ' &amp;semid=' . $tspec['semesterid']. ' &amp;ecuname=' . $ecu->getEcuname(). '&amp;idanac='.$idanac.'&amp;idses='.$idses.'&amp;typeaver=" class="btn btn-success btn-xs"><i class="fa fa-file-pdf-o"></i>  </a>';
                 }
 
 
